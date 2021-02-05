@@ -23,6 +23,7 @@ class BungieApiCall:
 
     def get_profile(self, member_list):
         profile_requests = (
-            self.api_call('Destiny2/', member.membershipType, '/Profile/', member.membershipId, {'components': [202]})
+            self.api_call('Destiny2/', member.membershipType, '/Profile/', member.membershipId,
+                          {'components': [202, 1100]})
             for member in member_list)
         return grequests.map(profile_requests)

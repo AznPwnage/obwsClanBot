@@ -13,27 +13,27 @@ class ClanGroup:
 
 
 class Clan:
-    def __init__(self, name, groupId, clanType):
+    def __init__(self, name, group_id, clan_type):
         self.name = name
-        self.groupId = groupId
-        self.clanType = clanType
+        self.groupId = group_id
+        self.clanType = clan_type
         self.totalMember = 0
         self.memberList = []
 
-    def setTotalMember(self, totalMember):
-        self.totalMember = totalMember
+    def setTotalMember(self, total_member):
+        self.totalMember = total_member
 
-    def addMember(self, name, membershipType, membershipId):
+    def addMember(self, name, membership_type, membership_id):
         if self.clanType == 'Regional':
-            clanScoreGained = -10
+            clan_score_change = -10
         else:
-            clanScoreGained = 0
-        self.memberList.append(ClanMember(name, membershipType, membershipId, clanScoreGained))
+            clan_score_change = 0
+        self.memberList.append(ClanMember(name, membership_type, membership_id, clan_score_change))
 
 
 class ClanMember:
-    def __init__(self, name, membershipType, membershipId, clanScoreGained):
+    def __init__(self, name, membership_type, membership_id, clan_score_change):
         self.name = name
-        self.membershipType = membershipType
-        self.membershipId = membershipId
-        self.clanScoreGained = clanScoreGained
+        self.membership_type = membership_type
+        self.membership_id = membership_id
+        self.clan_score_change = clan_score_change

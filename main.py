@@ -23,7 +23,7 @@ if __name__ == '__main__':
     clan_group = clan.ClanGroup().get_clan_list()
     clanMembersResponses = request.BungieApiCall().get_clan_members(clan_group)
 
-    for i in range(len(clan_group)):
+    for i in range(len(clan_group)):  # iterate over all clans in OBWS
         clan = clan_group[i]
         print(clan.name)
         clanMembersResponse = clanMembersResponses[i].json()['Response']
@@ -37,7 +37,7 @@ if __name__ == '__main__':
             clan.addMember(name, membershipType, membershipId)
 
         profile_responses = request.BungieApiCall().get_profile(clan.memberList)
-        for i in range(len(profile_responses)):
+        for j in range(len(profile_responses)):  # iterate over single clan's members
 
             privacy_flag = False
             account_not_exists_flag = False
@@ -49,15 +49,15 @@ if __name__ == '__main__':
             curr_dsc = 0
             curr_lw = 0
 
-            profile = profile_responses[i].json()
+            profile = profile_responses[j].json()
 
             if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
                 account_not_exists_flag = True
-                print(clan.memberList[i].name + ' account does not exist')
+                print(clan.memberList[j].name + ' account does not exist')
                 continue
             if 'data' not in list(profile['Response']['metrics']) or 'data' not in list(profile['Response']['characterProgressions']):  # private profile
                 privacy_flag = True
-                print(clan.memberList[i].name + ' has their profile set to private')
+                print(clan.memberList[j].name + ' has their profile set to private')
                 continue
 
             metrics = profile['Response']['metrics']['data']['metrics']
@@ -69,13 +69,13 @@ if __name__ == '__main__':
             if LW_MS_HASH in metrics.keys():
                 curr_lw = metrics.get(LW_MS_HASH)['objectiveProgress']['progress']
 
-            progression_data = profile['Response']['characterProgressions']['data']  # CLAN REWARD
-            for j in range(len(progression_data)):  # iterate over characters
-                if not clan_engram_flag or not crucible_flag:  # skip iteration if engram and live fire already completed/claimed
-                    milestones = progression_data[list(progression_data)[j]]['milestones']
+            progression_data = profile['Response']['characterProgressions']['data']  # clan & crucible engrams
+            for k in range(len(progression_data)):  # iterate over single member's characters
+                if not clan_engram_flag or not crucible_flag:  # skip iteration if clan and crucible engrams already completed/claimed
+                    milestones = progression_data[list(progression_data)[k]]['milestones']
                     clan_engram_flag = check_milestone(CLAN_ENGRAM_MS_HASH, CLAN_ENGRAM_OBJ_HASH)
-                    if 8 < len(milestones.keys()):  # require certain progression to have live-fire available (see mod alt accounts) if we skip this check then the 'picked up' check below will pass
+                    if 8 < len(milestones.keys()):  # require certain progression to have live-fire (crucible) available (see mod alt accounts) if we skip this check then the 'picked up' check below will pass
                         crucible_flag = check_milestone(CRUCIBLE_MS_HASH, CRUCIBLE_OBJ_HASH)
 
-            print(clan.memberList[i].name + ' || ID: ' + clan.memberList[i].membershipId + ' || GOS: ' + str(curr_gos) + ' || DSC: ' + str(curr_dsc) + ' || LW: '
+            print(clan.memberList[j].name + ' || ID: ' + clan.memberList[j].membershipId + ' || GOS: ' + str(curr_gos) + ' || DSC: ' + str(curr_dsc) + ' || LW: '
                   + str(curr_lw) + ' || CLAN: ' + str(clan_engram_flag) + ' || CRUCIBLE: ' + str(crucible_flag))

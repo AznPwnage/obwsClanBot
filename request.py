@@ -1,4 +1,5 @@
 import grequests
+import requests as r
 
 
 class BungieApiCall:
@@ -24,6 +25,22 @@ class BungieApiCall:
     def get_profile(self, member_list):
         profile_requests = (
             self.api_call('Destiny2/', member.membership_type, '/Profile/', member.membership_id,
-                          {'components': [202, 1100]})
+                          {'components': [200, 202, 1100]})
             for member in member_list)
         return grequests.map(profile_requests)
+
+    def get_activity_history(self, membership_type, membership_id, character_id):
+        activities = []
+        page = 0
+        while True:
+            response = r.get(
+                self.get_api_root() + 'Destiny2/' + membership_type + '/Account/' + membership_id + '/Character/' + character_id + '/Stats/Activities',
+                params={'page': page, 'mode': 4, 'count': 250}, headers=self.get_header()).json()
+            if 'Response' not in response.keys():
+                continue
+            if 'activities' in response['Response'].keys():
+                activities.extend(response['Response']['activities'])
+            page += 1
+            if 250 > len(response['Response']):
+                break
+        return activities

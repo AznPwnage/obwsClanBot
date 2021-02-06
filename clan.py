@@ -25,16 +25,24 @@ class Clan:
 
 
 class ClanMember:
-    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, gos=None, dsc=None, lw=None, clan_engram=None, crucible_engram=None, privacy=None, account_not_exists=None):
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None,
+                 h_gos=None, w_gos=None, t_gos=None, h_dsc=None, w_dsc=None, t_dsc=None, h_lw=None, w_lw=None, t_lw=None,
+                 clan_engram=None, crucible_engram=None, privacy=None, account_not_exists=None):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
         self.membership_type = membership_type
         self.clan_type = clan_type
         self.score = score
-        self.gos = gos
-        self.dsc = dsc
-        self.lw = lw
+        self.h_gos = h_gos
+        self.w_gos = w_gos
+        self.t_gos = t_gos
+        self.h_dsc = h_dsc
+        self.w_dsc = w_dsc
+        self.t_dsc = t_dsc
+        self.h_lw = h_lw
+        self.w_lw = w_lw
+        self.t_lw = t_lw
         self.clan_engram = clan_engram
         self.crucible_engram = crucible_engram
         self.privacy = privacy

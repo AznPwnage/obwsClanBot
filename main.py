@@ -36,9 +36,9 @@ CLAN_ENGRAM_OBJ_HASH = '1001409310'
 CRUCIBLE_MS_HASH = '2594202463'
 CRUCIBLE_OBJ_HASH = '4026431786'
 
-GOS_ACTIVITY_ID = '3458480158'
-DSC_ACTIVITY_ID = '910380154'
-LW_ACTIVITY_ID = '2122313384'
+GOS_ACTIVITY_ID = 3458480158
+DSC_ACTIVITY_ID = 910380154
+LW_ACTIVITY_ID = 2122313384
 
 if __name__ == '__main__':
 
@@ -105,27 +105,28 @@ if __name__ == '__main__':
 
             progression_data = profile['Response']['characterProgressions']['data']  # clan & crucible engrams
             char_iterator = 0
+            print(curr_member.name)
             for character_id in progression_data.keys():  # iterate over single member's characters
                 character_raids = request.BungieApiCall().get_activity_history(curr_member.membership_type, curr_member.membership_id, character_id)
                 for raid in character_raids:
                     if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
                         break
                     ref_id = raid['activityDetails']['referenceId']
-                    if 1 == char_iterator:  # hunter
+                    if 0 == char_iterator:  # hunter
                         if ref_id == GOS_ACTIVITY_ID:
                             curr_member.h_gos += 1
                         elif ref_id == DSC_ACTIVITY_ID:
                             curr_member.h_dsc += 1
                         elif ref_id == LW_ACTIVITY_ID:
                             curr_member.h_lw += 1
-                    elif 2 == char_iterator:  # warlock
+                    elif 1 == char_iterator:  # warlock
                         if ref_id == GOS_ACTIVITY_ID:
                             curr_member.w_gos += 1
                         elif ref_id == DSC_ACTIVITY_ID:
                             curr_member.w_dsc += 1
                         elif ref_id == LW_ACTIVITY_ID:
                             curr_member.w_lw += 1
-                    elif 3 == char_iterator:  # titan
+                    elif 2 == char_iterator:  # titan
                         if ref_id == GOS_ACTIVITY_ID:
                             curr_member.t_gos += 1
                         elif ref_id == DSC_ACTIVITY_ID:

@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     with open('members.csv', 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Id', 'Clan', 'MemberShipType', 'Score', 'GOS', 'DSC', 'LW', 'ClanEngram', 'CrucibleEngram', 'PrivacyFlag', 'AccountExistsFlag'])
+        writer.writerow(['Name', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'Score', 'GOS', 'DSC', 'LW', 'ClanEngram', 'CrucibleEngram', 'PrivacyFlag', 'AccountExistsFlag'])
         for member in curr_member_list:
             writer.writerow([str(member.name), str(member.membership_id), str(member.clan_name), str(member.membership_type), str(member.clan_type), str(member.score), str(member.gos), str(member.dsc), str(member.lw), str(member.clan_engram), str(member.crucible_engram), str(member.privacy), str(member.account_not_exists)])
 

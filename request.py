@@ -18,12 +18,12 @@ class BungieApiCall:
                              params=params, headers=self.get_header())
 
     def get_clan_members(self, clan_group):
-        clan_members_requests = (self.api_call('GroupV2/', clan.groupId, '/Members') for clan in clan_group)
+        clan_members_requests = (self.api_call('GroupV2/', clan.group_id, '/Members') for clan in clan_group)
         return grequests.map(clan_members_requests)
 
     def get_profile(self, member_list):
         profile_requests = (
-            self.api_call('Destiny2/', member.membershipType, '/Profile/', member.membershipId,
+            self.api_call('Destiny2/', member.membership_type, '/Profile/', member.membership_id,
                           {'components': [202, 1100]})
             for member in member_list)
         return grequests.map(profile_requests)

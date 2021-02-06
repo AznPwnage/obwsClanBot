@@ -3,7 +3,8 @@ import pandas as pd
 
 class ClanGroup:
     def __init__(self):
-        clan_list_df = pd.read_csv('clan_list.csv')
+        clan_list_df = pd.read_csv('test_clan_list2.csv')
+        # clan_list_df = pd.read_csv('clan_list.csv')
         self.clan_list = []
         for index, row in clan_list_df.iterrows():
             self.clan_list.append(Clan(row['name'], str(row['groupId']), row['type']))
@@ -15,25 +16,26 @@ class ClanGroup:
 class Clan:
     def __init__(self, name, group_id, clan_type):
         self.name = name
-        self.groupId = group_id
-        self.clanType = clan_type
-        self.totalMember = 0
+        self.group_id = group_id
+        self.clan_type = clan_type
         self.memberList = []
 
-    def setTotalMember(self, total_member):
-        self.totalMember = total_member
-
-    def addMember(self, name, membership_type, membership_id):
-        if self.clanType == 'Regional':
-            clan_score_change = -10
-        else:
-            clan_score_change = 0
-        self.memberList.append(ClanMember(name, membership_type, membership_id, clan_score_change))
+    def add_member(self, name, membership_type, membership_id):
+        self.memberList.append(ClanMember(name, membership_id, self.name, membership_type, self.clan_type))
 
 
 class ClanMember:
-    def __init__(self, name, membership_type, membership_id, clan_score_change):
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, gos=None, dsc=None, lw=None, clan_engram=None, crucible_engram=None, privacy=None, account_not_exists=None):
         self.name = name
-        self.membership_type = membership_type
         self.membership_id = membership_id
-        self.clan_score_change = clan_score_change
+        self.clan_name = clan_name
+        self.membership_type = membership_type
+        self.clan_type = clan_type
+        self.score = score
+        self.gos = gos
+        self.dsc = dsc
+        self.lw = lw
+        self.clan_engram = clan_engram
+        self.crucible_engram = crucible_engram
+        self.privacy = privacy
+        self.account_not_exists = account_not_exists

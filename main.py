@@ -110,16 +110,14 @@ def write_members_to_csv(mem_list):
         writer = csv.writer(csvfile)
         writer.writerow(
             ['Name', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'Score', 'H_GOS', 'H_DSC', 'H_LW', 'W_GOS', 'W_DSC',
-             'W_LW', 'T_GOS', 'T_DSC', 'T_LW', 'ClanEngram',
-             'CrucibleEngram', 'PrivacyFlag', 'AccountExistsFlag'])
-        for mem in mem_list:
+             'W_LW', 'T_GOS', 'T_DSC', 'T_LW', 'ClanEngram', 'CrucibleEngram', 'PrivacyFlag', 'AccountExistsFlag'])
+        for member in mem_list:
             writer.writerow(
-                [str(mem.name), str(mem.membership_id), str(mem.clan_name), str(mem.membership_type),
-                 str(mem.clan_type), str(mem.score), str(mem.h_gos), str(mem.h_dsc), str(mem.h_lw),
-                 str(mem.w_gos), str(mem.w_dsc), str(mem.w_lw), str(mem.t_gos), str(mem.t_dsc),
-                 str(mem.t_lw),
-                 str(mem.clan_engram), str(mem.crucible_engram), str(mem.privacy),
-                 str(mem.account_not_exists)])
+                [str(member.name), str(member.membership_id), str(member.clan_name), str(member.membership_type),
+                 str(member.clan_type), str(member.score), str(member.h_gos), str(member.h_dsc), str(member.h_lw),
+                 str(member.w_gos), str(member.w_dsc), str(member.w_lw), str(member.t_gos), str(member.t_dsc),
+                 str(member.t_lw), str(member.clan_engram), str(member.crucible_engram), str(member.privacy),
+                 str(member.account_not_exists)])
 
 
 if __name__ == '__main__':
@@ -139,10 +137,10 @@ if __name__ == '__main__':
         clan_member_response = clan_member_responses[i].json()['Response']
         members = clan_member_response['results']
 
-        for member in members:
-            name = member['destinyUserInfo']['LastSeenDisplayName']
-            membership_type = str(member['destinyUserInfo']['membershipType'])
-            membership_id = str(member['destinyUserInfo']['membershipId'])
+        for mem in members:
+            name = mem['destinyUserInfo']['LastSeenDisplayName']
+            membership_type = str(mem['destinyUserInfo']['membershipType'])
+            membership_id = str(mem['destinyUserInfo']['membershipId'])
             clan.add_member(name, membership_type, membership_id)
 
         profile_responses = request.BungieApiCall().get_profile(clan.memberList)

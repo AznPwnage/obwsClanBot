@@ -25,7 +25,8 @@ CLAN_ENGRAM_MS_HASH = '3603098564'
 CLAN_ENGRAM_OBJ_HASH = 1001409310
 CRUCIBLE_MS_HASH = '2594202463'
 CRUCIBLE_OBJ_HASH = 4026431786
-EXO_CHALLENGE_MS_HASH = '979073379'
+EXO_CHALLENGE_POWERFUL_MS_HASH = '979073379'
+EXO_CHALLENGE_PINNACLE_MS_HASH = '1713200903'
 BANSHEE_ENGRAM_MS_HASH = '3899487295'
 BANSHEE_ENGRAM_OBJ_HASH = 313458118
 DRIFTER_ENGRAM_MS_HASH = '3802603984'
@@ -97,8 +98,11 @@ def get_low_light(member, member_class, char_to_check):
 
 def get_week_start(dt):
     day_number = dt.today().weekday()  # returns 0 for Mon, 6 for Sun
-    if 1 <= day_number:  # diff from previous Tuesday
+    if 1 < day_number:  # diff from previous Tuesday
         return (dt - timedelta(days=day_number-1)).replace(hour=17, minute=00, second=0, microsecond=0)
+    if 1 == day_number:  # check whether past reset or not
+        if 17 <= dt.hour:  # past reset
+            return dt.replace().replace(hour=17, minute=00, second=0, microsecond=0)
     return (dt - timedelta(days=6)).replace(hour=17, minute=00, second=0, microsecond=0)  # case of Monday being current day
 
 
@@ -132,8 +136,8 @@ def check_collectible_milestone(milestones_list, ms_hash, obj_hash):
     return False
 
 
-def check_auto_milestone(milestones_list, ms_hash):
-    if ms_hash not in milestones_list.keys(): # completed
+def milestone_not_in_list(milestones_list, ms_hash):
+    if ms_hash not in milestones_list.keys():  # completed
         return True
     return False
 
@@ -170,7 +174,7 @@ def check_arr_contains(hash_arr, check_arr):
 
 def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
     if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, EXO_CHALLENGE_HASHES):
-        if check_auto_milestone(milestones_list, EXO_CHALLENGE_MS_HASH):
+        if milestone_not_in_list(milestones_list, EXO_CHALLENGE_POWERFUL_MS_HASH) and milestone_not_in_list(milestones_list, EXO_CHALLENGE_PINNACLE_MS_HASH):
             member.exo_challenge[member_class.name] = True
             member.score += 1
     return member
@@ -218,7 +222,7 @@ def get_exo_stranger(member, member_class, milestones_list):
 
 def get_empire_hunt(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, EMPIRE_HUNT_MS_HASH):
+        if milestone_not_in_list(milestones_list, EMPIRE_HUNT_MS_HASH):
             member.empire_hunt[member_class.name] = True
             member.score += 2
     return member
@@ -226,7 +230,7 @@ def get_empire_hunt(member, member_class, milestones_list):
 
 def get_nightfall(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, NIGHTFALL_MS_HASH):
+        if milestone_not_in_list(milestones_list, NIGHTFALL_MS_HASH):
             member.nightfall[member_class.name] = True
             member.score += 2
     return member
@@ -234,7 +238,7 @@ def get_nightfall(member, member_class, milestones_list):
 
 def get_deadly_venatics(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, DEADLY_VENATICS_MS_HASH):
+        if milestone_not_in_list(milestones_list, DEADLY_VENATICS_MS_HASH):
             member.deadly_venatics[member_class.name] = True
             member.score += 2
     return member
@@ -242,7 +246,7 @@ def get_deadly_venatics(member, member_class, milestones_list):
 
 def get_strikes(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, STRIKES_MS_HASH):
+        if milestone_not_in_list(milestones_list, STRIKES_MS_HASH):
             member.strikes[member_class.name] = True
             member.score += 3
     return member
@@ -250,7 +254,7 @@ def get_strikes(member, member_class, milestones_list):
 
 def get_nightfall_100k(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, NIGHTFALL_100K_MS_HASH):
+        if milestone_not_in_list(milestones_list, NIGHTFALL_100K_MS_HASH):
             member.nightfall_100k[member_class.name] = True
             member.score += 3
     return member
@@ -258,7 +262,7 @@ def get_nightfall_100k(member, member_class, milestones_list):
 
 def get_gambit(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, GAMBIT_MS_HASH):
+        if milestone_not_in_list(milestones_list, GAMBIT_MS_HASH):
             member.gambit[member_class.name] = True
             member.score += 3
     return member
@@ -266,7 +270,7 @@ def get_gambit(member, member_class, milestones_list):
 
 def get_crucible_playlist(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, CRUCIBLE_PLAYLIST_MS_HASH):
+        if milestone_not_in_list(milestones_list, CRUCIBLE_PLAYLIST_MS_HASH):
             member.crucible_playlist[member_class.name] = True
             if 'PVP' == member.clan_type:
                 member.score += 2
@@ -276,7 +280,7 @@ def get_crucible_playlist(member, member_class, milestones_list):
 
 def get_crucible_glory(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, CRUCIBLE_GLORY_MS_HASH):
+        if milestone_not_in_list(milestones_list, CRUCIBLE_GLORY_MS_HASH):
             member.crucible_glory[member_class.name] = True
             if 'PVP' == member.clan_type:
                 member.score += 2
@@ -286,17 +290,17 @@ def get_crucible_glory(member, member_class, milestones_list):
 
 def get_trials(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if check_auto_milestone(milestones_list, TRIALS3_MS_HASH):
+        if milestone_not_in_list(milestones_list, TRIALS3_MS_HASH):
             member.trials3[member_class.name] = True
             if 'PVP' == member.clan_type:
                 member.score += 2
             member.score += 2
-            if check_auto_milestone(milestones_list, TRIALS5_MS_HASH):
+            if milestone_not_in_list(milestones_list, TRIALS5_MS_HASH):
                 member.trials5[member_class.name] = True
                 if 'PVP' == member.clan_type:
                     member.score += 2
                 member.score += 3
-                if check_auto_milestone(milestones_list, TRIALS7_MS_HASH):
+                if milestone_not_in_list(milestones_list, TRIALS7_MS_HASH):
                     member.trials7[member_class.name] = True
                     if 'PVP' == member.clan_type:
                         member.score += 2

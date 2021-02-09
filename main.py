@@ -1,3 +1,5 @@
+import enum
+
 import request
 import clan as clan_lib
 import csv
@@ -5,54 +7,54 @@ from datetime import datetime, timezone, timedelta
 import pytz
 
 
+class DestinyClass(enum.Enum):
+    Hunter = 1
+    Warlock = 2
+    Titan = 0
+
+
+class DestinyRaid(enum.Enum):
+    gos = 3458480158
+    dsc = 910380154
+    lw = 2122313384
+
+MIN_LIGHT = 1200
+
 CLAN_ENGRAM_MS_HASH = '3603098564'
-CLAN_ENGRAM_OBJ_HASH = '1001409310'
+CLAN_ENGRAM_OBJ_HASH = 1001409310
 CRUCIBLE_MS_HASH = '2594202463'
-CRUCIBLE_OBJ_HASH = '4026431786'
+CRUCIBLE_OBJ_HASH = 4026431786
+EXO_CHALLENGE_MS_HASH = 979073379
 
-GOS_ACTIVITY_ID = 3458480158
-DSC_ACTIVITY_ID = 910380154
-LW_ACTIVITY_ID = 2122313384
-
-EXO_CHALLENGE_HASHES = {1262994080, 2361093350, 3784931086}
+EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
 
-def initialize_member():
-    member = clan_lib.ClanMember(clan.memberList[j].name, clan.memberList[j].membership_id,
-                                      clan.memberList[j].clan_name, clan.memberList[j].membership_type,
-                                      clan.clan_type)
+def initialize_member(clan_member):
+    member = clan_lib.ClanMember(clan_member.name, clan_member.membership_id, clan_member.clan_name,
+                                 clan_member.membership_type, clan_member.clan_type)
     member.privacy = False
     member.account_not_exists = False
 
-    member.clan_engram = False
-    member.crucible_engram = False
+    member.clan_engram = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.crucible_engram = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
-    member.h_gos = 0
-    member.w_gos = 0
-    member.t_gos = 0
-    member.h_dsc = 0
-    member.w_dsc = 0
-    member.t_dsc = 0
-    member.h_lw = 0
-    member.w_lw = 0
-    member.t_lw = 0
+    member.exo_challenge = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+
+    member.raids = {DestinyRaid.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+                    DestinyRaid.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+                    DestinyRaid.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0}}
+
+    member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
 
     member.score = 0
 
     return member
 
 
-def check_milestone(ms_hash, obj_hash):
-    if ms_hash in milestones.keys():  # not picked up
-        if obj_hash == milestones[ms_hash]['availableQuests'][0]['status']['stepObjectives'][0]['objectiveHash']:  # completed
-            return True
-    else:  # picked up
-        return True
-    return False
-
-
-def to_bool(val):
-    return 'True' == val
+def get_low_light(member, member_class, char_to_check):
+    if char_to_check['light'] >= MIN_LIGHT:
+        member.low_light[member_class.name] = False
+    return member
 
 
 def get_week_start(dt):
@@ -67,41 +69,68 @@ def str_to_time(time_str):
     return datetime.strptime(time_str, date_format)
 
 
-def get_weekly_raid_count(member):
+def get_weekly_raid_count(member, member_class):
     character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id)
     for raid in character_raids:
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
+        if 'No' == raid['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
+            continue
         ref_id = raid['activityDetails']['referenceId']
-        if 0 == char_iterator:  # hunter
-            if ref_id == GOS_ACTIVITY_ID:
-                member.h_gos += 1
-            elif ref_id == DSC_ACTIVITY_ID:
-                member.h_dsc += 1
-            elif ref_id == LW_ACTIVITY_ID:
-                member.h_lw += 1
-        elif 1 == char_iterator:  # warlock
-            if ref_id == GOS_ACTIVITY_ID:
-                member.w_gos += 1
-            elif ref_id == DSC_ACTIVITY_ID:
-                member.w_dsc += 1
-            elif ref_id == LW_ACTIVITY_ID:
-                member.w_lw += 1
-        elif 2 == char_iterator:  # titan
-            if ref_id == GOS_ACTIVITY_ID:
-                member.t_gos += 1
-            elif ref_id == DSC_ACTIVITY_ID:
-                member.t_dsc += 1
-            elif ref_id == LW_ACTIVITY_ID:
-                member.t_lw += 1
+        member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
     return member
 
 
-def get_clan_and_crucible_engram(member):
-    if not member.clan_engram or not member.crucible_engram:  # skip iteration if clan and crucible engrams already completed/claimed
-        member.clan_engram = check_milestone(CLAN_ENGRAM_MS_HASH, CLAN_ENGRAM_OBJ_HASH)
-        if 8 < len(milestones.keys()):  # require certain progression to have live-fire (crucible) available (see mod alt accounts) if we skip this check then the 'picked up' check below will pass
-            member.crucible_engram = check_milestone(CRUCIBLE_MS_HASH, CRUCIBLE_OBJ_HASH)
+def check_collectible_milestone(milestones_list, ms_hash, obj_hash):
+    if ms_hash in milestones_list.keys():  # not picked up
+        if obj_hash == milestones_list[ms_hash]['availableQuests'][0]['status']['stepObjectives'][0]['objectiveHash']:  # completed
+            return True
+    else:  # picked up
+        return True
+    return False
+
+
+def check_auto_milestone(milestones_list, ms_hash):
+    if ms_hash not in milestones_list.keys(): # completed
+        return True
+    return False
+
+
+def get_clan_engram(member, member_class, milestones_list):
+    if not member.low_light[member_class.name]:
+        if check_collectible_milestone(milestones_list, CLAN_ENGRAM_MS_HASH, CLAN_ENGRAM_OBJ_HASH):
+            member.clan_engram[member_class.name] = True
+            member.score += 4
+    return member
+
+
+def get_crucible_engram(member, member_class, milestones_list):
+    if not member.low_light[member_class.name]:
+        if check_collectible_milestone(milestones_list, CRUCIBLE_MS_HASH, CRUCIBLE_OBJ_HASH):
+            member.crucible_engram[member_class.name] = True
+            member.score += 4
+    return member
+
+
+def build_activity_hashes(activities_arr):
+    activity_hash_arr = []
+    for activity in activities_arr:
+        activity_hash_arr.append(activity['activityHash'])
+    return activity_hash_arr
+
+
+def check_arr_contains(hash_arr, check_arr):
+    for item in check_arr:
+        if item in hash_arr:
+            return True
+    return False
+
+
+def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
+    if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, EXO_CHALLENGE_HASHES):
+        if check_auto_milestone(milestones_list, EXO_CHALLENGE_MS_HASH):
+            member.exo_challenge[member_class.name] = True
+            member.score += 1
     return member
 
 
@@ -109,15 +138,14 @@ def write_members_to_csv(mem_list):
     with open('members.csv', 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
-            ['Name', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'Score', 'H_GOS', 'H_DSC', 'H_LW', 'W_GOS', 'W_DSC',
-             'W_LW', 'T_GOS', 'T_DSC', 'T_LW', 'ClanEngram', 'CrucibleEngram', 'PrivacyFlag', 'AccountExistsFlag'])
+            ['Name', 'Score', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'GOS', 'DSC', 'LW', 'ExoChallenge',
+             'ClanEngram', 'CrucibleEngram', 'LowLight', 'PrivacyFlag', 'AccountExistsFlag'])
         for member in mem_list:
             writer.writerow(
-                [str(member.name), str(member.membership_id), str(member.clan_name), str(member.membership_type),
-                 str(member.clan_type), str(member.score), str(member.h_gos), str(member.h_dsc), str(member.h_lw),
-                 str(member.w_gos), str(member.w_dsc), str(member.w_lw), str(member.t_gos), str(member.t_dsc),
-                 str(member.t_lw), str(member.clan_engram), str(member.crucible_engram), str(member.privacy),
-                 str(member.account_not_exists)])
+                [str(member.name), str(member.score), str(member.membership_id), str(member.clan_name), str(member.membership_type),
+                 str(member.clan_type), str(member.raids[DestinyRaid.gos.name]), str(member.raids[DestinyRaid.dsc.name]),
+                 str(member.raids[DestinyRaid.lw.name]), str(member.exo_challenge), str(member.clan_engram),
+                 str(member.crucible_engram), str(member.low_light), str(member.privacy), str(member.account_not_exists)])
 
 
 if __name__ == '__main__':
@@ -146,9 +174,9 @@ if __name__ == '__main__':
         profile_responses = request.BungieApiCall().get_profile(clan.memberList)
         for j in range(len(profile_responses)):  # iterate over single clan's members
 
-            curr_member = initialize_member()
+            curr_member = initialize_member(clan.memberList[j])
 
-            if clan.clan_type == 'Regional':
+            if clan.clan_type == 'Regional':  # point decay for regional clan
                 curr_member.score -= 10
 
             profile = profile_responses[j].json()
@@ -162,14 +190,21 @@ if __name__ == '__main__':
                 curr_member_list.append(curr_member)
                 continue
 
-            character_progressions = profile['Response']['characterProgressions']['data']  # clan & crucible engrams
-            char_iterator = 0
+            characters = profile['Response']['characters']['data']  # check light level
+            character_progressions = profile['Response']['characterProgressions']['data']
+            character_activities = profile['Response']['characterActivities']['data']
+            curr_class = None
             print(curr_member.name)
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
-                curr_member = get_weekly_raid_count(curr_member)
-                curr_member = get_clan_and_crucible_engram(curr_member)
-                char_iterator += 1
+                activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
+                character = characters[character_id]
+                curr_class = DestinyClass(character['classType'])
+                curr_member = get_low_light(curr_member, curr_class, character)
+                curr_member = get_weekly_raid_count(curr_member, curr_class)
+                curr_member = get_clan_engram(curr_member, curr_class, milestones)
+                curr_member = get_crucible_engram(curr_member, curr_class, milestones)
+                curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
             curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list)

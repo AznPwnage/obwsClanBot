@@ -26,24 +26,39 @@ class Clan:
 
 class ClanMember:
     def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None,
-                 h_gos=None, w_gos=None, t_gos=None, h_dsc=None, w_dsc=None, t_dsc=None, h_lw=None, w_lw=None, t_lw=None,
-                 clan_engram=None, crucible_engram=None, privacy=None, account_not_exists=None):
+                 gos=None, dsc=None, lw=None, clan_engram=None, crucible_engram=None, exo_challenge=None, banshee=None,
+                 drifter=None, zavala=None, variks=None, exo_stranger=None, trials3=None, empire_hunt=None,
+                 nightfall=None, deadly_venatics=None, strikes=None, nightfall_100k=None, gambit=None,
+                 crucible_playlist=None, crucible_glory=None, trials5=None, trials7=None, privacy=None,
+                 account_not_exists=None, low_light=None):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
         self.membership_type = membership_type
         self.clan_type = clan_type
         self.score = score
-        self.h_gos = h_gos
-        self.w_gos = w_gos
-        self.t_gos = t_gos
-        self.h_dsc = h_dsc
-        self.w_dsc = w_dsc
-        self.t_dsc = t_dsc
-        self.h_lw = h_lw
-        self.w_lw = w_lw
-        self.t_lw = t_lw
+        self.gos = gos
+        self.dsc = dsc
+        self.lw = lw
         self.clan_engram = clan_engram
         self.crucible_engram = crucible_engram
+        self.exo_challenge = exo_challenge
+        self.banshee = banshee
+        self.drifter = drifter
+        self.zavala = zavala
+        self.variks = variks
+        self.exo_stranger = exo_stranger
+        self.trials3 = trials3
+        self.empire_hunt = empire_hunt
+        self.nightfall = nightfall
+        self.deadly_venatics = deadly_venatics
+        self.strikes = strikes
+        self.nightfall_100k = nightfall_100k
+        self.gambit = gambit
+        self.crucible_playlist = crucible_playlist
+        self.crucible_glory = crucible_glory
+        self.trials5 = trials5
+        self.trials7 = trials7
         self.privacy = privacy
         self.account_not_exists = account_not_exists
+        self.low_light = low_light

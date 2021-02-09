@@ -219,7 +219,7 @@ def get_exo_stranger(member, member_class, milestones_list):
 def get_empire_hunt(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
         if check_auto_milestone(milestones_list, EMPIRE_HUNT_MS_HASH):
-            member.exo_challenge[member_class.name] = True
+            member.empire_hunt[member_class.name] = True
             member.score += 2
     return member
 
@@ -375,6 +375,7 @@ if __name__ == '__main__':
             character_progressions = profile['Response']['characterProgressions']['data']
             character_activities = profile['Response']['characterActivities']['data']
             curr_class = None
+            print(curr_member.name)
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
                 activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])

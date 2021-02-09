@@ -313,6 +313,8 @@ def apply_score_cap_and_decay(member):
         member.score = 40
     if clan.clan_type == 'Regional':  # point decay for regional clan
         member.score -= 10
+    if member.score > 30:  # max score post decay capped at 30 (specialized divisions as well)
+        member.score = 30
     return member
 
 

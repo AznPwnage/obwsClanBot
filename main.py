@@ -375,7 +375,6 @@ if __name__ == '__main__':
             character_progressions = profile['Response']['characterProgressions']['data']
             character_activities = profile['Response']['characterActivities']['data']
             curr_class = None
-            print(curr_member.name)
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
                 activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])

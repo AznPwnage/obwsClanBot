@@ -119,6 +119,8 @@ def get_weekly_raid_count(member, member_class):
         if 'No' == raid['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
             continue
         ref_id = raid['activityDetails']['referenceId']
+        if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
+            ref_id = 2122313384
         member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
         if member.raids[DestinyRaid(ref_id).name][member_class.name] == 1:
             if member.clan_type == 'Raid':
@@ -318,8 +320,8 @@ def apply_score_cap_and_decay(member):
     return member
 
 
-def write_members_to_csv(mem_list):
-    with open('members.csv', 'w', newline='', encoding='utf-8') as csvfile:
+def write_members_to_csv(mem_list, clan_name):
+    with open(clan_name + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
             ['Name', 'Score', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'GOS', 'DSC', 'LW', 'ClanEngram',
@@ -351,7 +353,9 @@ if __name__ == '__main__':
     clan_member_responses = request.BungieApiCall().get_clan_members(clan_group)
 
     for i in range(len(clan_group)):  # iterate over all clans in OBWS
+        curr_member_list = []
         clan = clan_group[i]
+        print(clan.name)
         clan_member_response = clan_member_responses[i].json()['Response']
         members = clan_member_response['results']
 
@@ -381,6 +385,7 @@ if __name__ == '__main__':
             character_progressions = profile['Response']['characterProgressions']['data']
             character_activities = profile['Response']['characterActivities']['data']
             curr_class = None
+            print(curr_member.name)
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
                 activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
@@ -409,4 +414,4 @@ if __name__ == '__main__':
             curr_member = apply_score_cap_and_decay(curr_member)
             curr_member_list.append(curr_member)
 
-    write_members_to_csv(curr_member_list)
+        write_members_to_csv(curr_member_list, clan.name)

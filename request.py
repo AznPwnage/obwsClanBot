@@ -37,7 +37,7 @@ class BungieApiCall:
                 self.get_api_root() + 'Destiny2/' + membership_type + '/Account/' + membership_id + '/Character/' + character_id + '/Stats/Activities',
                 params={'page': page, 'mode': 4, 'count': 250}, headers=self.get_header()).json()
             if 'Response' not in response.keys():
-                continue
+                break
             if 'activities' in response['Response'].keys():
                 activities.extend(response['Response']['activities'])
             page += 1

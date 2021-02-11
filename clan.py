@@ -3,7 +3,7 @@ import pandas as pd
 
 class ClanGroup:
     def __init__(self):
-        clan_list_df = pd.read_csv('clan_list.csv')
+        clan_list_df = pd.read_csv('test_clan_list2.csv')
         # clan_list_df = pd.read_csv('clan_list.csv')
         self.clan_list = []
         for index, row in clan_list_df.iterrows():
@@ -25,7 +25,7 @@ class Clan:
 
 
 class ClanMember:
-    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None,
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, prev_score=None,
                  gos=None, dsc=None, lw=None, clan_engram=None, crucible_engram=None, exo_challenge=None, banshee=None,
                  drifter=None, zavala=None, variks=None, exo_stranger=None, trials3=None, empire_hunt=None,
                  nightfall=None, deadly_venatics=None, strikes=None, nightfall_100k=None, gambit=None,
@@ -37,6 +37,7 @@ class ClanMember:
         self.membership_type = membership_type
         self.clan_type = clan_type
         self.score = score
+        self.prev_score = prev_score
         self.gos = gos
         self.dsc = dsc
         self.lw = lw

@@ -5,6 +5,8 @@ import clan as clan_lib
 import csv
 from datetime import datetime, timezone, timedelta
 import pytz
+import os.path as path
+import pandas as pd
 
 
 class DestinyClass(enum.Enum):
@@ -86,6 +88,7 @@ def initialize_member(clan_member):
     member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
 
     member.score = 0
+    member.prev_score = 0
 
     return member
 
@@ -97,7 +100,7 @@ def get_low_light(member, member_class, char_to_check):
 
 
 def get_week_start(dt):
-    day_number = dt.today().weekday()  # returns 0 for Mon, 6 for Sun
+    day_number = dt.weekday()  # returns 0 for Mon, 6 for Sun
     if 1 < day_number:  # diff from previous Tuesday
         return (dt - timedelta(days=day_number-1)).replace(hour=17, minute=00, second=0, microsecond=0)
     if 1 == day_number:  # check whether past reset or not
@@ -346,6 +349,7 @@ if __name__ == '__main__':
     stored_member_dict = {}  # member dictionary from stored file, reflects data from past week
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
+    prev_week = (week_start - timedelta(days=7)).date()
 
     utc = pytz.UTC
 
@@ -353,8 +357,16 @@ if __name__ == '__main__':
     clan_member_responses = request.BungieApiCall().get_clan_members(clan_group)
 
     for i in range(len(clan_group)):  # iterate over all clans in OBWS
+
         curr_member_list = []
         clan = clan_group[i]
+        prev_file_path = path.join(prev_week, clan.name)
+        curr_file_path = path.join(week_start.date(), clan.name)
+        if path.exists(curr_file_path):  # this week's data is already generated for this clan, skip it
+            continue
+        if path.exists(prev_file_path):
+            df = pd.read_csv(prev_file_path)
+
         print(clan.name)
         clan_member_response = clan_member_responses[i].json()['Response']
         members = clan_member_response['results']
@@ -369,7 +381,6 @@ if __name__ == '__main__':
         for j in range(len(profile_responses)):  # iterate over single clan's members
 
             curr_member = initialize_member(clan.memberList[j])
-
             profile = profile_responses[j].json()
 
             if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
@@ -380,6 +391,7 @@ if __name__ == '__main__':
                 curr_member.privacy = True
                 curr_member_list.append(curr_member)
                 continue
+
 
             characters = profile['Response']['characters']['data']  # check light level
             character_progressions = profile['Response']['characterProgressions']['data']

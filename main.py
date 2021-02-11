@@ -6,6 +6,7 @@ import csv
 from datetime import datetime, timezone, timedelta
 import pytz
 import os.path as path
+import os
 import pandas as pd
 
 
@@ -88,7 +89,10 @@ def initialize_member(clan_member):
     member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
 
     member.score = 0
+    member.score_delta = 0
     member.prev_score = 0
+    member.date_last_played = ''
+    member.days_last_played = -1
 
     return member
 
@@ -96,6 +100,21 @@ def initialize_member(clan_member):
 def get_low_light(member, member_class, char_to_check):
     if char_to_check['light'] >= MIN_LIGHT:
         member.low_light[member_class.name] = False
+    return member
+
+
+def get_prev_week_score(member, df):
+    if df is not None:
+        if int(member.membership_id) in df.index:
+            member.prev_score = df.loc[int(member.membership_id)]['Score']
+    return member
+
+
+def get_date_last_played(member, prof, dt):
+    last_dt_str = prof['Response']['profile']['data']['dateLastPlayed']
+    last_dt = utc.localize(datetime.strptime(last_dt_str, '%Y-%m-%dT%H:%M:%SZ'))
+    member.date_last_played = last_dt_str
+    member.days_last_played = (dt - last_dt).days
     return member
 
 
@@ -320,20 +339,23 @@ def apply_score_cap_and_decay(member):
         member.score -= 10
     if member.score > 30:  # max score post decay capped at 30 (specialized divisions as well)
         member.score = 30
+    member.score_delta = member.score
+    member.score += member.prev_score
     return member
 
 
-def write_members_to_csv(mem_list, clan_name):
-    with open(clan_name + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+def write_members_to_csv(mem_list, file_path):
+    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
-            ['Name', 'Score', 'Id', 'Clan', 'MemberShipType', 'ClanType', 'GOS', 'DSC', 'LW', 'ClanEngram',
-             'CrucibleEngram', 'ExoChallenge', 'SpareParts', 'ShadySchemes', 'VanguardServices', 'ExoStranger',
-             'EmpireHunt', 'NightFall', 'DeadlyVenatics', 'Strikes', 'Nightfall100k', 'Gambit', 'CruciblePlaylist',
-             'CrucibleGlory', 'Trials3', 'Trials5', 'Trials7', 'LowLight', 'PrivacyFlag', 'AccountExistsFlag'])
+            ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan', 'MemberShipType',
+             'ClanType', 'GOS', 'DSC', 'LW', 'ClanEngram', 'CrucibleEngram', 'ExoChallenge', 'SpareParts', 'ShadySchemes',
+             'VanguardServices', 'ExoStranger', 'EmpireHunt', 'NightFall', 'DeadlyVenatics', 'Strikes', 'Nightfall100k',
+             'Gambit', 'CruciblePlaylist', 'CrucibleGlory', 'Trials3', 'Trials5', 'Trials7', 'LowLight', 'PrivacyFlag', 'AccountExistsFlag'])
         for member in mem_list:
             writer.writerow(
-                [str(member.name), str(member.score), str(member.membership_id), str(member.clan_name), str(member.membership_type),
+                [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
+                 str(member.date_last_played), str(member.membership_id), str(member.clan_name), str(member.membership_type),
                  str(member.clan_type), str(member.raids[DestinyRaid.gos.name]), str(member.raids[DestinyRaid.dsc.name]),
                  str(member.raids[DestinyRaid.lw.name]), str(member.clan_engram), str(member.crucible_engram),
                  str(member.exo_challenge), str(member.banshee), str(member.drifter), str(member.zavala), str(member.exo_stranger),
@@ -349,7 +371,7 @@ if __name__ == '__main__':
     stored_member_dict = {}  # member dictionary from stored file, reflects data from past week
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
-    prev_week = (week_start - timedelta(days=7)).date()
+    prev_week = (week_start - timedelta(days=7))
 
     utc = pytz.UTC
 
@@ -358,16 +380,16 @@ if __name__ == '__main__':
 
     for i in range(len(clan_group)):  # iterate over all clans in OBWS
 
+        prev_df = None
         curr_member_list = []
         clan = clan_group[i]
-        prev_file_path = path.join(prev_week, clan.name)
-        curr_file_path = path.join(week_start.date(), clan.name)
-        if path.exists(curr_file_path):  # this week's data is already generated for this clan, skip it
-            continue
+        prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clan.name + '.csv')
+        curr_file_path = path.join(f'{week_start:%Y-%m-%d}', clan.name + '.csv')
+        if path.exists(curr_file_path):  # this week's data is already generated for this clan, delete it
+            os.remove(curr_file_path)
         if path.exists(prev_file_path):
-            df = pd.read_csv(prev_file_path)
+            prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id'], index_col='Id')
 
-        print(clan.name)
         clan_member_response = clan_member_responses[i].json()['Response']
         members = clan_member_response['results']
 
@@ -392,12 +414,13 @@ if __name__ == '__main__':
                 curr_member_list.append(curr_member)
                 continue
 
+            curr_member = get_prev_week_score(curr_member, prev_df)
+            curr_member = get_date_last_played(curr_member, profile, curr_dt)
 
             characters = profile['Response']['characters']['data']  # check light level
             character_progressions = profile['Response']['characterProgressions']['data']
             character_activities = profile['Response']['characterActivities']['data']
             curr_class = None
-            print(curr_member.name)
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
                 activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
@@ -426,4 +449,4 @@ if __name__ == '__main__':
             curr_member = apply_score_cap_and_decay(curr_member)
             curr_member_list.append(curr_member)
 
-        write_members_to_csv(curr_member_list, clan.name)
+        write_members_to_csv(curr_member_list, curr_file_path)

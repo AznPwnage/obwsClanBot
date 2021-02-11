@@ -3,8 +3,8 @@ import pandas as pd
 
 class ClanGroup:
     def __init__(self):
-        clan_list_df = pd.read_csv('test_clan_list2.csv')
-        # clan_list_df = pd.read_csv('clan_list.csv')
+        # clan_list_df = pd.read_csv('test_clan_list2.csv')
+        clan_list_df = pd.read_csv('clan_list.csv')
         self.clan_list = []
         for index, row in clan_list_df.iterrows():
             self.clan_list.append(Clan(row['name'], str(row['groupId']), row['type']))
@@ -25,19 +25,22 @@ class Clan:
 
 
 class ClanMember:
-    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, prev_score=None,
-                 gos=None, dsc=None, lw=None, clan_engram=None, crucible_engram=None, exo_challenge=None, banshee=None,
-                 drifter=None, zavala=None, variks=None, exo_stranger=None, trials3=None, empire_hunt=None,
-                 nightfall=None, deadly_venatics=None, strikes=None, nightfall_100k=None, gambit=None,
-                 crucible_playlist=None, crucible_glory=None, trials5=None, trials7=None, privacy=None,
-                 account_not_exists=None, low_light=None):
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, score_delta=None,
+                 prev_score=None, date_last_played=None, days_last_played=None, gos=None, dsc=None, lw=None,
+                 clan_engram=None, crucible_engram=None, exo_challenge=None, banshee=None, drifter=None, zavala=None,
+                 variks=None, exo_stranger=None, trials3=None, empire_hunt=None, nightfall=None, deadly_venatics=None,
+                 strikes=None, nightfall_100k=None, gambit=None, crucible_playlist=None, crucible_glory=None,
+                 trials5=None, trials7=None, privacy=None, account_not_exists=None, low_light=None):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
         self.membership_type = membership_type
         self.clan_type = clan_type
         self.score = score
+        self.score_delta = score_delta
         self.prev_score = prev_score
+        self.date_last_played = date_last_played
+        self.days_last_played = days_last_played
         self.gos = gos
         self.dsc = dsc
         self.lw = lw

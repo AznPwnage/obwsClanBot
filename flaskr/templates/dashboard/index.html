@@ -1,0 +1,48 @@
+{% block header %}
+  <h1>{% block title %}Clan Score Thing{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<table border="1">
+  <thead>
+    <tr>
+      <th>Clan Name</th>
+      <th>Do the thing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Emerald') }}">Emerald</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Emerald') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Jade') }}">Jade</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Jade') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Peridot') }}">Peridot</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Peridot') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Ruby') }}">Ruby</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Ruby') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Garnet') }}">Garnet</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Garnet') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Thulite') }}">Thulite</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Thulite') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Onyx') }}">Onyx</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Onyx') }}">Generate</a></td>
+    </tr>
+    <tr>
+      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Topaz') }}">Topaz</a></td>
+      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Topaz') }}">Generate</a></td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}

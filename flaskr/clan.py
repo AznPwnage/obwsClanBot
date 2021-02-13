@@ -3,14 +3,13 @@ import pandas as pd
 
 class ClanGroup:
     def __init__(self):
-        # clan_list_df = pd.read_csv('test_clan_list2.csv')
         clan_list_df = pd.read_csv('clan_list.csv')
-        self.clan_list = []
+        self.clans = {}
         for index, row in clan_list_df.iterrows():
-            self.clan_list.append(Clan(row['name'], str(row['groupId']), row['type']))
+            self.clans[row['name']] = (Clan(row['name'], str(row['groupId']), row['type']))
 
-    def get_clan_list(self):
-        return self.clan_list
+    def get_clans(self):
+        return self.clans
 
 
 class Clan:

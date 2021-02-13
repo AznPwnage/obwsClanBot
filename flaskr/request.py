@@ -18,9 +18,8 @@ class BungieApiCall:
         return grequests.get(self.get_api_root() + url_string_1 + url_param_1 + url_string_2 + url_param_2,
                              params=params, headers=self.get_header())
 
-    def get_clan_members(self, clan_group):
-        clan_members_requests = (self.api_call('GroupV2/', clan.group_id, '/Members') for clan in clan_group)
-        return grequests.map(clan_members_requests)
+    def get_clan_members(self, clan):
+        return r.get(self.get_api_root() + 'GroupV2/' + clan.group_id + '/Members', headers=self.get_header())
 
     def get_profile(self, member_list):
         profile_requests = (

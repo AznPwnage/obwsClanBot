@@ -1,7 +1,7 @@
 import enum
 
-import request
-import clan as clan_lib
+from . import request
+from . import clan as clan_lib
 import csv
 from datetime import datetime, timezone, timedelta
 import pytz
@@ -53,6 +53,8 @@ TRIALS5_MS_HASH = '3628293755'
 TRIALS7_MS_HASH = '3628293753'
 
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
+
+clans = clan_lib.ClanGroup().get_clans()
 
 
 def initialize_member(clan_member):
@@ -407,83 +409,80 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.privacy), str(member.account_not_exists)])
 
 
-def get_scores():
+def get_scores(selected_clan):
 
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
     prev_week = (week_start - timedelta(days=7))
+    clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
+    prev_df = None
+    curr_member_list = []
+    clan = clans[selected_clan]
+    curr_week_folder = f'{week_start:%Y-%m-%d}'
+    prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clan.name + '.csv')
+    curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
+    if not path.exists(curr_week_folder):
+        os.makedirs(curr_week_folder)
+    if path.exists(curr_file_path):  # this week's data is already generated for this clan, delete it
+        os.remove(curr_file_path)
+    if path.exists(prev_file_path):
+        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id'], index_col='Id')
+    members = clan_member_response['results']
 
-    clan_group = clan_lib.ClanGroup().get_clan_list()
-    clan_member_responses = request.BungieApiCall().get_clan_members(clan_group)
+    for mem in members:
+        name = mem['destinyUserInfo']['LastSeenDisplayName']
+        membership_type = str(mem['destinyUserInfo']['membershipType'])
+        membership_id = str(mem['destinyUserInfo']['membershipId'])
+        clan.add_member(name, membership_type, membership_id)
 
-    for i in range(len(clan_group)):  # iterate over all clans in OBWS
+    profile_responses = request.BungieApiCall().get_profile(clan.memberList)
+    for j in range(len(profile_responses)):  # iterate over single clan's members
 
-        prev_df = None
-        curr_member_list = []
-        clan = clan_group[i]
-        prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clan.name + '.csv')
-        curr_file_path = path.join(f'{week_start:%Y-%m-%d}', clan.name + '.csv')
-        if path.exists(curr_file_path):  # this week's data is already generated for this clan, delete it
-            os.remove(curr_file_path)
-        if path.exists(prev_file_path):
-            prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id'], index_col='Id')
+        curr_member = initialize_member(clan.memberList[j])
+        profile = profile_responses[j].json()
+        print(curr_member.name)
 
-        clan_member_response = clan_member_responses[i].json()['Response']
-        members = clan_member_response['results']
-
-        for mem in members:
-            name = mem['destinyUserInfo']['LastSeenDisplayName']
-            membership_type = str(mem['destinyUserInfo']['membershipType'])
-            membership_id = str(mem['destinyUserInfo']['membershipId'])
-            clan.add_member(name, membership_type, membership_id)
-
-        profile_responses = request.BungieApiCall().get_profile(clan.memberList)
-        for j in range(len(profile_responses)):  # iterate over single clan's members
-
-            curr_member = initialize_member(clan.memberList[j])
-            profile = profile_responses[j].json()
-
-            if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
-                curr_member.account_not_exists = True
-                curr_member_list.append(curr_member)
-                continue
-            if 'data' not in list(profile['Response']['metrics']) or 'data' not in list(profile['Response']['characterProgressions']):  # private profile
-                curr_member.privacy = True
-                curr_member_list.append(curr_member)
-                continue
-
-            curr_member = get_prev_week_score(curr_member, prev_df)
-            curr_member = get_date_last_played(curr_member, profile, curr_dt)
-
-            characters = profile['Response']['characters']['data']  # check light level
-            character_progressions = profile['Response']['characterProgressions']['data']
-            character_activities = profile['Response']['characterActivities']['data']
-            for character_id in character_progressions.keys():  # iterate over single member's characters
-                milestones = character_progressions[character_id]['milestones']
-                activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
-                character = characters[character_id]
-                curr_class = DestinyClass(character['classType'])
-                curr_member = get_low_light(curr_member, curr_class, character)
-                curr_member = get_weekly_raid_count(curr_member, curr_class, week_start, character_id)
-                curr_member = get_clan_engram(curr_member, curr_class, milestones)
-                curr_member = get_crucible_engram(curr_member, curr_class, milestones)
-                curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
-                curr_member = get_banshee(curr_member, curr_class, milestones)
-                curr_member = get_drifter(curr_member, curr_class, milestones)
-                curr_member = get_zavala(curr_member, curr_class, milestones)
-                curr_member = get_variks(curr_member, curr_class, milestones)
-                curr_member = get_exo_stranger(curr_member, curr_class, milestones)
-                curr_member = get_empire_hunt(curr_member, curr_class, milestones)
-                curr_member = get_nightfall(curr_member, curr_class, milestones)
-                curr_member = get_deadly_venatics(curr_member, curr_class, milestones)
-                curr_member = get_strikes(curr_member, curr_class, milestones)
-                curr_member = get_nightfall_100k(curr_member, curr_class, milestones)
-                curr_member = get_gambit(curr_member, curr_class, milestones)
-                curr_member = get_crucible_playlist(curr_member, curr_class, milestones)
-                curr_member = get_crucible_glory(curr_member, curr_class, milestones)
-                curr_member = get_trials(curr_member, curr_class, milestones)
-
-            curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
+        if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
+            curr_member.account_not_exists = True
             curr_member_list.append(curr_member)
+            continue
+        if 'data' not in list(profile['Response']['metrics']) or 'data' not in list(profile['Response']['characterProgressions']):  # private profile
+            curr_member.privacy = True
+            curr_member_list.append(curr_member)
+            continue
 
-        write_members_to_csv(curr_member_list, curr_file_path)
+        curr_member = get_prev_week_score(curr_member, prev_df)
+        curr_member = get_date_last_played(curr_member, profile, curr_dt)
+
+        characters = profile['Response']['characters']['data']  # check light level
+        character_progressions = profile['Response']['characterProgressions']['data']
+        character_activities = profile['Response']['characterActivities']['data']
+        for character_id in character_progressions.keys():  # iterate over single member's characters
+            milestones = character_progressions[character_id]['milestones']
+            activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
+            character = characters[character_id]
+            curr_class = DestinyClass(character['classType'])
+            curr_member = get_low_light(curr_member, curr_class, character)
+            curr_member = get_weekly_raid_count(curr_member, curr_class, week_start, character_id)
+            curr_member = get_clan_engram(curr_member, curr_class, milestones)
+            curr_member = get_crucible_engram(curr_member, curr_class, milestones)
+            curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
+            curr_member = get_banshee(curr_member, curr_class, milestones)
+            curr_member = get_drifter(curr_member, curr_class, milestones)
+            curr_member = get_zavala(curr_member, curr_class, milestones)
+            curr_member = get_variks(curr_member, curr_class, milestones)
+            curr_member = get_exo_stranger(curr_member, curr_class, milestones)
+            curr_member = get_empire_hunt(curr_member, curr_class, milestones)
+            curr_member = get_nightfall(curr_member, curr_class, milestones)
+            curr_member = get_deadly_venatics(curr_member, curr_class, milestones)
+            curr_member = get_strikes(curr_member, curr_class, milestones)
+            curr_member = get_nightfall_100k(curr_member, curr_class, milestones)
+            curr_member = get_gambit(curr_member, curr_class, milestones)
+            curr_member = get_crucible_playlist(curr_member, curr_class, milestones)
+            curr_member = get_crucible_glory(curr_member, curr_class, milestones)
+            curr_member = get_trials(curr_member, curr_class, milestones)
+
+        curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
+        curr_member_list.append(curr_member)
+
+    write_members_to_csv(curr_member_list, curr_file_path)

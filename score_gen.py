@@ -111,6 +111,7 @@ def get_prev_week_score(member, df):
 
 
 def get_date_last_played(member, prof, dt):
+    utc = pytz.UTC
     last_dt_str = prof['Response']['profile']['data']['dateLastPlayed']
     last_dt = utc.localize(datetime.strptime(last_dt_str, '%Y-%m-%dT%H:%M:%SZ'))
     member.date_last_played = last_dt_str
@@ -133,7 +134,8 @@ def str_to_time(time_str):
     return datetime.strptime(time_str, date_format)
 
 
-def get_weekly_raid_count(member, member_class):
+def get_weekly_raid_count(member, member_class, week_start, character_id):
+    utc = pytz.UTC
     character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id)
     for raid in character_raids:
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
@@ -332,10 +334,10 @@ def get_trials(member, member_class, milestones_list):
     return member
 
 
-def apply_score_cap_and_decay(member):
+def apply_score_cap_and_decay(member, clan_type):
     if member.score > 40:
         member.score = 40
-    if clan.clan_type == 'Regional':  # point decay for regional clan
+    if clan_type == 'Regional':  # point decay for regional clan
         member.score -= 10
     if member.score > 30:  # max score post decay capped at 30 (specialized divisions as well)
         member.score = 30
@@ -348,32 +350,68 @@ def write_members_to_csv(mem_list, file_path):
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
-            ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan', 'MemberShipType',
-             'ClanType', 'GOS', 'DSC', 'LW', 'ClanEngram', 'CrucibleEngram', 'ExoChallenge', 'SpareParts', 'ShadySchemes',
-             'VanguardServices', 'ExoStranger', 'EmpireHunt', 'NightFall', 'DeadlyVenatics', 'Strikes', 'Nightfall100k',
-             'Gambit', 'CruciblePlaylist', 'CrucibleGlory', 'Trials3', 'Trials5', 'Trials7', 'LowLight', 'PrivacyFlag', 'AccountExistsFlag'])
+            ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
+             'MemberShipType', 'ClanType',
+             'GOS_H', 'GOS_W', 'GOS_T',
+             'DSC_H', 'DSC_W', 'DSC_T',
+             'LW_H', 'LW_W', 'LW_T',
+             'ClanEngram_H', 'ClanEngram_W', 'ClanEngram_T',
+             'CrucibleEngram_H', 'CrucibleEngram_W', 'CrucibleEngram_T',
+             'ExoChallenge_H', 'ExoChallenge_W', 'ExoChallenge_T',
+             'SpareParts_H', 'SpareParts_W', 'SpareParts_T',
+             'ShadySchemes_H', 'ShadySchemes_W', 'ShadySchemes_T',
+             'VanguardServices_H', 'VanguardServices_W', 'VanguardServices_T',
+             'Variks_H', 'Variks_W', 'Variks_T',
+             'ExoStranger_H', 'ExoStranger_W', 'ExoStranger_T',
+             'EmpireHunt_H', 'EmpireHunt_W', 'EmpireHunt_T',
+             'NightFall_H', 'NightFall_W', 'NightFall_T',
+             'DeadlyVenatics_H', 'DeadlyVenatics_W', 'DeadlyVenatics_T',
+             'Strikes_H', 'Strikes_W', 'Strikes_T',
+             'Nightfall100k_H', 'Nightfall100k_W', 'Nightfall100k_T',
+             'Gambit_H', 'Gambit_W', 'Gambit_T',
+             'CruciblePlaylist_H', 'CruciblePlaylist_W', 'CruciblePlaylist_T',
+             'CrucibleGlory_H', 'CrucibleGlory_W', 'CrucibleGlory_T',
+             'Trials3_H', 'Trials3_W', 'Trials3_T',
+             'Trials5_H', 'Trials5_W', 'Trials5_T',
+             'Trials7_H', 'Trials7_W', 'Trials7_T',
+             'LowLight_H', 'LowLight_W', 'LowLight_T',
+             'PrivacyFlag', 'AccountExistsFlag'])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
                  str(member.date_last_played), str(member.membership_id), str(member.clan_name), str(member.membership_type),
-                 str(member.clan_type), str(member.raids[DestinyRaid.gos.name]), str(member.raids[DestinyRaid.dsc.name]),
-                 str(member.raids[DestinyRaid.lw.name]), str(member.clan_engram), str(member.crucible_engram),
-                 str(member.exo_challenge), str(member.banshee), str(member.drifter), str(member.zavala), str(member.exo_stranger),
-                 str(member.empire_hunt), str(member.nightfall), str(member.deadly_venatics), str(member.strikes),
-                 str(member.nightfall_100k), str(member.gambit), str(member.crucible_playlist), str(member.crucible_glory),
-                 str(member.trials3), str(member.trials5), str(member.trials7), str(member.low_light), str(member.privacy),
-                 str(member.account_not_exists)])
+                 str(member.clan_type),
+                 str(member.raids[DestinyRaid.gos.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Titan.name]),
+                 str(member.raids[DestinyRaid.dsc.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Titan.name]),
+                 str(member.raids[DestinyRaid.lw.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Titan.name]),
+                 str(member.clan_engram[DestinyClass.Hunter.name]), str(member.clan_engram[DestinyClass.Warlock.name]), str(member.clan_engram[DestinyClass.Titan.name]),
+                 str(member.crucible_engram[DestinyClass.Hunter.name]), str(member.crucible_engram[DestinyClass.Warlock.name]), str(member.crucible_engram[DestinyClass.Titan.name]),
+                 str(member.exo_challenge[DestinyClass.Hunter.name]), str(member.exo_challenge[DestinyClass.Warlock.name]), str(member.exo_challenge[DestinyClass.Titan.name]),
+                 str(member.banshee[DestinyClass.Hunter.name]), str(member.banshee[DestinyClass.Warlock.name]), str(member.banshee[DestinyClass.Titan.name]),
+                 str(member.drifter[DestinyClass.Hunter.name]), str(member.drifter[DestinyClass.Warlock.name]), str(member.drifter[DestinyClass.Titan.name]),
+                 str(member.zavala[DestinyClass.Hunter.name]), str(member.zavala[DestinyClass.Warlock.name]), str(member.zavala[DestinyClass.Titan.name]),
+                 str(member.variks[DestinyClass.Hunter.name]), str(member.variks[DestinyClass.Warlock.name]), str(member.variks[DestinyClass.Titan.name]),
+                 str(member.exo_stranger[DestinyClass.Hunter.name]), str(member.exo_stranger[DestinyClass.Warlock.name]), str(member.exo_stranger[DestinyClass.Titan.name]),
+                 str(member.empire_hunt[DestinyClass.Hunter.name]), str(member.empire_hunt[DestinyClass.Warlock.name]), str(member.empire_hunt[DestinyClass.Titan.name]),
+                 str(member.nightfall[DestinyClass.Hunter.name]), str(member.nightfall[DestinyClass.Warlock.name]), str(member.nightfall[DestinyClass.Titan.name]),
+                 str(member.deadly_venatics[DestinyClass.Hunter.name]), str(member.deadly_venatics[DestinyClass.Warlock.name]), str(member.deadly_venatics[DestinyClass.Titan.name]),
+                 str(member.strikes[DestinyClass.Hunter.name]), str(member.strikes[DestinyClass.Warlock.name]), str(member.strikes[DestinyClass.Titan.name]),
+                 str(member.nightfall_100k[DestinyClass.Hunter.name]), str(member.nightfall_100k[DestinyClass.Warlock.name]), str(member.nightfall_100k[DestinyClass.Titan.name]),
+                 str(member.gambit[DestinyClass.Hunter.name]), str(member.gambit[DestinyClass.Warlock.name]), str(member.gambit[DestinyClass.Titan.name]),
+                 str(member.crucible_playlist[DestinyClass.Hunter.name]), str(member.crucible_playlist[DestinyClass.Warlock.name]), str(member.crucible_playlist[DestinyClass.Titan.name]),
+                 str(member.crucible_glory[DestinyClass.Hunter.name]), str(member.crucible_glory[DestinyClass.Warlock.name]), str(member.crucible_glory[DestinyClass.Titan.name]),
+                 str(member.trials3[DestinyClass.Hunter.name]), str(member.trials3[DestinyClass.Warlock.name]), str(member.trials3[DestinyClass.Titan.name]),
+                 str(member.trials5[DestinyClass.Hunter.name]), str(member.trials5[DestinyClass.Warlock.name]), str(member.trials5[DestinyClass.Titan.name]),
+                 str(member.trials7[DestinyClass.Hunter.name]), str(member.trials7[DestinyClass.Warlock.name]), str(member.trials7[DestinyClass.Titan.name]),
+                 str(member.low_light[DestinyClass.Hunter.name]), str(member.low_light[DestinyClass.Warlock.name]), str(member.low_light[DestinyClass.Titan.name]),
+                 str(member.privacy), str(member.account_not_exists)])
 
 
-if __name__ == '__main__':
+def get_scores():
 
-    curr_member_list = []  # member list compiled from Bungie API calls, reflects data from current week
-    stored_member_dict = {}  # member dictionary from stored file, reflects data from past week
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
     prev_week = (week_start - timedelta(days=7))
-
-    utc = pytz.UTC
 
     clan_group = clan_lib.ClanGroup().get_clan_list()
     clan_member_responses = request.BungieApiCall().get_clan_members(clan_group)
@@ -420,14 +458,13 @@ if __name__ == '__main__':
             characters = profile['Response']['characters']['data']  # check light level
             character_progressions = profile['Response']['characterProgressions']['data']
             character_activities = profile['Response']['characterActivities']['data']
-            curr_class = None
             for character_id in character_progressions.keys():  # iterate over single member's characters
                 milestones = character_progressions[character_id]['milestones']
                 activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
                 character = characters[character_id]
                 curr_class = DestinyClass(character['classType'])
                 curr_member = get_low_light(curr_member, curr_class, character)
-                curr_member = get_weekly_raid_count(curr_member, curr_class)
+                curr_member = get_weekly_raid_count(curr_member, curr_class, week_start, character_id)
                 curr_member = get_clan_engram(curr_member, curr_class, milestones)
                 curr_member = get_crucible_engram(curr_member, curr_class, milestones)
                 curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
@@ -446,7 +483,7 @@ if __name__ == '__main__':
                 curr_member = get_crucible_glory(curr_member, curr_class, milestones)
                 curr_member = get_trials(curr_member, curr_class, milestones)
 
-            curr_member = apply_score_cap_and_decay(curr_member)
+            curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
             curr_member_list.append(curr_member)
 
         write_members_to_csv(curr_member_list, curr_file_path)

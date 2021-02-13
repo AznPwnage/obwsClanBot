@@ -1,0 +1,16 @@
+<style style="text/css">
+  	.hoverTable{
+		border-collapse:collapse;
+		table-layout: fixed;
+	}
+	.hoverTable td,th{
+		padding:7px; border:1px solid #7B7978;
+		width: 200px;
+		height: 20px;
+		overflow: hidden;
+	}
+	/* Define the hover highlight color for the table row */
+    .hoverTable tbody tr:hover {
+          background-color: #525252;
+    }
+</style>

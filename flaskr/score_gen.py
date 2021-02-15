@@ -108,7 +108,7 @@ def get_low_light(member, member_class, char_to_check):
 def get_prev_week_score(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
-            member.prev_score = df.loc[int(member.membership_id)]['Score']
+            member.prev_score = int(df.loc[int(member.membership_id)]['Score'])
     return member
 
 
@@ -440,7 +440,7 @@ def get_scores(selected_clan):
 
         curr_member = initialize_member(clan.memberList[j])
         profile = profile_responses[j].json()
-        print(curr_member.name)
+        print(str(j+1) + '/' + str(len(profile_responses)) + ':' + curr_member.name)
 
         if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
             curr_member.account_not_exists = True

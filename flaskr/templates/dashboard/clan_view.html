@@ -1,14 +1,15 @@
 <!doctype html>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
 {% block header %}
-  <h1>{% block title %}{{clan_name}} Score Thing{% endblock %}</h1>
+  <h1>{{clan_name}}</h1>
 {% endblock %}
 
 {% block content %}
   <table class="hoverTable">
     <thead>
       <tr>
-        <th rowspan="2">Name</th>
+        <th rowspan="2"><a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0' ) }}">Name</a></th>
         <th rowspan="2">Score</th>
         <th rowspan="2">Score Delta</th>
         <th rowspan="2">Previous Score</th>

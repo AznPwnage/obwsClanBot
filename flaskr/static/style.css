@@ -1,6 +1,7 @@
 <style style="text/css">
   	.hoverTable{
 		border-collapse:collapse;
+		position: relative;
 		table-layout: fixed;
 	}
 	.hoverTable td,th{
@@ -9,8 +10,24 @@
 		height: 20px;
 		overflow: hidden;
 	}
+	.hoverTable tr:nth-child(1) th{
+	    position: sticky;
+        top: 0; /* Don't forget this, required for the stickiness */
+		background-color: #968786;
+	}
+	.hoverTable tr:nth-child(2) th{
+	    position: sticky;
+        top: 54px; /* Don't forget this, required for the stickiness */
+		background-color: #968786;
+	}
+	.hoverTable tr:nth-child(odd){
+		background-color: #e8b4b0;
+	}
+	.hoverTable tr:nth-child(even){
+		background-color: #e3776f;
+	}
 	/* Define the hover highlight color for the table row */
     .hoverTable tbody tr:hover {
-          background-color: #525252;
+          background-color: #ddd;
     }
 </style>

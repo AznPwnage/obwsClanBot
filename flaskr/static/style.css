@@ -1,33 +1,61 @@
 <style style="text/css">
-  	.hoverTable{
+  	.fullTable{
 		border-collapse:collapse;
 		position: relative;
 		table-layout: fixed;
 	}
-	.hoverTable td,th{
+	.fullTable td,th{
 		padding:7px; border:1px solid #7B7978;
 		width: 200px;
 		height: 20px;
 		overflow: hidden;
 	}
-	.hoverTable tr:nth-child(1) th{
+	.fullTable tr:nth-child(1) th{
 	    position: sticky;
         top: 0; /* Don't forget this, required for the stickiness */
 		background-color: #968786;
 	}
-	.hoverTable tr:nth-child(2) th{
+	.fullTable tr:nth-child(2) th{
 	    position: sticky;
         top: 54px; /* Don't forget this, required for the stickiness */
 		background-color: #968786;
 	}
-	.hoverTable tr:nth-child(odd){
+	.fullTable tr:nth-child(odd){
 		background-color: #e8b4b0;
 	}
-	.hoverTable tr:nth-child(even){
+	.fullTable tr:nth-child(even){
 		background-color: #e3776f;
 	}
 	/* Define the hover highlight color for the table row */
-    .hoverTable tbody tr:hover {
+    .fullTable tbody tr:hover {
           background-color: #ddd;
+    }
+    a {
+      color: black;
+      text-decoration: none; /* no underline */
+    }
+    .guardian {
+        background-color: #408d9c
+    }
+    .brave {
+        background-color: #4477c2
+    }
+    .heroic {
+        background-color: #2f47ec
+    }
+    .fabled {
+        background-color: #8359ff
+    }
+    .mythic {
+        background-color: #d118ca
+    }
+    .legend {
+        background-color: #d11f1f
+    }
+    .ironWolf {
+        background-color: #6fe4ab
+    }
+    .ironLord {
+        background-color: #b5e76b
     }
 </style>

@@ -122,12 +122,16 @@ def get_date_last_played(member, prof, dt):
 
 
 def get_week_start(dt):
+    print(dt)
     day_number = dt.weekday()  # returns 0 for Mon, 6 for Sun
+    print(day_number)
     if 1 < day_number:  # diff from previous Tuesday
         return (dt - timedelta(days=day_number-1)).replace(hour=17, minute=00, second=0, microsecond=0)
     if 1 == day_number:  # check whether past reset or not
         if 17 <= dt.hour:  # past reset
             return dt.replace().replace(hour=17, minute=00, second=0, microsecond=0)
+        else:  # not past reset
+            return (dt - timedelta(days=7)).replace(hour=17, minute=00, second=0, microsecond=0)
     return (dt - timedelta(days=6)).replace(hour=17, minute=00, second=0, microsecond=0)  # case of Monday being current day
 
 

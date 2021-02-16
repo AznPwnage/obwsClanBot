@@ -1,0 +1,50 @@
+<!doctype html>
+<head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script></head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
+{% block header %}
+  <h1>{{clan_name}}</h1>
+{% endblock %}
+
+{% block content %}
+  <table class="fullTable" id="mainTable" style="float: left;">
+    <thead>
+      <tr>
+        <th>Name<br/>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th>Score<br/>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for member in members -%}
+      <tr>
+        <td>{{ member[0] }}</td>  <!-- Name -->
+        <td>{{ member[1] }}</td>  <!-- Score -->
+      </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+{% endblock %}
+<script>
+$(document).ready(function() {
+    var rows = 20;
+    var rowSize = 4;
+    var $main = $('#mainTable'),
+    $head = $main.find('tr:first'),
+    $extraRows = $main.find('tr:gt(' + rows + ')');
+
+    for( var i = 0, count = 1; i < $extraRows.length; i = i+rows, count++){
+       if (count % rowSize == 0) {
+        $('TEST').appendTo($main.parent());
+        $('<table class="fullTable">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
+       } else {
+        $('<table class="fullTable" style="float: left;">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
+       }
+    }
+});
+</script>

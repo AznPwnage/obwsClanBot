@@ -1,4 +1,5 @@
 <!doctype html>
+<head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script></head>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
 {% block header %}
@@ -6,15 +7,33 @@
 {% endblock %}
 
 {% block content %}
-  <table class="hoverTable">
+  <table class="fullTable">
     <thead>
       <tr>
-        <th rowspan="2"><a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0' ) }}">Name</a></th>
-        <th rowspan="2">Score</th>
-        <th rowspan="2">Score Delta</th>
-        <th rowspan="2">Previous Score</th>
-        <th rowspan="2">Days Last Played</th>
-        <th rowspan="2">Date Last Played</th>
+        <th rowspan="2">Name<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Score<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Score Delta<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Previous Score<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Days Last Played<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Date Last Played<br/>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date' ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
         <th colspan="3">GOS</th>
         <th colspan="3">DSC</th>
         <th colspan="3">LW</th>
@@ -53,11 +72,11 @@
       {%- for member in members -%}
       <tr>
         <td>{{ member[0] }}</td>  <!-- Name -->
-        <td>{{ member[1] }}</td>  <!-- Score -->
+        <td class="score">{{ member[1] }}</td>  <!-- Score -->
         <td>{{ member[2] }}</td>  <!-- Score Delta -->
         <td>{{ member[3] }}</td>  <!-- Previous Score -->
         <td>{{ member[4] }}</td>  <!-- Days Last Played -->
-        <td>{{ member[5][5:10] }}</td>  <!-- Date Last Played -->
+        <td>{{ member[5][:10] }}</td>  <!-- Date Last Played -->
         <td>{{ member[10] }}</td> <!-- GOS Hunter -->
         <td>{{ member[11] }}</td> <!-- GOS Warlock -->
         <td>{{ member[12] }}</td> <!-- GOS Titan -->
@@ -134,3 +153,25 @@
     </tbody>
   </table>
 {% endblock %}
+<script>
+  $('.score').each(function() {
+    var score = parseInt($(this).text());
+    if (score < 60) {
+      $(this).addClass('guardian');
+    } else if (score < 120) {
+      $(this).addClass('brave');
+    } else if (score < 240) {
+      $(this).addClass('heroic');
+    } else if (score < 480) {
+      $(this).addClass('fabled');
+    } else if (score < 720) {
+      $(this).addClass('mythic');
+    } else if (score < 1440) {
+      $(this).addClass('legend');
+    } else if (score < 2160) {
+      $(this).addClass('ironWolf');
+    } else {
+      $(this).addClass('ironLord');
+    }
+});
+</script>

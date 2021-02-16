@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <a href="{{ url_for('dashboard.index') }}">home</a>
 {% block header %}
   <h1>{% block title %}Clan Score Thing{% endblock %}</h1>
@@ -15,6 +16,7 @@
     <tr>
       <td><a href="{{ url_for('dashboard.clan_view', clan_name='Emerald') }}">Emerald</a></td>
       <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Emerald') }}">Generate</a></td>
+      <td><a href="{{ url_for('dashboard.discord_view', clan_name='Emerald') }}">Discord View</a></td>
     </tr>
     <tr>
       <td><a href="{{ url_for('dashboard.clan_view', clan_name='Jade') }}">Jade</a></td>

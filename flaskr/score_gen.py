@@ -96,6 +96,8 @@ def initialize_member(clan_member):
     member.date_last_played = ''
     member.days_last_played = -1
 
+    member.inactive = False
+
     return member
 
 
@@ -122,9 +124,7 @@ def get_date_last_played(member, prof, dt):
 
 
 def get_week_start(dt):
-    print(dt)
     day_number = dt.weekday()  # returns 0 for Mon, 6 for Sun
-    print(day_number)
     if 1 < day_number:  # diff from previous Tuesday
         return (dt - timedelta(days=day_number-1)).replace(hour=17, minute=00, second=0, microsecond=0)
     if 1 == day_number:  # check whether past reset or not
@@ -140,7 +140,7 @@ def str_to_time(time_str):
     return datetime.strptime(time_str, date_format)
 
 
-def get_weekly_raid_count(member, member_class, week_start, character_id):
+def get_weekly_raid_count(member, member_class, week_start, character_id, completion_counter):
     utc = pytz.UTC
     character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id)
     for raid in character_raids:
@@ -153,10 +153,11 @@ def get_weekly_raid_count(member, member_class, week_start, character_id):
             ref_id = 2122313384
         member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
         if member.raids[DestinyRaid(ref_id).name][member_class.name] == 1:
+            completion_counter += 1
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
-    return member
+    return member, completion_counter
 
 
 def check_collectible_milestone(milestones_list, ms_hash, obj_hash):
@@ -352,12 +353,28 @@ def apply_score_cap_and_decay(member, clan_type):
     return member
 
 
+def check_inactive(member, clan_type, completion_counter):
+    if member.days_last_played > 5:
+        member.inactive = True
+        return member
+    if clan_type == 'Regional':
+        return member
+    if clan_type == 'PVP':
+        for char_completion in member.crucible_engram:
+            if not member.inactive:
+                member.inactive = char_completion
+    if clan_type == 'Raid':
+        if completion_counter < 3:
+            member.inactive = True
+    return member
+
+
 def write_members_to_csv(mem_list, file_path):
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
-             'MemberShipType', 'ClanType',
+             'MemberShipType', 'ClanType', 'Inactive',
              'GOS_H', 'GOS_W', 'GOS_T',
              'DSC_H', 'DSC_W', 'DSC_T',
              'LW_H', 'LW_W', 'LW_T',
@@ -386,7 +403,7 @@ def write_members_to_csv(mem_list, file_path):
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
                  str(member.date_last_played), str(member.membership_id), str(member.clan_name), str(member.membership_type),
-                 str(member.clan_type),
+                 str(member.clan_type), str(member.inactive),
                  str(member.raids[DestinyRaid.gos.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Titan.name]),
                  str(member.raids[DestinyRaid.dsc.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Titan.name]),
                  str(member.raids[DestinyRaid.lw.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Titan.name]),
@@ -442,6 +459,7 @@ def get_scores(selected_clan):
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
 
+        completion_counter = 0
         curr_member = initialize_member(clan.memberList[j])
         profile = profile_responses[j].json()
         print(str(j+1) + '/' + str(len(profile_responses)) + ':' + curr_member.name)
@@ -467,7 +485,7 @@ def get_scores(selected_clan):
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
             curr_member = get_low_light(curr_member, curr_class, character)
-            curr_member = get_weekly_raid_count(curr_member, curr_class, week_start, character_id)
+            curr_member, completion_counter = get_weekly_raid_count(curr_member, curr_class, week_start, character_id, completion_counter)
             curr_member = get_clan_engram(curr_member, curr_class, milestones)
             curr_member = get_crucible_engram(curr_member, curr_class, milestones)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
@@ -487,6 +505,7 @@ def get_scores(selected_clan):
             curr_member = get_trials(curr_member, curr_class, milestones)
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
+        curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)

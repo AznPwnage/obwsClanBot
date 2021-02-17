@@ -8,12 +8,14 @@
 		padding:7px; border:1px solid #7B7978;
 		overflow: hidden;
 	}
-	.fullTable tr:nth-child(1) th{
+	.fullTable thead tr:nth-child(1) th{
+	    position: -webkit-sticky; /* for Safari */
 	    position: sticky;
         top: 0; /* Don't forget this, required for the stickiness */
 		background-color: #968786;
 	}
-	.fullTable tr:nth-child(2) th{
+	.fullTable thead tr:nth-child(2) th{
+	    position: -webkit-sticky; /* for Safari */
 	    position: sticky;
         top: 54px; /* Don't forget this, required for the stickiness */
 		background-color: #968786;
@@ -27,6 +29,12 @@
 	/* Define the hover highlight color for the table row */
     .fullTable tbody tr:hover {
           background-color: #ddd;
+    }
+    .fullTable tbody th {
+      position: -webkit-sticky; /* for Safari */
+      position: sticky;
+      background-color: #968786;
+      left: 0;
     }
     a {
       color: black;

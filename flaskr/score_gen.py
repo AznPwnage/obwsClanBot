@@ -350,6 +350,8 @@ def apply_score_cap_and_decay(member, clan_type):
         member.score = 30
     member.score_delta = member.score
     member.score += member.prev_score
+    if member.score < 0:
+        member.score = 0
     return member
 
 

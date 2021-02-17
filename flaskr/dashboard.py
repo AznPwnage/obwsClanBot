@@ -23,9 +23,10 @@ def clan_view():
     sort_by = request.args.get('sort_by', None)
     reverse = request.args.get('reverse', None)
     col_type = request.args.get('col_type', None)
+    selected_date = request.args.get('selected_date', None)
 
-    curr_file_path = get_curr_file_path(clan_name)
-    with open(curr_file_path, 'r', encoding='utf-8') as f:
+    file_path = get_file_path(clan_name, selected_date)
+    with open(file_path, 'r', encoding='utf-8') as f:
         csv_reader = csv.reader(f)
         next(csv_reader)
         if sort_by is not None:
@@ -48,14 +49,15 @@ def clan_view():
             for row in csv_reader:
                 members.append(row)
 
-    return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name)
+    return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name, selected_date=selected_date)
 
 
 @dashboard.route('/generate')
 def generate_scores():
     clan_name = request.args.get('clan_name', None)
+    selected_date = request.args.get('selected_date', None)
     score_gen.get_scores(clan_name)
-    return redirect(url_for('dashboard.clan_view', clan_name=clan_name))
+    return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
 
 
 @dashboard.route('/discord')
@@ -66,9 +68,10 @@ def discord_view():
     sort_by = request.args.get('sort_by', None)
     reverse = request.args.get('reverse', None)
     col_type = request.args.get('col_type', None)
+    selected_date = request.args.get('selected_date', None)
 
-    curr_file_path = get_curr_file_path(clan_name)
-    with open(curr_file_path, 'r', encoding='utf-8') as f:
+    file_path = get_file_path(clan_name, selected_date)
+    with open(file_path, 'r', encoding='utf-8') as f:
         csv_reader = csv.reader(f)
         next(csv_reader)
         if sort_by is not None:
@@ -90,11 +93,11 @@ def discord_view():
         else:
             for row in csv_reader:
                 members.append(row)
-    return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name)
+    return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name, selected_date=selected_date)
 
 
-def get_curr_file_path(clan_name):
-    curr_dt = datetime.now(timezone.utc)
-    week_start = score_gen.get_week_start(curr_dt)
-    curr_week_folder = f'{week_start:%Y-%m-%d}'
-    return path.join(curr_week_folder, clan_name + '.csv')
+def get_file_path(clan_name, selected_date):
+    dt = datetime.strptime(selected_date, '%Y-%m-%d')
+    week_start = score_gen.get_week_start(dt)
+    week_folder = f'{week_start:%Y-%m-%d}'
+    return path.join(week_folder, clan_name + '.csv')

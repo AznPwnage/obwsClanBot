@@ -1,51 +1,127 @@
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <a href="{{ url_for('dashboard.index') }}">home</a>
 {% block header %}
-  <h1>{% block title %}Clan Score Thing{% endblock %}</h1>
+<h1>{% block title %}Clan Score Thing{% endblock %}</h1>
 {% endblock %}
-
-{% block content %}
-<table border="1">
-  <thead>
+<table class="indexTable">
+    <thead>
+    <th>View full score chart</th>
+    <th>Generate scores</th>
+    <th>Discord view</th>
+    </thead>
+    <tbody>
     <tr>
-      <th>Clan Name</th>
-      <th>Do the thing</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Emerald') }}">Emerald</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Emerald') }}">Generate</a></td>
-      <td><a href="{{ url_for('dashboard.discord_view', clan_name='Emerald') }}">Discord View</a></td>
-    </tr>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Jade') }}">Jade</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Jade') }}">Generate</a></td>
+        <td>
+            Date:<input type="date" id="clanView_datePick">
+        </td>
+        <td></td>
+        <td>
+            Date:<input type="date" id="discordView_datePick">
+        </td>
     </tr>
     <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Peridot') }}">Peridot</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Peridot') }}">Generate</a></td>
+        <td>
+            Clan:
+            <select id="clanView_clanPick">
+                <option value="Emerald">Emerald</option>
+                <option value="Jade">Jade</option>
+                <option value="Peridot">Peridot</option>
+                <option value="Ruby">Ruby</option>
+                <option value="Garnet">Garnet</option>
+                <option value="Thulite">Thulite</option>
+                <option value="Onyx">Onyx</option>
+                <option value="Topaz">Topaz</option>
+            </select>
+        </td>
+        <td>
+            Clan: <select id="generateScores_clanPick">
+            <option value="Emerald">Emerald</option>
+            <option value="Jade">Jade</option>
+            <option value="Peridot">Peridot</option>
+            <option value="Ruby">Ruby</option>
+            <option value="Garnet">Garnet</option>
+            <option value="Thulite">Thulite</option>
+            <option value="Onyx">Onyx</option>
+            <option value="Topaz">Topaz</option>
+        </select>
+        </td>
+        <td>
+            Clan: <select id="discordView_clanPick">
+            <option value="Emerald">Emerald</option>
+            <option value="Jade">Jade</option>
+            <option value="Peridot">Peridot</option>
+            <option value="Ruby">Ruby</option>
+            <option value="Garnet">Garnet</option>
+            <option value="Thulite">Thulite</option>
+            <option value="Onyx">Onyx</option>
+            <option value="Topaz">Topaz</option>
+        </select>
+        </td>
     </tr>
     <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Ruby') }}">Ruby</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Ruby') }}">Generate</a></td>
+        <td class="bottomCell">
+            <input id="clanView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="generateScores_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="discordView_btn" type="button" value="Go"/>
+        </td>
     </tr>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Garnet') }}">Garnet</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Garnet') }}">Generate</a></td>
-    </tr>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Thulite') }}">Thulite</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Thulite') }}">Generate</a></td>
-    </tr>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Onyx') }}">Onyx</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Onyx') }}">Generate</a></td>
-    </tr>
-    <tr>
-      <td><a href="{{ url_for('dashboard.clan_view', clan_name='Topaz') }}">Topaz</a></td>
-      <td><a href="{{ url_for('dashboard.generate_scores', clan_name='Topaz') }}">Generate</a></td>
-    </tr>
-  </tbody>
+    </tbody>
 </table>
-{% endblock %}
+
+<script>
+$(document).ready( function() {
+    $('#clanView_datePick').val(new Date().toISOString().slice(0,10));
+});
+$('#clanView_btn').click( function(e){
+    $('#clanView_btn').prop('disabled', true);
+    $('#generateScores_btn').prop('disabled', true);
+    $('#discordView_btn').prop('disabled', true);
+    e.preventDefault();
+    var selectedClan = $("#clanView_clanPick").val()
+    var selectedDate = $("#clanView_datePick").val()
+    var url = "{{ url_for('dashboard.clan_view', clan_name='selectedClan', selected_date='selectedDate') }}"
+            .replace("selectedClan", selectedClan)
+            .replace("selectedDate", selectedDate)
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
+$('#generateScores_btn').click( function(e){
+    $('#clanView_btn').prop('disabled', true);
+    $('#generateScores_btn').prop('disabled', true);
+    $('#discordView_btn').prop('disabled', true);
+    e.preventDefault();
+    var selectedClan = $("#generateScores_clanPick").val()
+    var url = "{{ url_for('dashboard.generate_scores', clan_name='selectedClan', selected_date='selectedDate') }}"
+            .replace("selectedClan", selectedClan)
+            .replace("selectedDate", new Date().toISOString().slice(0,10))
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
+$(document).ready( function() {
+    $('#discordView_datePick').val(new Date().toISOString().slice(0,10));
+});
+$('#discordView_btn').click( function(e){
+    $('#clanView_btn').prop('disabled', true);
+    $('#generateScores_btn').prop('disabled', true);
+    $('#discordView_btn').prop('disabled', true);
+    e.preventDefault();
+    var selectedClan = $("#discordView_clanPick").val()
+    var selectedDate = $("#discordView_datePick").val()
+    var url = "{{ url_for('dashboard.discord_view', clan_name='selectedClan', selected_date='selectedDate') }}"
+            .replace("selectedClan", selectedClan)
+            .replace("selectedDate", selectedDate)
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>

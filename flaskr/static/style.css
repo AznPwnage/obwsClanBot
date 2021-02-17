@@ -6,8 +6,6 @@
 	}
 	.fullTable td,th{
 		padding:7px; border:1px solid #7B7978;
-		width: 200px;
-		height: 20px;
 		overflow: hidden;
 	}
 	.fullTable tr:nth-child(1) th{
@@ -57,5 +55,22 @@
     }
     .ironLord {
         background-color: #b5e76b
+    }
+    .indexTable {
+        border-collapse: collapse;
+    }
+    .indexTable tr {
+        border: none;
+    }
+    .indexTable td {
+      border-right: solid 1px;
+      border-left: solid 1px;
+      padding: 10px;
+    }
+    .bottomCell {
+        border-bottom: solid 1px;
+        text-align: center;
+    }
+    .scoreCol {
     }
 </style>

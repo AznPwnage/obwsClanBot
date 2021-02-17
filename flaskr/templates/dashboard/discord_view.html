@@ -11,12 +11,12 @@
     <thead>
       <tr>
         <th>Name<br/>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str' ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', reverse='1' ) }}"><font size="2">▼</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
-        <th>Score<br/>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int' ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', reverse='1' ) }}"><font size="2">▼</font></a>
+        <th class="scoreCol">Score<br/>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
       </tr>
     </thead>
@@ -24,7 +24,7 @@
       {%- for member in members -%}
       <tr>
         <td>{{ member[0] }}</td>  <!-- Name -->
-        <td>{{ member[1] }}</td>  <!-- Score -->
+        <td class="score scoreCol">{{ member[1] }}</td>  <!-- Score -->
       </tr>
       {%- endfor -%}
     </tbody>
@@ -33,18 +33,39 @@
 <script>
 $(document).ready(function() {
     var rows = 20;
-    var rowSize = 4;
+<!--    var rowSize = 5;-->
     var $main = $('#mainTable'),
     $head = $main.find('tr:first'),
     $extraRows = $main.find('tr:gt(' + rows + ')');
 
     for( var i = 0, count = 1; i < $extraRows.length; i = i+rows, count++){
-       if (count % rowSize == 0) {
-        $('TEST').appendTo($main.parent());
-        $('<table class="fullTable">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
-       } else {
+<!--       if (count % rowSize == 0) {-->
+<!--        $('<table class="fullTable">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());-->
+<!--       } else {-->
         $('<table class="fullTable" style="float: left;">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
-       }
+<!--       }-->
+    }
+});
+</script>
+<script>
+  $('.score').each(function() {
+    var score = parseInt($(this).text());
+    if (score < 60) {
+      $(this).addClass('guardian');
+    } else if (score < 120) {
+      $(this).addClass('brave');
+    } else if (score < 240) {
+      $(this).addClass('heroic');
+    } else if (score < 480) {
+      $(this).addClass('fabled');
+    } else if (score < 720) {
+      $(this).addClass('mythic');
+    } else if (score < 1440) {
+      $(this).addClass('legend');
+    } else if (score < 2160) {
+      $(this).addClass('ironWolf');
+    } else {
+      $(this).addClass('ironLord');
     }
 });
 </script>

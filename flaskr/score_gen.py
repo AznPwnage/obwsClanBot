@@ -372,6 +372,8 @@ def check_inactive(member, clan_type, completion_counter):
 
 
 def write_members_to_csv(mem_list, file_path):
+    if path.exists(file_path):  # this week's data is already generated for this clan, delete it
+        os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
@@ -432,7 +434,7 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.privacy), str(member.account_not_exists)])
 
 
-def get_scores(selected_clan):
+def generate_scores(selected_clan):
 
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
@@ -446,10 +448,8 @@ def get_scores(selected_clan):
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
-    if path.exists(curr_file_path):  # this week's data is already generated for this clan, delete it
-        os.remove(curr_file_path)
     if path.exists(prev_file_path):
-        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id'], index_col='Id')
+        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
     members = clan_member_response['results']
 
     for mem in members:

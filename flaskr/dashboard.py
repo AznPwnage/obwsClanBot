@@ -56,7 +56,7 @@ def clan_view():
 def generate_scores():
     clan_name = request.args.get('clan_name', None)
     selected_date = request.args.get('selected_date', None)
-    score_gen.get_scores(clan_name)
+    score_gen.generate_scores(clan_name)
     return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
 
 

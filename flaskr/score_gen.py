@@ -511,3 +511,24 @@ def generate_scores(selected_clan):
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)
+
+
+def get_file_path(selected_clan, date):
+    week_start = get_week_start(date)
+    week_folder = f'{week_start:%Y-%m-%d}'
+    return path.join(week_folder, selected_clan + '.csv')
+
+
+def get_left_diff_df(left_df, right_df):
+    diff_index = left_df.index.difference(right_df.index)
+    return left_df[left_df.index.isin(diff_index.tolist())].reset_index()
+
+
+def get_clan_member_diff(selected_clan, start_date, end_date):
+    start_file_path = get_file_path(selected_clan, start_date)
+    end_file_path = get_file_path(selected_clan, end_date)
+    start_df = pd.read_csv(start_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
+    end_df = pd.read_csv(end_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
+    members_who_left = get_left_diff_df(start_df, end_df)
+    members_who_joined = get_left_diff_df(end_df, start_df)
+    return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')

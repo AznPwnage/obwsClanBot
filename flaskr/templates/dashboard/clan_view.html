@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
 {% block header %}
-  <h1>{{clan_name}}</h1>
+  <h1>{{clan_name}} for {{selected_date}}</h1>
 {% endblock %}
 
 {% block content %}

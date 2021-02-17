@@ -11,6 +11,7 @@
     <th>View full score chart</th>
     <th>Generate scores</th>
     <th>Discord view</th>
+    <th>Diff</th>
     </thead>
     <tbody>
     <tr>
@@ -20,6 +21,10 @@
         <td></td>
         <td>
             Date:<input type="date" id="discordView_datePick">
+        </td>
+        <td>
+            Start:<input type="date" id="diffView_startDatePick">
+            End:<input type="date" id="diffView_endDatePick">
         </td>
     </tr>
     <tr>
@@ -60,6 +65,18 @@
             <option value="Topaz">Topaz</option>
         </select>
         </td>
+        <td>
+            Clan: <select id="diffView_clanPick">
+            <option value="Emerald">Emerald</option>
+            <option value="Jade">Jade</option>
+            <option value="Peridot">Peridot</option>
+            <option value="Ruby">Ruby</option>
+            <option value="Garnet">Garnet</option>
+            <option value="Thulite">Thulite</option>
+            <option value="Onyx">Onyx</option>
+            <option value="Topaz">Topaz</option>
+        </select>
+        </td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -70,6 +87,9 @@
         </td>
         <td class="bottomCell">
             <input id="discordView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="diffView_btn" type="button" value="Go"/>
         </td>
     </tr>
     </tbody>
@@ -83,6 +103,7 @@ $('#clanView_btn').click( function(e){
     $('#clanView_btn').prop('disabled', true);
     $('#generateScores_btn').prop('disabled', true);
     $('#discordView_btn').prop('disabled', true);
+    $('#diffView_btn').prop('disabled', true);
     e.preventDefault();
     var selectedClan = $("#clanView_clanPick").val()
     var selectedDate = $("#clanView_datePick").val()
@@ -98,6 +119,7 @@ $('#generateScores_btn').click( function(e){
     $('#clanView_btn').prop('disabled', true);
     $('#generateScores_btn').prop('disabled', true);
     $('#discordView_btn').prop('disabled', true);
+    $('#diffView_btn').prop('disabled', true);
     e.preventDefault();
     var selectedClan = $("#generateScores_clanPick").val()
     var url = "{{ url_for('dashboard.generate_scores', clan_name='selectedClan', selected_date='selectedDate') }}"
@@ -115,12 +137,35 @@ $('#discordView_btn').click( function(e){
     $('#clanView_btn').prop('disabled', true);
     $('#generateScores_btn').prop('disabled', true);
     $('#discordView_btn').prop('disabled', true);
+    $('#diffView_btn').prop('disabled', true);
     e.preventDefault();
     var selectedClan = $("#discordView_clanPick").val()
     var selectedDate = $("#discordView_datePick").val()
     var url = "{{ url_for('dashboard.discord_view', clan_name='selectedClan', selected_date='selectedDate') }}"
             .replace("selectedClan", selectedClan)
             .replace("selectedDate", selectedDate)
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
+$(document).ready( function() {
+    $('#diffView_startDatePick').val(new Date().toISOString().slice(0,10));
+    $('#diffView_endDatePick').val(new Date().toISOString().slice(0,10));
+});
+$('#diffView_btn').click( function(e){
+    $('#clanView_btn').prop('disabled', true);
+    $('#generateScores_btn').prop('disabled', true);
+    $('#discordView_btn').prop('disabled', true);
+    $('#diffView_btn').prop('disabled', true);
+    e.preventDefault();
+    var selectedClan = $("#diffView_clanPick").val()
+    var startDate = $("#diffView_startDatePick").val()
+    var endDate = $("#diffView_endDatePick").val()
+    var url = "{{ url_for('dashboard.diff_view', clan_name='selectedClan', start_date='startDate', end_date='endDate') }}"
+            .replace("selectedClan", selectedClan)
+            .replace("startDate", startDate)
+            .replace("endDate", endDate)
             .replaceAll("amp;", "");
     window.location.href = url;
 });

@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
 {% block header %}
-  <h1>{{clan_name}}</h1>
+  <h1>{{clan_name}} for {{selected_date}}</h1>
 {% endblock %}
 
 {% block content %}
@@ -14,9 +14,13 @@
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
-        <th class="scoreCol">Score<br/>
+        <th>Score<br/>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+        </th>
+        <th>Previous Score<br/>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
       </tr>
     </thead>
@@ -24,7 +28,8 @@
       {%- for member in members -%}
       <tr>
         <td>{{ member[0] }}</td>  <!-- Name -->
-        <td class="score scoreCol">{{ member[1] }}</td>  <!-- Score -->
+        <td class="score">{{ member[1] }}</td>  <!-- Score -->
+        <td class="score">{{ member[3] }}</td>  <!-- Previous Score -->
       </tr>
       {%- endfor -%}
     </tbody>

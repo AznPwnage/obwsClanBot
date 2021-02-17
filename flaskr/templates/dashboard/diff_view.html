@@ -1,0 +1,106 @@
+<!doctype html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>/
+{% block header %}
+<h1>{{clan_name}} Diffs for {{start_date}} to {{end_date}}</h1>
+{% endblock %}
+<table class="indexTable">
+    <thead>
+    <tr>
+        <th>Left</th>
+        <th>Joined</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="bottomCell">
+                        {%- if members_who_left -%}
+            <table class="fullTable">
+                <thead>
+                <tr>
+                    <th>Name<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Name', col_type='str', selected_date='%s'%selected_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Name', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
+                    <th>Score<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Score', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {%- for member in members_who_left -%}
+                <tr>
+                    <td>{{ member['Name'] }}</td>  <!-- Name -->
+                    <td class="score">{{ member['Score'] }}</td>  <!-- Score -->
+                </tr>
+                {%- endfor -%}
+                </tbody>
+            </table>
+                        {%- endif -%}
+        </td>
+        <td class="bottomCell">
+                        {%- if members_who_joined -%}
+            <table class="fullTable">
+                <thead>
+                <tr>
+                    <th>Name<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Name', col_type='str', selected_date='%s'%selected_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Name', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
+                    <th>Score<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Score', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='Score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {%- for member in members_who_joined -%}
+                <tr>
+                    <td>{{ member['Name'] }}</td>  <!-- Name -->
+                    <td class="score">{{ member['Score'] }}</td>  <!-- Score -->
+                </tr>
+                {%- endfor -%}
+                </tbody>
+            </table>
+                        {%- endif -%}
+        </td>
+    </tr>
+    </tbody>
+</table>
+<script>
+  $('.score').each(function() {
+    var score = parseInt($(this).text());
+    if (score < 60) {
+      $(this).addClass('guardian');
+    } else if (score < 120) {
+      $(this).addClass('brave');
+    } else if (score < 240) {
+      $(this).addClass('heroic');
+    } else if (score < 480) {
+      $(this).addClass('fabled');
+    } else if (score < 720) {
+      $(this).addClass('mythic');
+    } else if (score < 1440) {
+      $(this).addClass('legend');
+    } else if (score < 2160) {
+      $(this).addClass('ironWolf');
+    } else {
+      $(this).addClass('ironLord');
+    }
+});
+
+
+
+</script>

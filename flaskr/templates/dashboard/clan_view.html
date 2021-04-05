@@ -1,47 +1,76 @@
 <!doctype html>
-<head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script></head>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
+<a href="{{ url_for('dashboard.index') }}">home</a>/<a
+        href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
 {% block header %}
-  <h1>{{clan_name}} for {{selected_date}}</h1>
+<h1>{{clan_name}} for {{selected_date}}</h1>
 {% endblock %}
 
 {% block content %}
-  <table class="fullTable">
+<table class="fullTable" id="table">
     <thead>
-      <tr>
+    <tr>
         <th rowspan="2">Name<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th rowspan="2">Score<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
-        </th>
-        <th rowspan="2">Score Delta<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th rowspan="2">Previous Score<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
+        </th>
+<!--        <th rowspan="2">External Score<br/>-->
+<!--            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date ) }}"><font-->
+<!--                    size="2">▲</font></a>-->
+<!--            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font-->
+<!--                    size="2">▼</font></a>-->
+<!--        </th>-->
+        <th rowspan="2">Score Delta<br/>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th rowspan="2">Days Last Played<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th rowspan="2">Date Last Played<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th rowspan="2">Inactive<br/>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
+        </th>
+        <th rowspan="2">Clan Engram<br/>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='21', col_type='date', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='21', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
         </th>
         <th colspan="3">GOS</th>
         <th colspan="3">DSC</th>
         <th colspan="3">LW</th>
-        <th colspan="3">Clan Engram</th>
+        <th colspan="3">Clan Engram By Class</th>
         <th colspan="3">Crucible Engram</th>
         <th colspan="3">Exo Challenge</th>
         <th colspan="3">Banshee</th>
@@ -63,100 +92,111 @@
         <th colspan="3">Low Light</th>
         <th rowspan="2">Account doesn't exist</th>
         <th rowspan="2">Private account</th>
-      </tr>
-      <tr>
+    </tr>
+    <tr>
         {%- for i in range(23) %}
-          <th>H</th>
-          <th>W</th>
-          <th>T</th>
+        <th>H</th>
+        <th>W</th>
+        <th>T</th>
         {%- endfor -%}
-      </tr>
+    </tr>
     </thead>
     <tbody>
-      {%- for member in members -%}
-      <tr>
-        <th>{{ member[0] }}</th>  <!-- Name -->
-        <td class="score">{{ member[1] }}</td>  <!-- Score -->
-        <td>{{ member[2] }}</td>  <!-- Score Delta -->
-        <td>{{ member[3] }}</td>  <!-- Previous Score -->
-        <td>{{ member[4] }}</td>  <!-- Days Last Played -->
-        <td>{{ member[5][:10] }}</td>  <!-- Date Last Played -->
-        <td>{{ member[10] }}</td>  <!-- Days Last Played -->
-        <td>{{ member[11] }}</td> <!-- GOS Hunter -->
-        <td>{{ member[12] }}</td> <!-- GOS Warlock -->
-        <td>{{ member[13] }}</td> <!-- GOS Titan -->
-        <td>{{ member[14] }}</td> <!-- DSC Hunter -->
-        <td>{{ member[15] }}</td> <!-- DSC Warlock -->
-        <td>{{ member[16] }}</td> <!-- DSC Titan -->
-        <td>{{ member[17] }}</td> <!-- LW Hunter -->
-        <td>{{ member[18] }}</td> <!-- LW Warlock -->
-        <td>{{ member[19] }}</td> <!-- LW Titan -->
-        <td>{%- if member[20] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Hunter -->
-        <td>{%- if member[21] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Warlock -->
-        <td>{%- if member[22] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Titan -->
-        <td>{%- if member[23] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
-        <td>{%- if member[24] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
-        <td>{%- if member[25] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->
-        <td>{%- if member[26] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Hunter -->
-        <td>{%- if member[27] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Warlock -->
-        <td>{%- if member[28] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Titan -->
-        <td>{%- if member[29] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Hunter -->
-        <td>{%- if member[30] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Warlock -->
-        <td>{%- if member[31] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Titan -->
-        <td>{%- if member[32] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Hunter -->
-        <td>{%- if member[33] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Warlock -->
-        <td>{%- if member[34] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Titan -->
-        <td>{%- if member[35] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Hunter -->
-        <td>{%- if member[36] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Warlock -->
-        <td>{%- if member[37] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Titan -->
-        <td>{%- if member[38] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Hunter -->
-        <td>{%- if member[39] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Warlock -->
-        <td>{%- if member[40] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Titan -->
-        <td>{%- if member[41] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Hunter -->
-        <td>{%- if member[42] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Warlock -->
-        <td>{%- if member[43] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Titan -->
-        <td>{%- if member[44] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Hunter -->
-        <td>{%- if member[45] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Warlock -->
-        <td>{%- if member[46] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Titan -->
-        <td>{%- if member[47] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
-        <td>{%- if member[48] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
-        <td>{%- if member[49] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
-        <td>{%- if member[50] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Hunter -->
-        <td>{%- if member[51] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Warlock -->
-        <td>{%- if member[52] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Titan -->
-        <td>{%- if member[53] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
-        <td>{%- if member[54] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
-        <td>{%- if member[55] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
-        <td>{%- if member[56] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
-        <td>{%- if member[57] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
-        <td>{%- if member[58] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
-        <td>{%- if member[59] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Hunter -->
-        <td>{%- if member[60] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Warlock -->
-        <td>{%- if member[61] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Titan -->
-        <td>{%- if member[62] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Hunter -->
-        <td>{%- if member[63] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Warlock -->
-        <td>{%- if member[64] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Titan -->
-        <td>{%- if member[65] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
-        <td>{%- if member[66] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
-        <td>{%- if member[67] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
-        <td>{%- if member[68] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Hunter -->
-        <td>{%- if member[69] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Warlock -->
-        <td>{%- if member[70] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Titan -->
-        <td>{%- if member[71] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Hunter -->
-        <td>{%- if member[72] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Warlock -->
-        <td>{%- if member[73] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Titan -->
-        <td>{%- if member[74] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Hunter -->
-        <td>{%- if member[75] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Warlock -->
-        <td>{%- if member[76] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Titan -->
-        <td>{%- if member[77] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
-        <td>{%- if member[78] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
-        <td>{%- if member[79] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
-        <td>{%- if member[80] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Account doesn't exist -->
-        <td>{%- if member[81] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Private account -->
-      </tr>
-      {%- endfor -%}
+    {%- for i in range(members|length) -%}
+    <tr>
+        <th>{{ members[i][0] }}</th>  <!-- Name -->
+        <td class="score"><b>{{ members[i][1] }}</b></td>  <!-- Score -->
+        <td class="score">{{ members[i][3] }}</td>  <!-- Previous Score -->
+<!--        <td><input name="externalScore" type="text" value="{{ members[i][82] }}" onfocusout="addExternalScore()"></td>-->
+<!--        &lt;!&ndash; External Score &ndash;&gt;-->
+        <td>{{ members[i][2] }}</td>  <!-- Score Delta -->
+        <td>{{ members[i][4] }}</td>  <!-- Days Last Played -->
+        <td>{{ members[i][5][:10] }}</td>  <!-- Date Last Played -->
+        <td>
+            {%- if members[i][10] == 'True' -%}
+            ✔️
+            {%- endif -%}
+        </td>  <!-- Inactive -->
+        <td>
+            {%- if members[i][20] == 'True' or members[i][21] == 'True' or members[i][22] == 'True' -%}
+            ✔️
+            {%- endif -%}
+        </td>
+        <td>{{ members[i][11] }}</td> <!-- GOS Hunter -->
+        <td>{{ members[i][12] }}</td> <!-- GOS Warlock -->
+        <td>{{ members[i][13] }}</td> <!-- GOS Titan -->
+        <td>{{ members[i][14] }}</td> <!-- DSC Hunter -->
+        <td>{{ members[i][15] }}</td> <!-- DSC Warlock -->
+        <td>{{ members[i][16] }}</td> <!-- DSC Titan -->
+        <td>{{ members[i][17] }}</td> <!-- LW Hunter -->
+        <td>{{ members[i][18] }}</td> <!-- LW Warlock -->
+        <td>{{ members[i][19] }}</td> <!-- LW Titan -->
+        <td>{%- if members[i][20] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Hunter -->
+        <td>{%- if members[i][21] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Warlock -->
+        <td>{%- if members[i][22] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Titan -->
+        <td>{%- if members[i][23] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
+        <td>{%- if members[i][24] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
+        <td>{%- if members[i][25] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->
+        <td>{%- if members[i][26] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Hunter -->
+        <td>{%- if members[i][27] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Warlock -->
+        <td>{%- if members[i][28] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Titan -->
+        <td>{%- if members[i][29] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Hunter -->
+        <td>{%- if members[i][30] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Warlock -->
+        <td>{%- if members[i][31] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Titan -->
+        <td>{%- if members[i][32] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Hunter -->
+        <td>{%- if members[i][33] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Warlock -->
+        <td>{%- if members[i][34] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Titan -->
+        <td>{%- if members[i][35] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Hunter -->
+        <td>{%- if members[i][36] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Warlock -->
+        <td>{%- if members[i][37] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Titan -->
+        <td>{%- if members[i][38] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Hunter -->
+        <td>{%- if members[i][39] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Warlock -->
+        <td>{%- if members[i][40] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Titan -->
+        <td>{%- if members[i][41] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Hunter -->
+        <td>{%- if members[i][42] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Warlock -->
+        <td>{%- if members[i][43] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Titan -->
+        <td>{%- if members[i][44] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Hunter -->
+        <td>{%- if members[i][45] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Warlock -->
+        <td>{%- if members[i][46] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Titan -->
+        <td>{%- if members[i][47] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
+        <td>{%- if members[i][48] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
+        <td>{%- if members[i][49] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
+        <td>{%- if members[i][50] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Hunter -->
+        <td>{%- if members[i][51] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Warlock -->
+        <td>{%- if members[i][52] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Titan -->
+        <td>{%- if members[i][53] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
+        <td>{%- if members[i][54] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
+        <td>{%- if members[i][55] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
+        <td>{%- if members[i][56] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
+        <td>{%- if members[i][57] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
+        <td>{%- if members[i][58] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
+        <td>{%- if members[i][59] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Hunter -->
+        <td>{%- if members[i][60] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Warlock -->
+        <td>{%- if members[i][61] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Titan -->
+        <td>{%- if members[i][62] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Hunter -->
+        <td>{%- if members[i][63] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Warlock -->
+        <td>{%- if members[i][64] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Titan -->
+        <td>{%- if members[i][65] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
+        <td>{%- if members[i][66] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
+        <td>{%- if members[i][67] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
+        <td>{%- if members[i][68] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Hunter -->
+        <td>{%- if members[i][69] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Warlock -->
+        <td>{%- if members[i][70] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Titan -->
+        <td>{%- if members[i][71] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Hunter -->
+        <td>{%- if members[i][72] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Warlock -->
+        <td>{%- if members[i][73] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Titan -->
+        <td>{%- if members[i][74] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Hunter -->
+        <td>{%- if members[i][75] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Warlock -->
+        <td>{%- if members[i][76] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Titan -->
+        <td>{%- if members[i][77] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
+        <td>{%- if members[i][78] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
+        <td>{%- if members[i][79] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
+        <td>{%- if members[i][80] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Account doesn't exist -->
+        <td>{%- if members[i][81] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Private account -->
+    </tr>
+    {%- endfor -%}
     </tbody>
-  </table>
+</table>
 {% endblock %}
 <script>
   $('.score').each(function() {
@@ -179,4 +219,13 @@
       $(this).addClass('ironLord');
     }
 });
+
+</script>
+<script>
+  function addExternalScore() {
+  members[i][1] = members[i][1] + members[i][82];
+  var table = document.getElementById("table");
+  var tr = table.getElementsByTagName();
+}
+
 </script>

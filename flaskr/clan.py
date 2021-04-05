@@ -29,7 +29,8 @@ class ClanMember:
                  clan_engram=None, crucible_engram=None, exo_challenge=None, banshee=None, drifter=None, zavala=None,
                  variks=None, exo_stranger=None, trials3=None, empire_hunt=None, nightfall=None, deadly_venatics=None,
                  strikes=None, nightfall_100k=None, gambit=None, crucible_playlist=None, crucible_glory=None,
-                 trials5=None, trials7=None, privacy=None, account_not_exists=None, low_light=None, inactive=None):
+                 trials5=None, trials7=None, privacy=None, account_not_exists=None, low_light=None, inactive=None,
+                 external_score=None):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
@@ -66,3 +67,4 @@ class ClanMember:
         self.account_not_exists = account_not_exists
         self.low_light = low_light
         self.inactive = inactive
+        self.external_score = external_score

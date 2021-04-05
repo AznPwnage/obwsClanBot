@@ -14,11 +14,11 @@
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
-        <th>Score<br/>
+        <th>Score New<br/>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
-        <th>Previous Score<br/>
+        <th>Score Old<br/>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
           <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
@@ -28,8 +28,8 @@
       {%- for member in members -%}
       <tr>
         <td>{{ member[0] }}</td>  <!-- Name -->
-        <td class="score">{{ member[1] }}</td>  <!-- Score -->
-        <td class="score">{{ member[3] }}</td>  <!-- Previous Score -->
+        <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+        <td class="score" width="50px" align="center">{{ member[3] }}</td>  <!-- Previous Score -->
       </tr>
       {%- endfor -%}
     </tbody>
@@ -38,17 +38,12 @@
 <script>
 $(document).ready(function() {
     var rows = 20;
-<!--    var rowSize = 5;-->
     var $main = $('#mainTable'),
-    $head = $main.find('tr:first'),
+    $head = $main.find('thead:first'),
     $extraRows = $main.find('tr:gt(' + rows + ')');
 
     for( var i = 0, count = 1; i < $extraRows.length; i = i+rows, count++){
-<!--       if (count % rowSize == 0) {-->
-<!--        $('<table class="fullTable">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());-->
-<!--       } else {-->
         $('<table class="fullTable" style="float: left;">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
-<!--       }-->
     }
 });
 </script>

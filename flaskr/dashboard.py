@@ -56,8 +56,12 @@ def clan_view():
 def generate_scores():
     clan_name = request.args.get('clan_name', None)
     selected_date = request.args.get('selected_date', None)
-    score_gen.generate_scores(clan_name)
-    return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
+    if clan_name == 'All':
+        score_gen.generate_all_scores()
+        return render_template('dashboard/index.html')
+    else:
+        score_gen.generate_scores(clan_name)
+        return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
 
 
 @dashboard.route('/discord')
@@ -82,14 +86,14 @@ def discord_view():
                 elif col_type == 'date':
                     members = sorted(csv_reader, key=lambda item: item[sort_by][:10])
                 elif col_type == 'str':
-                    members = sorted(csv_reader, key=lambda item: item[sort_by])
+                    members = sorted(csv_reader, key=lambda item: item[sort_by].upper())
             else:
                 if col_type == 'int':
                     members = sorted(csv_reader, key=lambda item: int(item[sort_by]), reverse=True)
                 elif col_type == 'date':
                     members = sorted(csv_reader, key=lambda item: item[sort_by][:10], reverse=True)
                 elif col_type == 'str':
-                    members = sorted(csv_reader, key=lambda item: item[sort_by], reverse=True)
+                    members = sorted(csv_reader, key=lambda item: item[sort_by].upper(), reverse=True)
         else:
             for row in csv_reader:
                 members.append(row)

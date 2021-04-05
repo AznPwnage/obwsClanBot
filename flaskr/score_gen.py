@@ -54,6 +54,10 @@ TRIALS7_MS_HASH = '3628293753'
 
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
+MEMBERSHIP_IDS_TO_IGNORE = ['4611686018468017900',  # Renk
+                            '4611686018467476681',  # Daramir
+                            '4611686018467377928']  # Halioon
+
 clans = clan_lib.ClanGroup().get_clans()
 
 
@@ -97,6 +101,8 @@ def initialize_member(clan_member):
     member.days_last_played = -1
 
     member.inactive = False
+
+    member.external_score = 0
 
     return member
 
@@ -151,6 +157,8 @@ def get_weekly_raid_count(member, member_class, week_start, character_id, comple
         ref_id = raid['activityDetails']['referenceId']
         if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
             ref_id = 2122313384
+        if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
+            ref_id = 910380154
         member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
         if member.raids[DestinyRaid(ref_id).name][member_class.name] == 1:
             completion_counter += 1
@@ -346,8 +354,6 @@ def apply_score_cap_and_decay(member, clan_type):
         member.score = 40
     if clan_type == 'Regional':  # point decay for regional clan
         member.score -= 10
-    if member.score > 30:  # max score post decay capped at 30 (specialized divisions as well)
-        member.score = 30
     member.score_delta = member.score
     member.score += member.prev_score
     if member.score < 0:
@@ -363,8 +369,9 @@ def check_inactive(member, clan_type, completion_counter):
         return member
     if clan_type == 'PVP':
         for char_completion in member.crucible_engram:
-            if not member.inactive:
-                member.inactive = char_completion
+            if member.crucible_engram[char_completion]:
+                return member
+        member.inactive = True
     if clan_type == 'Raid':
         if completion_counter < 3:
             member.inactive = True
@@ -376,6 +383,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
+        # 83 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -402,7 +410,7 @@ def write_members_to_csv(mem_list, file_path):
              'Trials5_H', 'Trials5_W', 'Trials5_T',
              'Trials7_H', 'Trials7_W', 'Trials7_T',
              'LowLight_H', 'LowLight_W', 'LowLight_T',
-             'PrivacyFlag', 'AccountExistsFlag'])
+             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore'])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
@@ -431,7 +439,7 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.trials5[DestinyClass.Hunter.name]), str(member.trials5[DestinyClass.Warlock.name]), str(member.trials5[DestinyClass.Titan.name]),
                  str(member.trials7[DestinyClass.Hunter.name]), str(member.trials7[DestinyClass.Warlock.name]), str(member.trials7[DestinyClass.Titan.name]),
                  str(member.low_light[DestinyClass.Hunter.name]), str(member.low_light[DestinyClass.Warlock.name]), str(member.low_light[DestinyClass.Titan.name]),
-                 str(member.privacy), str(member.account_not_exists)])
+                 str(member.privacy), str(member.account_not_exists), str(member.external_score)])
 
 
 def generate_scores(selected_clan):
@@ -453,10 +461,12 @@ def generate_scores(selected_clan):
     members = clan_member_response['results']
 
     for mem in members:
+        clan.member_list = []
         name = mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
-        clan.add_member(name, membership_type, membership_id)
+        if membership_id not in MEMBERSHIP_IDS_TO_IGNORE:
+            clan.add_member(name, membership_type, membership_id)
 
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
@@ -511,6 +521,12 @@ def generate_scores(selected_clan):
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)
+
+
+def generate_all_scores():
+    for clan in clans:
+        print(clan)
+        generate_scores(clan)
 
 
 def get_file_path(selected_clan, date):

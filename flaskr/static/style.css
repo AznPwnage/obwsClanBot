@@ -7,6 +7,7 @@
 	.fullTable td,th{
 		padding:7px; border:1px solid #7B7978;
 		overflow: hidden;
+		font-family: Arial;
 	}
 	.fullTable thead tr:nth-child(1) th{
 	    position: -webkit-sticky; /* for Safari */
@@ -21,10 +22,10 @@
 		background-color: #968786;
 	}
 	.fullTable tr:nth-child(odd){
-		background-color: #e8b4b0;
+		background-color: #FFF2CC;
 	}
 	.fullTable tr:nth-child(even){
-		background-color: #e3776f;
+		background-color: #FFF2CC;
 	}
 	/* Define the hover highlight color for the table row */
     .fullTable tbody tr:hover {
@@ -36,10 +37,12 @@
       background-color: #968786;
       left: 0;
     }
+
     a {
       color: black;
       text-decoration: none; /* no underline */
     }
+
     .guardian {
         background-color: #408d9c
     }
@@ -64,6 +67,7 @@
     .ironLord {
         background-color: #b5e76b
     }
+
     .indexTable {
         border-collapse: collapse;
     }
@@ -75,6 +79,7 @@
       border-left: solid 1px;
       padding: 10px;
     }
+
     .bottomCell {
         border-bottom: solid 1px;
         text-align: center;

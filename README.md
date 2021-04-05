@@ -13,10 +13,8 @@ Will need to add a key.txt file in your local repo, with the Bungie API key in i
 04. run this command: py -3 -m venv venv
 05. run this command: venv\Scripts\activate
 06. run this command (only on first install of a new version): pip install flaskr-1.0.0-py3-none-any.whl --force-reinstall
-07. run this command: set FLASK_APP=flaskr
-08. run this command: set FLASK_ENV=development
-09. run this command: flask run
-10. You can access the webpage at 127.0.0.1:5000 on your browser
+07. run this command: set FLASK_APP=flaskr && set FLASK_ENV=development && flask run
+08. You can access the webpage at 127.0.0.1:5000 on your browser
 
 ==PATCH NOTES==
 =v1.0.0=

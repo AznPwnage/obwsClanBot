@@ -50,7 +50,8 @@ def clan_view():
             for row in csv_reader:
                 members.append(row)
 
-    return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name, selected_date=selected_date)
+    return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name,
+                           selected_date=selected_date)
 
 
 @dashboard.route('/generate')
@@ -98,7 +99,8 @@ def discord_view():
         else:
             for row in csv_reader:
                 members.append(row)
-    return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name, selected_date=selected_date)
+    return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name,
+                           selected_date=selected_date)
 
 
 @dashboard.route('/diff')
@@ -118,8 +120,14 @@ def diff_view():
         else:
             members_who_left = members_who_left.sort_values(sort_by, ascending=False)
 
-    return render_template('dashboard/diff_view.html', members_who_left=members_who_left, members_who_joined=members_who_joined, clan_name=clan_name,
+    return render_template('dashboard/diff_view.html', members_who_left=members_who_left,
+                           members_who_joined=members_who_joined, clan_name=clan_name,
                            start_date=start_date_str, end_date=end_date_str)
+
+
+@dashboard.route('/save')
+def save_to_csv():
+    return ''
 
 
 def get_file_path(clan_name, selected_date):

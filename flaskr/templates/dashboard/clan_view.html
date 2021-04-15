@@ -18,6 +18,8 @@
                     size="2">▲</font></a>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
+            <br>
+            <input id="copyNames_btn" type="button" value="Copy"/>
         </th>
         <th rowspan="2">Score<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font
@@ -31,12 +33,12 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
-<!--        <th rowspan="2">External Score<br/>-->
-<!--            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date ) }}"><font-->
-<!--                    size="2">▲</font></a>-->
-<!--            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font-->
-<!--                    size="2">▼</font></a>-->
-<!--        </th>-->
+        <th rowspan="2">External Score<br/>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
+        </th>
         <th rowspan="2">Score Delta<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
@@ -107,8 +109,8 @@
         <th>{{ members[i][0] }}</th>  <!-- Name -->
         <td class="score"><b>{{ members[i][1] }}</b></td>  <!-- Score -->
         <td class="score">{{ members[i][3] }}</td>  <!-- Previous Score -->
-<!--        <td><input name="externalScore" type="text" value="{{ members[i][82] }}" onfocusout="addExternalScore()"></td>-->
-<!--        &lt;!&ndash; External Score &ndash;&gt;-->
+        <td><input name="externalScore" type="text" value="{{ members[i][82] }}" onfocusout="addExternalScore()"></td>
+        <!-- External Score -->
         <td>{{ members[i][2] }}</td>  <!-- Score Delta -->
         <td>{{ members[i][4] }}</td>  <!-- Days Last Played -->
         <td>{{ members[i][5][:10] }}</td>  <!-- Date Last Played -->
@@ -228,4 +230,16 @@
   var tr = table.getElementsByTagName();
 }
 
+</script>
+<script>
+$('#copyNames_btn').click( function(e){
+    e.preventDefault();
+    var m = {{members|tojson}};
+    var member_names = "";
+    var i;
+    for (i = 0; i < m.length; i++) {
+        member_names = member_names.concat("@",m[i][0]," ");
+    }
+    alert(member_names);
+});
 </script>

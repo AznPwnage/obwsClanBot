@@ -1,11 +1,12 @@
+import csv
+import os.path as path
+from datetime import datetime
+
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, redirect, render_template, request, url_for
 )
 
-import csv
-from datetime import datetime, timezone, timedelta
 from . import score_gen
-import os.path as path
 
 dashboard = Blueprint('dashboard', __name__)
 

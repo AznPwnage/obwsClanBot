@@ -270,11 +270,13 @@ $('#saveScores_btn').click( function(e){
     for (var i = 0; i < m.length; i++) {
         var external_score = document.getElementById("externalScore_".concat(i)).value;
         var score = document.getElementById("score_".concat(i)).innerHTML;
-        if (m[i][0].includes(",") {
+        var score_delta = document.getElementById("scoreDelta_".concat(i)).innerHTML;
+        if (m[i][0].includes(",")) {
             m[i][0] = "\"" + m[i][0] + "\"";
         }
         m[i][1] = score;
         m[i][82] = external_score;
+        m[i][2] = score_delta;
         m_string += m[i] + "\r\n";
     }
 

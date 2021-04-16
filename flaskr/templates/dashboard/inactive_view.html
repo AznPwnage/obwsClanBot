@@ -1,0 +1,130 @@
+<!doctype html>
+<head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script></head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>/<a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name) }}">{{ clan_name }}</a>
+{% block header %}
+  <h1>Inactives for {{selected_date}}</h1>
+{% endblock %}
+
+<br/>
+{% block content %}
+{%- if clan_name != 'All' -%}
+<table class="indexTable">
+  <thead>
+    <th>
+      {{clan_name}}
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <table class="fullTable" id="mainTable" style="float: left;">
+<thead>
+  <tr>
+    <th>Name
+    </th>
+    <th>Score
+    </th>
+  </tr>
+</thead>
+<tbody>
+  {%- for member in members -%}
+  <tr>
+    <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
+    <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+  </tr>
+  {%- endfor -%}
+</tbody>
+</table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+{%- endif -%}
+{%- if clan_name == 'All' -%}
+  <table class="indexTable">
+    <thead>
+    {%- for clan in clans -%}
+      <th>
+        {{clan}}
+        <input type="button" value="Copy Inactives" onclick="copyNames_click('{{clan}}')"/>
+      </th>
+    {%- endfor -%}
+    </thead>
+    <tbody>
+      <tr>
+        {%- for clan in clans -%}
+        <td valign="top">
+          <table class="fullTable" style="float: left;">
+            <thead>
+              <tr>
+                <th>Name
+                </th>
+                <th>Score
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for member in members -%}
+                {%- if member[7] == clan -%}
+                <tr>
+                  <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
+                  <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+                </tr>
+                {%- endif -%}
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </td>
+        {%- endfor -%}
+      </tr>
+    </tbody>
+  </table>
+{%- endif -%}
+{% endblock %}
+<script>
+  $('.score').each(function() {
+    var score = parseInt($(this).text());
+    if (score < 60) {
+      $(this).addClass('guardian');
+    } else if (score < 120) {
+      $(this).addClass('brave');
+    } else if (score < 240) {
+      $(this).addClass('heroic');
+    } else if (score < 480) {
+      $(this).addClass('fabled');
+    } else if (score < 720) {
+      $(this).addClass('mythic');
+    } else if (score < 1440) {
+      $(this).addClass('legend');
+    } else if (score < 2160) {
+      $(this).addClass('ironWolf');
+    } else {
+      $(this).addClass('ironLord');
+    }
+});
+</script>
+<script>
+$(document).ready(function() {
+    var rows = 20;
+    var $main = $('#mainTable'),
+    $head = $main.find('thead:first'),
+    $extraRows = $main.find('tr:gt(' + rows + ')');
+
+    for( var i = 0, count = 1; i < $extraRows.length; i = i+rows, count++){
+        $('<table class="fullTable" style="float: left;">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
+    }
+});
+</script>
+<script>
+function copyNames_click(clan) {
+    var m = {{members|tojson}};
+    var member_names = "";
+    for (var i = 0; i < m.length; i++) {
+        if (m[i][7] == clan) {
+            member_names = member_names.concat(m[i][0],"\r\n");
+        }
+    }
+    alert(member_names);
+}
+</script>

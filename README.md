@@ -1,5 +1,6 @@
 # obwsClanBot
-Automation of clan score tracking for OBWS
+Automation of clan score tracking for OBWS.
+Developed and maintained by AznPwnage, for OBWS clan. Any usage of this code in whole or part without the prior knowledge and consent of AznPwnage is not allowed.
 
 # Setup:
 Will need to add a key.txt file in your local repo, with the Bungie API key in it, without any whitespace.

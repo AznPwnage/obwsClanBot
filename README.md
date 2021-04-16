@@ -6,7 +6,7 @@ Developed and maintained by AznPwnage, for OBWS clan. Any usage of this code in 
 # Setup:
 Will need to add a key.txt file in your local repo, with the Bungie API key in it, without any whitespace.
 
-==WINDOWS==
+### Windows
 01. install python3: 
 	download at: https://www.python.org/downloads/
 	instructions at: https://docs.python.org/3/using/windows.html

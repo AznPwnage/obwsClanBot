@@ -31,7 +31,7 @@ Will need to add a key.txt file in your local repo, with the Bungie API key in i
 - Added external score editing
 - Added saving functionality
 - Added inactives view
-Minor headsup - regarding saving the score file, it will save on whatever order you have the page currently sorted to, and hence won't preserve the Bungie API ordering (which I can't figure out what it's ordered on)
+- Minor headsup - regarding saving the score file, it will save on whatever order you have the page currently sorted to, and hence won't preserve the Bungie API ordering (which I can't figure out what it's ordered on)
 
 
 #### v1.0.4

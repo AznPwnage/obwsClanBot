@@ -23,6 +23,7 @@ Will need to add a key.txt file in your local repo, with the Bungie API key in i
 - score gilding
 - tracking clan swaps
 - track inactivity period (research)
+- update breadcrumbs
 
 # PATCH NOTES
 

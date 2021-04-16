@@ -10,6 +10,7 @@
 {% endblock %}
 
 <input id="saveScores_btn" type="button" value="Save to CSV"/>
+<input id="copyNames_btn" type="button" value="Copy Inactives"/>
 {% block content %}
 <table class="fullTable" id="table">
     <thead>
@@ -20,7 +21,6 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
             <br>
-            <input id="copyNames_btn" type="button" value="Copy"/>
         </th>
         <th rowspan="2">Score<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font
@@ -109,11 +109,11 @@
     <tr>
         <th>{{ members[i][0] }}</th>  <!-- Name -->
         <td class="score" id="score_td_{{i}}"><b id="score_{{i}}">{{ members[i][1] }}</b></td>  <!-- Score -->
-        <td class="score">{{ members[i][3] }}</td>  <!-- Previous Score -->
+        <td class="score" id="prevScore_{{i}}">{{ members[i][3] }}</td>  <!-- Previous Score -->
         <td><input id="externalScore_{{i}}" name="externalScore" type="text" value="{{ members[i][82] }}"
                    onfocusout="addExternalScore({{i}})"
                    size="5"></td><!-- External Score -->
-        <td>{{ members[i][2] }}</td>  <!-- Score Delta -->
+        <td id="scoreDelta_{{i}}">{{ members[i][2] }}</td>  <!-- Score Delta -->
         <td>{{ members[i][4] }}</td>  <!-- Days Last Played -->
         <td>{{ members[i][5][:10] }}</td>  <!-- Date Last Played -->
         <td>
@@ -215,9 +215,15 @@ function addExternalScore(i) {
     var old_external_score = m[i][82];
     var new_external_score = document.getElementById("externalScore_".concat(i)).value;
     var external_score = +new_external_score - +old_external_score;
+
     var old_score = m[i][1];
     var new_score = +external_score + +old_score;
     document.getElementById("score_".concat(i)).innerHTML = new_score;
+
+    var prev_score = document.getElementById("prevScore_".concat(i)).innerHTML;
+    var new_score_delta = +new_score - +prev_score;
+    document.getElementById("scoreDelta_".concat(i)).innerHTML = new_score_delta;
+
     applyScoreColor(new_score, document.getElementById("score_td_".concat(i)));
 }
 </script>
@@ -248,29 +254,36 @@ $('#copyNames_btn').click( function(e){
     var m = {{members|tojson}};
     var member_names = "";
     for (var i = 0; i < m.length; i++) {
-        member_names = member_names.concat("@",m[i][0]," ");
+        if (m[i][10] == 'True') {
+            member_names = member_names.concat(m[i][0],"\r\n");
+        }
     }
     alert(member_names);
 });
-
-
 </script>
 <script>
 $('#saveScores_btn').click( function(e){
     e.preventDefault();
-    var external_score = document.getElementById("externalScore_".concat(i)).value;
-    var score = document.getElementById("score_".concat(i)).innerHTML;
+
     var m = {{members|tojson}};
+    m_string = "";
     for (var i = 0; i < m.length; i++) {
+        var external_score = document.getElementById("externalScore_".concat(i)).value;
+        var score = document.getElementById("score_".concat(i)).innerHTML;
+        if (m[i][0].includes(",") {
+            m[i][0] = "\"" + m[i][0] + "\"";
+        }
         m[i][1] = score;
         m[i][82] = external_score;
+        m_string += m[i] + "\r\n";
     }
 
-    var url_to_hit = "{{ url_for('dashboard.save_to_csv', old_url='url_placeholder') }}"
+    var url_to_hit = "{{ url_for('dashboard.save_to_csv', m='members_placeholder', clan='clan_placeholder', date='date_placeholder', old_url='url_placeholder') }}"
+            .replace("members_placeholder", encodeURI(m_string))
+            .replace("clan_placeholder", {{clan_name|tojson}})
+            .replace("date_placeholder", {{selected_date|tojson}})
             .replace("url_placeholder", window.location.href.replaceAll("&", "%26"))
             .replaceAll("amp;", "");
-    alert(url_to_hit);
+    window.location.href = url_to_hit;
 });
-
-
 </script>

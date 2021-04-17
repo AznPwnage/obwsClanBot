@@ -61,11 +61,23 @@
     .legend {
         background-color: #d11f1f
     }
+    .gildedLegend {
+        background-color: #dd711d
+    }
     .ironWolf {
         background-color: #6fe4ab
     }
+    .gildedIronWolf {
+        background-color: #a5d768
+    }
     .ironLord {
         background-color: #b5e76b
+    }
+    .gildedIronLord {
+        background-color: #d4d247
+    }
+    .ironWill {
+        background-color: #12dfeb
     }
 
     .indexTable {

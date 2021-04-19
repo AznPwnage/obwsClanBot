@@ -40,6 +40,12 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
+        <th rowspan="2">Gild Level<br/>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='83', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='83', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
+        </th>
         <th rowspan="2">Score Delta<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
@@ -113,6 +119,30 @@
         <td><input id="externalScore_{{i}}" name="externalScore" type="text" value="{{ members[i][82] }}"
                    onfocusout="addExternalScore({{i}})"
                    size="5"></td><!-- External Score -->
+        <td>
+        <select id="gildLevel">
+            {%- if members[i][83] == '0' -%}
+            <option value="0" selected>0</option>
+            {%- else -%}
+            <option value="0">0</option>
+            {%- endif -%}
+            {%- if members[i][83] == '1' -%}
+            <option value="1" selected>1</option>
+            {%- else -%}
+            <option value="2">2</option>
+            {%- endif -%}
+            {%- if members[i][83] == '3' -%}
+            <option value="3" selected>3</option>
+            {%- else -%}
+            <option value="4">4</option>
+            {%- endif -%}
+            {%- if members[i][83] == '0' -%}
+            <option value="4" selected>4</option>
+            {%- else -%}
+            <option value="4">4</option>
+            {%- endif -%}
+        </select>
+        </td>
         <td id="scoreDelta_{{i}}">{{ members[i][2] }}</td>  <!-- Score Delta -->
         <td>{{ members[i][4] }}</td>  <!-- Days Last Played -->
         <td>{{ members[i][5][:10] }}</td>  <!-- Date Last Played -->

@@ -125,6 +125,7 @@ def initialize_member(clan_member):
     member.inactive = False
 
     member.external_score = 0
+    member.gild_level = 0
 
     return member
 
@@ -139,6 +140,13 @@ def get_prev_week_score(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
             member.prev_score = int(df.loc[int(member.membership_id)]['Score'])
+    return member
+
+
+def get_prev_gild_level(member, df):
+    if df is not None:
+        if int(member.membership_id) in df.index:
+            member.gild_level = int(df.loc[int(member.membership_id)]['GildLevel'])
     return member
 
 
@@ -405,7 +413,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 83 columns
+        # 84 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -432,7 +440,7 @@ def write_members_to_csv(mem_list, file_path):
              'Trials5_H', 'Trials5_W', 'Trials5_T',
              'Trials7_H', 'Trials7_W', 'Trials7_T',
              'LowLight_H', 'LowLight_W', 'LowLight_T',
-             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore'])
+             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore', 'GildLevel'])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
@@ -461,7 +469,7 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.trials5[DestinyClass.Hunter.name]), str(member.trials5[DestinyClass.Warlock.name]), str(member.trials5[DestinyClass.Titan.name]),
                  str(member.trials7[DestinyClass.Hunter.name]), str(member.trials7[DestinyClass.Warlock.name]), str(member.trials7[DestinyClass.Titan.name]),
                  str(member.low_light[DestinyClass.Hunter.name]), str(member.low_light[DestinyClass.Warlock.name]), str(member.low_light[DestinyClass.Titan.name]),
-                 str(member.privacy), str(member.account_not_exists), str(member.external_score)])
+                 str(member.privacy), str(member.account_not_exists), str(member.external_score), str(member.gild_level)])
 
 
 def generate_scores(selected_clan):
@@ -509,6 +517,7 @@ def generate_scores(selected_clan):
 
         curr_member = get_prev_week_score(curr_member, prev_df)
         curr_member = get_date_last_played(curr_member, profile, curr_dt)
+        curr_member = get_prev_gild_level(curr_member, prev_df)
 
         characters = profile['Response']['characters']['data']  # check light level
         character_progressions = profile['Response']['characterProgressions']['data']

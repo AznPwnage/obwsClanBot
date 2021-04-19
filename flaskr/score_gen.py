@@ -51,6 +51,8 @@ CRUCIBLE_GLORY_MS_HASH = '1368032265'
 TRIALS3_MS_HASH = '3628293757'
 TRIALS5_MS_HASH = '3628293755'
 TRIALS7_MS_HASH = '3628293753'
+PROPHECY_MS_HASH = '825965416'
+HARBINGER_MS_HASH = '1086730368'
 
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
@@ -125,6 +127,9 @@ def initialize_member(clan_member):
     member.inactive = False
 
     member.external_score = 0
+
+    member.prophecy = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.harbinger = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
     return member
 
@@ -371,6 +376,22 @@ def get_trials(member, member_class, milestones_list):
     return member
 
 
+def get_prophecy(member, member_class, milestones_list):
+    if not member.low_light[member_class.name]:
+        if milestone_not_in_list(milestones_list, PROPHECY_MS_HASH):
+            member.prophecy[member_class.name] = True
+            member.score += 2
+    return member
+
+
+def get_harbinger(member, member_class, milestones_list):
+    if not member.low_light[member_class.name]:
+        if milestone_not_in_list(milestones_list, HARBINGER_MS_HASH):
+            member.harbinger[member_class.name] = True
+            member.score += 2
+    return member
+
+
 def apply_score_cap_and_decay(member, clan_type):
     if member.score > 40:
         member.score = 40
@@ -405,7 +426,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 83 columns
+        # 89 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -432,7 +453,9 @@ def write_members_to_csv(mem_list, file_path):
              'Trials5_H', 'Trials5_W', 'Trials5_T',
              'Trials7_H', 'Trials7_W', 'Trials7_T',
              'LowLight_H', 'LowLight_W', 'LowLight_T',
-             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore'])
+             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore',
+             'Prophecy_H', 'Prophecy_W', 'Prophecy_T',
+             'Harbinger_H', 'Harbinger_W', 'Harbinger_T',])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
@@ -461,7 +484,9 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.trials5[DestinyClass.Hunter.name]), str(member.trials5[DestinyClass.Warlock.name]), str(member.trials5[DestinyClass.Titan.name]),
                  str(member.trials7[DestinyClass.Hunter.name]), str(member.trials7[DestinyClass.Warlock.name]), str(member.trials7[DestinyClass.Titan.name]),
                  str(member.low_light[DestinyClass.Hunter.name]), str(member.low_light[DestinyClass.Warlock.name]), str(member.low_light[DestinyClass.Titan.name]),
-                 str(member.privacy), str(member.account_not_exists), str(member.external_score)])
+                 str(member.privacy), str(member.account_not_exists), str(member.external_score),
+                 str(member.prophecy[DestinyClass.Hunter.name]), str(member.prophecy[DestinyClass.Warlock.name]), str(member.prophecy[DestinyClass.Titan.name]),
+                 str(member.harbinger[DestinyClass.Hunter.name]), str(member.harbinger[DestinyClass.Warlock.name]), str(member.harbinger[DestinyClass.Titan.name])])
 
 
 def generate_scores(selected_clan):
@@ -537,6 +562,8 @@ def generate_scores(selected_clan):
             curr_member = get_crucible_playlist(curr_member, curr_class, milestones)
             curr_member = get_crucible_glory(curr_member, curr_class, milestones)
             curr_member = get_trials(curr_member, curr_class, milestones)
+            curr_member = get_prophecy(curr_member, curr_class, milestones)
+            curr_member = get_harbinger(curr_member, curr_class, milestones)
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)

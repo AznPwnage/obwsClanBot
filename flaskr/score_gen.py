@@ -22,6 +22,13 @@ class DestinyRaid(enum.Enum):
     lw = 2122313384
 
 
+raid_completion_thresholds = {
+    DestinyRaid.gos: {'kills': 40, 'timeInSeconds': 1200},
+    DestinyRaid.dsc: {'kills': 35, 'timeInSeconds': 1200},
+    DestinyRaid.lw: {'kills': 45, 'timeInSeconds': 1500}
+}
+
+
 MIN_LIGHT = 1200
 
 CLAN_ENGRAM_MS_HASH = '3603098564'
@@ -181,13 +188,23 @@ def get_weekly_raid_count(member, member_class, week_start, character_id, comple
             break
         if 'No' == raid['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
             continue
+
         ref_id = raid['activityDetails']['referenceId']
         if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
             ref_id = 2122313384
         if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
             ref_id = 910380154
-        member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
-        if member.raids[DestinyRaid(ref_id).name][member_class.name] == 1:
+        curr_raid = DestinyRaid(ref_id)
+
+        kills = raid['values']['kills']['basic']['value']
+        completion_time_in_seconds = raid['values']['timePlayedSeconds']['basic']['value']
+        kill_check_fail = kills < raid_completion_thresholds[curr_raid]['kills']
+        time_check_fail = completion_time_in_seconds < raid_completion_thresholds[curr_raid]['timeInSeconds']
+        if kill_check_fail and time_check_fail:
+            continue
+
+        member.raids[curr_raid.name][member_class.name] += 1
+        if member.raids[curr_raid.name][member_class.name] == 1:    # only award points for first unique completion of the raid
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
@@ -455,7 +472,7 @@ def write_members_to_csv(mem_list, file_path):
              'LowLight_H', 'LowLight_W', 'LowLight_T',
              'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore',
              'Prophecy_H', 'Prophecy_W', 'Prophecy_T',
-             'Harbinger_H', 'Harbinger_W', 'Harbinger_T',])
+             'Harbinger_H', 'Harbinger_W', 'Harbinger_T'])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),

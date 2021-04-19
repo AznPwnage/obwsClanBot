@@ -183,10 +183,10 @@ def get_weekly_raid_count(member, member_class, week_start, character_id, comple
             ref_id = 910380154
         member.raids[DestinyRaid(ref_id).name][member_class.name] += 1
         if member.raids[DestinyRaid(ref_id).name][member_class.name] == 1:
-            completion_counter += 1
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
+        completion_counter += 1
     return member, completion_counter
 
 

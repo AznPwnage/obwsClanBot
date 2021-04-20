@@ -144,7 +144,7 @@ def read_score_file(file_path, sort_by, reverse, col_type):
             elif col_type == 'date':
                 members = sorted(csv_reader, key=lambda item: item[sort_by][:10], reverse=reverse)
             elif col_type == 'str':
-                members = sorted(csv_reader, key=lambda item: item[sort_by], reverse=reverse)
+                members = sorted(csv_reader, key=lambda item: item[sort_by].lower(), reverse=reverse)
         else:
             for row in csv_reader:
                 members.append(row)

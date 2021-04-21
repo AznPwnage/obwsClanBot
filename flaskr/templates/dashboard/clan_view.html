@@ -98,12 +98,14 @@
         <th colspan="3">Trials 3 wins</th>
         <th colspan="3">Trials 5 wins</th>
         <th colspan="3">Trials 7 wins</th>
+        <th colspan="3">Prophecy</th>
+        <th colspan="3">Harbinger</th>
         <th colspan="3">Low Light</th>
         <th rowspan="2">Account doesn't exist</th>
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(23) %}
+        {%- for i in range(25) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -222,6 +224,12 @@
         <td>{%- if members[i][74] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Hunter -->
         <td>{%- if members[i][75] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Warlock -->
         <td>{%- if members[i][76] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Titan -->
+        <td>{%- if members[i][83] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Hunter -->
+        <td>{%- if members[i][84] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Warlock -->
+        <td>{%- if members[i][85] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Titan -->
+        <td>{%- if members[i][86] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Hunter -->
+        <td>{%- if members[i][87] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Warlock -->
+        <td>{%- if members[i][88] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Titan -->
         <td>{%- if members[i][77] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
         <td>{%- if members[i][78] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
         <td>{%- if members[i][79] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
@@ -232,6 +240,40 @@
     </tbody>
 </table>
 {% endblock %}
+<script>
+function createPopup(text) {
+    var docHeight = $(document).height();
+    var divCont = "<div>"+text+"</div>";
+    $("body").append("<div id='overlayDiv'></div>").hide().fadeIn("slow");
+    $overlayDiv = $("#overlayDiv");
+    $overlayDiv.height(docHeight).css({
+            'opacity' : 1.0,
+            'position': 'absolute',
+            'top': 0,
+            'background-color': 'white',
+            'width': 'fit-content',
+            'height': 'fit-content',
+            'z-index': 5000,
+            'margin-left': '10%',
+            'margin-right': '10%',
+            'margin-top': '10%',
+            'color': 'black',
+            'border': 'solid',
+            'white-space': 'pre-line',
+            'padding': '10px'
+    });
+    $overlayDiv.append(divCont+"<br/><br/><button id='close'>CLOSE</button>");
+    $("#close").ready(function(){
+       $(document).on("click", "#close", function(){
+          $overlayDiv.fadeOut("slow", function(){
+             $overlayDiv.remove();
+          });
+       });
+    });
+}
+</script>
+<script>
+</script>
 <script>
 $(document).ready(function () {
     $('.score').each(function() {
@@ -288,7 +330,8 @@ $('#copyNames_btn').click( function(e){
             member_names = member_names.concat(m[i][0],"\r\n");
         }
     }
-    alert(member_names);
+    createPopup(member_names);
+<!--    alert(member_names);-->
 });
 </script>
 <script>

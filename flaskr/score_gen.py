@@ -159,7 +159,8 @@ def get_prev_week_score(member, df):
 def get_prev_gild_level(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
-            member.gild_level = int(df.loc[int(member.membership_id)]['GildLevel'])
+            if 'GildLevel' in df.columns:
+                member.gild_level = int(df.loc[int(member.membership_id)]['GildLevel'])
     return member
 
 

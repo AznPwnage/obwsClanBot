@@ -211,6 +211,40 @@
 </table>
 {% endblock %}
 <script>
+function createPopup(text) {
+    var docHeight = $(document).height();
+    var divCont = "<div>"+text+"</div>";
+    $("body").append("<div id='overlayDiv'></div>").hide().fadeIn("slow");
+    $overlayDiv = $("#overlayDiv");
+    $overlayDiv.height(docHeight).css({
+            'opacity' : 1.0,
+            'position': 'absolute',
+            'top': 0,
+            'background-color': 'white',
+            'width': 'fit-content',
+            'height': 'fit-content',
+            'z-index': 5000,
+            'margin-left': '10%',
+            'margin-right': '10%',
+            'margin-top': '10%',
+            'color': 'black',
+            'border': 'solid',
+            'white-space': 'pre-line',
+            'padding': '10px'
+    });
+    $overlayDiv.append(divCont+"<br/><br/><button id='close'>CLOSE</button>");
+    $("#close").ready(function(){
+       $(document).on("click", "#close", function(){
+          $overlayDiv.fadeOut("slow", function(){
+             $overlayDiv.remove();
+          });
+       });
+    });
+}
+</script>
+<script>
+</script>
+<script>
 $(document).ready(function () {
     $('.score').each(function() {
         applyScoreColor(parseInt($(this).text()), $(this)[0]);
@@ -266,7 +300,8 @@ $('#copyNames_btn').click( function(e){
             member_names = member_names.concat(m[i][0],"\r\n");
         }
     }
-    alert(member_names);
+    createPopup(member_names);
+<!--    alert(member_names);-->
 });
 </script>
 <script>

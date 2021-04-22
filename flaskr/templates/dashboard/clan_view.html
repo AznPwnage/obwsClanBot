@@ -325,14 +325,13 @@ function applyScoreColor(score, element) {
 $('#copyNames_btn').click( function(e){
     e.preventDefault();
     var m = {{members|tojson}};
-    var member_names = "";
+    var member_names = "<h3>"+{{clan_name|tojson}}+"</h3>\r\n";
     for (var i = 0; i < m.length; i++) {
         if (m[i][10] == 'True') {
             member_names = member_names.concat(m[i][0],"\r\n");
         }
     }
     createPopup(member_names);
-<!--    alert(member_names);-->
 });
 </script>
 <script>

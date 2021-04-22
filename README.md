@@ -27,6 +27,19 @@ Will need to add a key.txt file in your local repo, with the Bungie API key in i
 
 # PATCH NOTES
 
+#### v1.1.3:
+- Fixed string sort to ignore capitalization
+- Fixed missing headers for Prophecy and Harbinger in save to csv
+- Added custom popup window to allow text copying in Chrome
+
+#### v1.1.2:
+-  Added time and kill thresholds for raid completion criteria
+
+#### v1.1.1:
+- Added milestone tracking for prophecy and harbinger
+- Switched raid completion tracking for Onyx to non-unique completions (still only tracking via activity history, not milestones)
+
+
 ### v1.1.0
 - Added external score editing
 - Added saving functionality

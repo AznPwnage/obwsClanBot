@@ -13,29 +13,30 @@
   <thead>
     <th>
       {{clan_name}}
+      <input type="button" value="Copy Inactives" onclick="copyNames_click('{{clan_name}}')"/>
     </th>
   </thead>
   <tbody>
     <tr>
       <td>
         <table class="fullTable" id="mainTable" style="float: left;">
-<thead>
-  <tr>
-    <th>Name
-    </th>
-    <th>Score
-    </th>
-  </tr>
-</thead>
-<tbody>
-  {%- for member in members -%}
-  <tr>
-    <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
-    <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
-  </tr>
-  {%- endfor -%}
-</tbody>
-</table>
+        <thead>
+          <tr>
+            <th>Name
+            </th>
+            <th>Score
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for member in members -%}
+          <tr>
+            <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
+            <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+          </tr>
+          {%- endfor -%}
+        </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
@@ -83,6 +84,39 @@
 {%- endif -%}
 {% endblock %}
 <script>
+function createPopup(text) {
+    var docHeight = $(document).height();
+    var divCont = "<div>"+text+"</div>";
+    $("body").append("<div id='overlayDiv'></div>").hide().fadeIn("slow");
+    $overlayDiv = $("#overlayDiv");
+    $overlayDiv.height(docHeight).css({
+            'opacity' : 1.0,
+            'position': 'absolute',
+            'top': 0,
+            'background-color': 'white',
+            'width': 'fit-content',
+            'height': 'fit-content',
+            'max-height': '50%',
+            'z-index': 5000,
+            'margin-left': '10%',
+            'margin-right': '10%',
+            'margin-top': '10%',
+            'color': 'black',
+            'border': 'solid',
+            'white-space': 'pre-line',
+            'padding': '10px'
+    });
+    $overlayDiv.append(divCont+"<br/><br/><button id='close'>CLOSE</button>");
+    $("#close").ready(function(){
+       $(document).on("click", "#close", function(){
+          $overlayDiv.fadeOut("slow", function(){
+             $overlayDiv.remove();
+          });
+       });
+    });
+}
+</script>
+<script>
   $('.score').each(function() {
     var score = parseInt($(this).text());
     if (score < 60) {
@@ -119,12 +153,12 @@ $(document).ready(function() {
 <script>
 function copyNames_click(clan) {
     var m = {{members|tojson}};
-    var member_names = "";
+    var member_names = "<h3>"+clan+"</h3>\r\n";
     for (var i = 0; i < m.length; i++) {
         if (m[i][7] == clan) {
             member_names = member_names.concat(m[i][0],"\r\n");
         }
     }
-    alert(member_names);
+    createPopup(member_names);
 }
 </script>

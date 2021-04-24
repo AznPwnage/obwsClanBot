@@ -28,8 +28,8 @@
       {%- for member in members -%}
       <tr>
         <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
-        <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
-        <td class="score" width="50px" align="center">{{ member[3] }}</td>  <!-- Previous Score -->
+        <td width="50px" align="center"><b class="score">{{ member[1] }}</b></td>  <!-- Score -->
+        <td width="50px" align="center"><div class="score">{{ member[3] }}</div></td>  <!-- Previous Score -->
       </tr>
       {%- endfor -%}
     </tbody>
@@ -45,27 +45,69 @@ $(document).ready(function() {
     for( var i = 0, count = 1; i < $extraRows.length; i = i+rows, count++){
         $('<table class="fullTable" style="float: left;">').append($head.clone(), $extraRows.slice(i,i+rows)).append('</table>').appendTo($main.parent());
     }
+    var i = 0;
+    var numberOfCols = 2;
+    var colCounter = 0;
+    $('.score').each(function() {
+      calculateDisplayScore(i, $(this)[0]);
+      if (colCounter == (numberOfCols-1)) {
+        colCounter = 0;
+        i++;
+      } else {
+        colCounter++;
+      }
+    });
 });
 </script>
 <script>
-  $('.score').each(function() {
-    var score = parseInt($(this).text());
+function applyDisplayScoreColor(score, element) {
+    element = element.parentElement;
     if (score < 60) {
-      $(this).addClass('guardian');
+      element.className = "score guardian";
     } else if (score < 120) {
-      $(this).addClass('brave');
+      element.className = "score brave";
     } else if (score < 240) {
-      $(this).addClass('heroic');
+      element.className = "score heroic";
     } else if (score < 480) {
-      $(this).addClass('fabled');
+      element.className = "score fabled";
     } else if (score < 720) {
-      $(this).addClass('mythic');
+      element.className = "score mythic";
+    } else if (score == 720) {
+      element.className = "score legend";
     } else if (score < 1440) {
-      $(this).addClass('legend');
+      element.className = "score gildedLegend";
+    } else if (score == 1440) {
+      element.className = "score ironWolf";
     } else if (score < 2160) {
-      $(this).addClass('ironWolf');
+      element.className = "score gildedIronWolf";
+    } else if (score == 2160) {
+      element.className = "score ironLord";
+    } else if (score < 3600) {
+      element.className = "score gildedIronLord";
+    } else if (score == 3600) {
+      element.className = "score ironWill";
     } else {
-      $(this).addClass('ironLord');
+      element.className = "score ironWill";
     }
-});
+}
+</script>
+<script>
+function calculateDisplayScore(i, element) {
+       var score = +element.innerHTML;
+       var m = {{members|tojson}};
+       var gildLevel = m[i][89];
+       var displayScore = score;
+       if (gildLevel == 0) {
+       } else if (gildLevel == 1) {
+            displayScore = displayScore - 720;
+       } else if (gildLevel == 2) {
+            displayScore = displayScore - 2160;
+       } else if (gildLevel == 3) {
+            displayScore = displayScore - 4320;
+       } else {
+            displayScore = displayScore - 4320;
+       }
+       element.innerHTML = displayScore;
+       applyDisplayScoreColor(displayScore, element);
+}
 </script>

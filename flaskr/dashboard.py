@@ -82,7 +82,7 @@ def diff_view():
 
 @dashboard.route('/save')
 def save_to_csv():
-    m = request.args.get('m', None)
+    m = request.args.get('m', None).replace('%23', '#')
     clan = request.args.get('clan', None)
     date = request.args.get('date', None)
     url = request.args.get('old_url', None).replace('%26', '&')

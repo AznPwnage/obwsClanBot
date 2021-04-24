@@ -28,6 +28,8 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
+        <th rowspan="2">Display Score<br/>
+        </th>
         <th rowspan="2">Previous Score<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
@@ -117,34 +119,54 @@
     <tr>
         <th>{{ members[i][0] }}</th>  <!-- Name -->
         <td class="score" id="score_td_{{i}}"><b id="score_{{i}}">{{ members[i][1] }}</b></td>  <!-- Score -->
+        <td class="score" id="displayScore_td_{{i}}">
+            <b id="displayScore_{{i}}" class="displayScore"></b>
+        </td>   <!-- Display Score -->
         <td class="score" id="prevScore_{{i}}">{{ members[i][3] }}</td>  <!-- Previous Score -->
         <td><input id="externalScore_{{i}}" name="externalScore" type="text" value="{{ members[i][82] }}"
                    onfocusout="addExternalScore({{i}})"
                    size="5"></td><!-- External Score -->
         <td>
-        <select id="gildLevel">
-            {%- if members[i][83] == '0' -%}
-            <option value="0" selected>0</option>
-            {%- else -%}
-            <option value="0">0</option>
-            {%- endif -%}
-            {%- if members[i][83] == '1' -%}
-            <option value="1" selected>1</option>
-            {%- else -%}
-            <option value="1">1</option>
-            {%- endif -%}
-            {%- if members[i][83] == '2' -%}
-            <option value="2" selected>2</option>
-            {%- else -%}
-            <option value="2">2</option>
-            {%- endif -%}
-            {%- if members[i][83] == '3' -%}
-            <option value="3" selected>3</option>
-            {%- else -%}
-            <option value="3">3</option>
+        <select id="gildLevel_{{i}}" onchange="updateGildLevel({{i}})">
+            {%- if members[i][89] == '0' -%}
+                <option value="0" selected id="option0_{{i}}">0</option>
+                {%- if members[i][1] == '720' -%}
+                    <option value="1" id="option1_{{i}}">1</option>
+                {%- else -%}
+                    <option value="1" disabled="false" id="option1_{{i}}">1</option>
+                {%- endif -%}
+                <option value="2" hidden id="option2_{{i}}">2</option>
+                <option value="3" hidden id="option3_{{i}}">3</option>
+                <option value="4" hidden id="option4_{{i}}">4</option>
+            {%- elif members[i][89] == '1' -%}
+                <option value="1" selected id="option1_{{i}}">1</option>
+                {%- if members[i][1] == '2160' -%}
+                    <option value="2" id="option2_{{i}}">2</option>
+                {%- else -%}
+                    <option value="2" disabled id="option2_{{i}}">2</option>
+                {%- endif -%}
+                <option value="3" hidden id="option3_{{i}}">3</option>
+                <option value="4" hidden id="option4_{{i}}">4</option>
+            {%- elif members[i][89] == '2' -%}
+                <option value="2" selected id="option2_{{i}}">2</option>
+                {%- if members[i][1] == '4320' -%}
+                    <option value="3" id="option3_{{i}}">3</option>
+                {%- else -%}
+                    <option value="3" disabled id="option3_{{i}}">3</option>
+                {%- endif -%}
+                <option value="4" hidden id="option4_{{i}}">4</option>
+            {%- elif members[i][89] == '3' -%}
+                <option value="3" selected id="option3_{{i}}">3</option>
+                {%- if members[i][1] == '7920' -%}
+                    <option value="4" id="option4_{{i}}">4</option>
+                {%- else -%}
+                    <option value="4" disabled id="option4_{{i}}">4</option>
+                {%- endif -%}
+            {%- elif members[i][89] == '4' -%}
+                <option value="4" selected id="option4_{{i}}">4</option>
             {%- endif -%}
         </select>
-        </td>
+        </td>   <!-- Gild Level -->
         <td id="scoreDelta_{{i}}">{{ members[i][2] }}</td>  <!-- Score Delta -->
         <td>{{ members[i][4] }}</td>  <!-- Days Last Played -->
         <td>{{ members[i][5][:10] }}</td>  <!-- Date Last Played -->
@@ -280,6 +302,11 @@ $(document).ready(function () {
     $('.score').each(function() {
         applyScoreColor(parseInt($(this).text()), $(this)[0]);
     });
+    var i = 0;
+    $('.displayScore').each(function() {
+        calculateDisplayScore(i);
+        i++;
+    });
 });
 </script>
 <script>
@@ -288,14 +315,20 @@ function addExternalScore(i) {
     var old_external_score = m[i][82];
     var new_external_score = document.getElementById("externalScore_".concat(i)).value;
     var external_score = +new_external_score - +old_external_score;
+    var gild_level = +document.getElementById("gildLevel_".concat(i)).value
 
     var old_score = m[i][1];
+    external_score = applyGildCap(+old_score, +external_score, gild_level, i);
+
     var new_score = +external_score + +old_score;
     document.getElementById("score_".concat(i)).innerHTML = new_score;
 
     var prev_score = document.getElementById("prevScore_".concat(i)).innerHTML;
     var new_score_delta = +new_score - +prev_score;
     document.getElementById("scoreDelta_".concat(i)).innerHTML = new_score_delta;
+
+    document.getElementById("externalScore_".concat(i)).value = external_score;
+    calculateDisplayScore(i);
 
     applyScoreColor(new_score, document.getElementById("score_td_".concat(i)));
 }
@@ -312,12 +345,53 @@ function applyScoreColor(score, element) {
       element.className = "score fabled";
     } else if (score < 720) {
       element.className = "score mythic";
-    } else if (score < 1440) {
+    } else if (score == 720) {
       element.className = "score legend";
     } else if (score < 2160) {
+      element.className = "score gildedLegend";
+    } else if (score == 2160) {
       element.className = "score ironWolf";
-    } else {
+    } else if (score < 4320) {
+      element.className = "score gildedIronWolf";
+    } else if (score == 4320) {
       element.className = "score ironLord";
+    } else if (score < 7920) {
+      element.className = "score gildedIronLord";
+    } else if (score == 7920) {
+      element.className = "score ironWill";
+    } else {
+      element.className = "score ironWill";
+    }
+}
+</script>
+<script>
+function applyDisplayScoreColor(score, element) {
+    if (score < 60) {
+      element.className = "score guardian";
+    } else if (score < 120) {
+      element.className = "score brave";
+    } else if (score < 240) {
+      element.className = "score heroic";
+    } else if (score < 480) {
+      element.className = "score fabled";
+    } else if (score < 720) {
+      element.className = "score mythic";
+    } else if (score == 720) {
+      element.className = "score legend";
+    } else if (score < 1440) {
+      element.className = "score gildedLegend";
+    } else if (score == 1440) {
+      element.className = "score ironWolf";
+    } else if (score < 2160) {
+      element.className = "score gildedIronWolf";
+    } else if (score == 2160) {
+      element.className = "score ironLord";
+    } else if (score < 3600) {
+      element.className = "score gildedIronLord";
+    } else if (score == 3600) {
+      element.className = "score ironWill";
+    } else {
+      element.className = "score ironWill";
     }
 }
 </script>
@@ -344,21 +418,76 @@ $('#saveScores_btn').click( function(e){
         var external_score = document.getElementById("externalScore_".concat(i)).value;
         var score = document.getElementById("score_".concat(i)).innerHTML;
         var score_delta = document.getElementById("scoreDelta_".concat(i)).innerHTML;
+        var gild_level = +document.getElementById("gildLevel_".concat(i)).value
         if (m[i][0].includes(",")) {
             m[i][0] = "\"" + m[i][0] + "\"";
         }
         m[i][1] = score;
         m[i][82] = external_score;
         m[i][2] = score_delta;
+        m[i][89] = gild_level;
         m_string += m[i] + "\r\n";
     }
 
     var url_to_hit = "{{ url_for('dashboard.save_to_csv', m='members_placeholder', clan='clan_placeholder', date='date_placeholder', old_url='url_placeholder') }}"
-            .replace("members_placeholder", encodeURI(m_string))
+            .replace("members_placeholder", encodeURI(m_string).replaceAll("#", "%23"))
             .replace("clan_placeholder", {{clan_name|tojson}})
             .replace("date_placeholder", {{selected_date|tojson}})
             .replace("url_placeholder", window.location.href.replaceAll("&", "%26"))
             .replaceAll("amp;", "");
     window.location.href = url_to_hit;
 });
+</script>
+<script>
+function updateGildLevel(i) {
+    var m = {{members|tojson}};
+    var old_gild_level = m[i][89];
+    var gildLevel = document.getElementById("gildLevel_".concat(i)).value;
+    if (+gildLevel != 4) {
+        var optionElement = document.getElementById("option".concat(+gildLevel+1) + "_".concat(i));
+        console.log(optionElement);
+        optionElement.hidden = false;
+        optionElement.disabled = true;
+    }
+}
+</script>
+<script>
+function applyGildCap(oldScore, externalScore, gildLevel, i) {
+    var gildLevelThresholds = new Map([[0, 720],[1,2160],[2,4320],[3,7920],[4,99999]]);
+    var gildLevelThreshold = gildLevelThresholds.get(gildLevel);
+    var potentialScore = oldScore + externalScore;
+    if (gildLevel != 4) {
+        var optionElement = document.getElementById("option".concat(gildLevel+1) + "_".concat(i));
+    }
+    if (potentialScore >= gildLevelThreshold) {
+        if (gildLevel != 4) {
+            optionElement.disabled = false;
+        }
+        return (gildLevelThreshold - oldScore);
+    }
+    if (gildLevel != 4) {
+        optionElement.disabled = true;
+    }
+    return externalScore;
+}
+</script>
+<script>
+function calculateDisplayScore(i) {
+       var score = +document.getElementById("score_".concat(i)).innerHTML;
+       var gildLevel = +document.getElementById("gildLevel_".concat(i)).value;
+       var displayScore = score;
+
+       if (gildLevel == 0) {
+       } else if (gildLevel == 1) {
+            displayScore = displayScore - 720;
+       } else if (gildLevel == 2) {
+            displayScore = displayScore - 2160;
+       } else if (gildLevel == 3) {
+            displayScore = displayScore - 4320;
+       } else {
+            displayScore = displayScore - 4320;
+       }
+       document.getElementById("displayScore_".concat(i)).innerHTML = displayScore;
+       applyDisplayScoreColor(displayScore, document.getElementById("displayScore_td_".concat(i)));
+}
 </script>

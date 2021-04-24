@@ -28,6 +28,14 @@ raid_completion_thresholds = {
     DestinyRaid.lw: {'kills': 45, 'timeInSeconds': 1500}
 }
 
+gild_level_thresholds = {
+    0: 720,
+    1: 2160,
+    2: 4320,
+    3: 7920,
+    4: 99999
+}
+
 
 MIN_LIGHT = 1200
 
@@ -424,10 +432,23 @@ def apply_score_cap_and_decay(member, clan_type):
         member.score = 40
     if clan_type == 'Regional':  # point decay for regional clan
         member.score -= 10
+
+    member = apply_gild_cap(member)
+
     member.score_delta = member.score
     member.score += member.prev_score
     if member.score < 0:
         member.score = 0
+    return member
+
+
+def apply_gild_cap(member):
+    potential_score = member.score + member.prev_score
+    gild_level_threshold = gild_level_thresholds.get(member.gild_level)
+
+    if potential_score > gild_level_threshold:
+        member.score = gild_level_threshold - member.prev_score
+
     return member
 
 

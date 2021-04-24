@@ -80,24 +80,40 @@
     </tbody>
 </table>
 <script>
+function applyScoreColor(score, element) {
+console.log(element);
+    if (score < 60) {
+      element.className = "score guardian";
+    } else if (score < 120) {
+      element.className = "score brave";
+    } else if (score < 240) {
+      element.className = "score heroic";
+    } else if (score < 480) {
+      element.className = "score fabled";
+    } else if (score < 720) {
+      element.className = "score mythic";
+    } else if (score == 720) {
+      element.className = "score legend";
+    } else if (score < 2160) {
+      element.className = "score gildedLegend";
+    } else if (score == 2160) {
+      element.className = "score ironWolf";
+    } else if (score < 4320) {
+      element.className = "score gildedIronWolf";
+    } else if (score == 4320) {
+      element.className = "score ironLord";
+    } else if (score < 7920) {
+      element.className = "score gildedIronLord";
+    } else if (score == 7920) {
+      element.className = "score ironWill";
+    } else {
+      element.className = "score ironWill";
+    }
+}
+</script>
+<script>
   $('.score').each(function() {
     var score = parseInt($(this).text());
-    if (score < 60) {
-      $(this).addClass('guardian');
-    } else if (score < 120) {
-      $(this).addClass('brave');
-    } else if (score < 240) {
-      $(this).addClass('heroic');
-    } else if (score < 480) {
-      $(this).addClass('fabled');
-    } else if (score < 720) {
-      $(this).addClass('mythic');
-    } else if (score < 1440) {
-      $(this).addClass('legend');
-    } else if (score < 2160) {
-      $(this).addClass('ironWolf');
-    } else {
-      $(this).addClass('ironLord');
-    }
+    applyScoreColor(score, $(this)[0]);
 });
 </script>

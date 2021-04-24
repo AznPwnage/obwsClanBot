@@ -107,6 +107,6 @@ function calculateDisplayScore(i, element) {
             displayScore = displayScore - 4320;
        }
        element.innerHTML = displayScore;
-       applyDisplayScoreColor(displayScore, gildLevel, element);
+       applyDisplayScoreColor(displayScore, gildLevel, element.parentElement);
 }
 </script>

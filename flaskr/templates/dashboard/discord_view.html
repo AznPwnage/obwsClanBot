@@ -60,31 +60,30 @@ $(document).ready(function() {
 });
 </script>
 <script>
-function applyDisplayScoreColor(score, element) {
-    element = element.parentElement;
-    if (score < 60) {
+function applyDisplayScoreColor(score, gildLevel, element) {
+    if (score < 60 && gildLevel == 0) {
       element.className = "score guardian";
-    } else if (score < 120) {
+    } else if (score < 120 && gildLevel == 0) {
       element.className = "score brave";
-    } else if (score < 240) {
+    } else if (score < 240 && gildLevel == 0) {
       element.className = "score heroic";
-    } else if (score < 480) {
+    } else if (score < 480 && gildLevel == 0) {
       element.className = "score fabled";
-    } else if (score < 720) {
+    } else if (score < 720 && gildLevel == 0) {
       element.className = "score mythic";
-    } else if (score == 720) {
+    } else if (score == 720 && gildLevel == 0) {
       element.className = "score legend";
-    } else if (score < 1440) {
+    } else if (score < 1440 && gildLevel == 1) {
       element.className = "score gildedLegend";
-    } else if (score == 1440) {
+    } else if (score == 1440 && gildLevel == 1) {
       element.className = "score ironWolf";
-    } else if (score < 2160) {
+    } else if (score < 2160 && gildLevel == 2) {
       element.className = "score gildedIronWolf";
-    } else if (score == 2160) {
+    } else if (score == 2160 && gildLevel == 2) {
       element.className = "score ironLord";
-    } else if (score < 3600) {
+    } else if (score < 3600 && gildLevel >= 3) {
       element.className = "score gildedIronLord";
-    } else if (score == 3600) {
+    } else if (score == 3600 && gildLevel >= 3) {
       element.className = "score ironWill";
     } else {
       element.className = "score ironWill";
@@ -108,6 +107,6 @@ function calculateDisplayScore(i, element) {
             displayScore = displayScore - 4320;
        }
        element.innerHTML = displayScore;
-       applyDisplayScoreColor(displayScore, element);
+       applyDisplayScoreColor(displayScore, gildLevel, element);
 }
 </script>

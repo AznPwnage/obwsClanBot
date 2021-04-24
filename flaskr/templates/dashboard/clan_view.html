@@ -365,30 +365,30 @@ function applyScoreColor(score, element) {
 }
 </script>
 <script>
-function applyDisplayScoreColor(score, element) {
-    if (score < 60) {
+function applyDisplayScoreColor(score, gildLevel, element) {
+    if (score < 60 && gildLevel == 0) {
       element.className = "score guardian";
-    } else if (score < 120) {
+    } else if (score < 120 && gildLevel == 0) {
       element.className = "score brave";
-    } else if (score < 240) {
+    } else if (score < 240 && gildLevel == 0) {
       element.className = "score heroic";
-    } else if (score < 480) {
+    } else if (score < 480 && gildLevel == 0) {
       element.className = "score fabled";
-    } else if (score < 720) {
+    } else if (score < 720 && gildLevel == 0) {
       element.className = "score mythic";
-    } else if (score == 720) {
+    } else if (score == 720 && gildLevel == 0) {
       element.className = "score legend";
-    } else if (score < 1440) {
+    } else if (score < 1440 && gildLevel == 1) {
       element.className = "score gildedLegend";
-    } else if (score == 1440) {
+    } else if (score == 1440 && gildLevel == 1) {
       element.className = "score ironWolf";
-    } else if (score < 2160) {
+    } else if (score < 2160 && gildLevel == 2) {
       element.className = "score gildedIronWolf";
-    } else if (score == 2160) {
+    } else if (score == 2160 && gildLevel == 2) {
       element.className = "score ironLord";
-    } else if (score < 3600) {
+    } else if (score < 3600 && gildLevel >= 3) {
       element.className = "score gildedIronLord";
-    } else if (score == 3600) {
+    } else if (score == 3600 && gildLevel >= 3) {
       element.className = "score ironWill";
     } else {
       element.className = "score ironWill";
@@ -441,13 +441,16 @@ $('#saveScores_btn').click( function(e){
 <script>
 function updateGildLevel(i) {
     var m = {{members|tojson}};
-    var old_gild_level = m[i][89];
-    var gildLevel = document.getElementById("gildLevel_".concat(i)).value;
-    if (+gildLevel != 4) {
-        var optionElement = document.getElementById("option".concat(+gildLevel+1) + "_".concat(i));
-        console.log(optionElement);
+    var oldGildLevel = +m[i][89];
+    var gildLevel = +document.getElementById("gildLevel_".concat(i)).value;
+    if (gildLevel != 4) {
+        var optionElement = document.getElementById("option".concat(gildLevel+1) + "_".concat(i));
         optionElement.hidden = false;
         optionElement.disabled = true;
+    }
+    if (gildLevel <= oldGildLevel) {
+        // TODO: add logic to remove optionElements above current
+        addExternalScore(i);
     }
 }
 </script>
@@ -488,6 +491,6 @@ function calculateDisplayScore(i) {
             displayScore = displayScore - 4320;
        }
        document.getElementById("displayScore_".concat(i)).innerHTML = displayScore;
-       applyDisplayScoreColor(displayScore, document.getElementById("displayScore_td_".concat(i)));
+       applyDisplayScoreColor(displayScore, gildLevel, document.getElementById("displayScore_td_".concat(i)));
 }
 </script>

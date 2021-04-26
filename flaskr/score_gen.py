@@ -28,6 +28,36 @@ raid_completion_thresholds = {
     DestinyRaid.lw: {'kills': 45, 'timeInSeconds': 1500}
 }
 
+
+class DestinyActivity(enum.Enum):
+    gos = (3458480158, 4, 40, 1200)
+    dsc = (910380154, 4, 35, 1200)
+    lw = (2122313384, 4, 45, 1500)
+    poh = (2582501063, 82, None, None)
+    prophecy = (1077850348, 82, None, None)
+    st = (2032534090, 2, None, None)
+    presage = (2124066889, 2, None, None)
+    presage_master = (4212753278, 2, None, None)
+    harbinger = (1738383283, 2, None, None)
+
+    def __init__(self, activity_hash, activity_mode, threshold_kill, threshold_time):
+        self.activity_hash = activity_hash
+        self.activity_mode = activity_mode
+        self.threshold_kill = threshold_kill
+        self.threshold_time = threshold_time
+
+    def __new__(cls, activity_hash, activity_mode, threshold_kill, threshold_time):
+        entry = object.__new__(cls)
+        entry.activity_hash = entry._value_ = activity_hash # set the value, and the extra attribute
+        entry.activity_mode = activity_mode
+        entry.threshold_kill = threshold_kill
+        entry.threshold_time = threshold_time
+        return entry
+
+    def __repr__(self):
+        return f'<{type(self).__name__}.{self.name}: ({self.activity_hash!r}, {self.activity_mode!r}, {self.threshold_kill!r}, {self.threshold_time!r})>'
+
+
 gild_level_thresholds = {
     0: 720,
     1: 2160,
@@ -68,6 +98,7 @@ TRIALS5_MS_HASH = '3628293755'
 TRIALS7_MS_HASH = '3628293753'
 PROPHECY_MS_HASH = '825965416'
 HARBINGER_MS_HASH = '1086730368'
+PRESAGE_MS_HASH = '3927548661'
 
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
@@ -145,6 +176,7 @@ def initialize_member(clan_member):
 
     member.prophecy = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
     member.harbinger = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.presage = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
     member.gild_level = 0
 
@@ -200,34 +232,64 @@ def str_to_time(time_str):
 
 def get_weekly_raid_count(member, member_class, week_start, character_id, completion_counter):
     utc = pytz.UTC
-    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id)
+    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 4)
     for raid in character_raids:
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
-        if 'No' == raid['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
+        ref_id = get_activity_ref_id(raid)
+        activity_enum = DestinyActivity(ref_id)
+        if activity_invalid(raid, activity_enum):
             continue
 
-        ref_id = raid['activityDetails']['referenceId']
-        if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
-            ref_id = 2122313384
-        if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
-            ref_id = 910380154
-        curr_raid = DestinyRaid(ref_id)
-
-        kills = raid['values']['kills']['basic']['value']
-        completion_time_in_seconds = raid['values']['timePlayedSeconds']['basic']['value']
-        kill_check_fail = kills < raid_completion_thresholds[curr_raid]['kills']
-        time_check_fail = completion_time_in_seconds < raid_completion_thresholds[curr_raid]['timeInSeconds']
-        if kill_check_fail and time_check_fail:
-            continue
-
-        member.raids[curr_raid.name][member_class.name] += 1
-        if member.raids[curr_raid.name][member_class.name] == 1:    # only award points for first unique completion of the raid
+        member.raids[activity_enum.name][member_class.name] += 1
+        if member.raids[activity_enum.name][member_class.name] == 1:    # only award points for first unique completion of the raid
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
         completion_counter += 1
     return member, completion_counter
+
+
+# def get_dungeons(member, member_class, week_start, character_id):
+#     utc = pytz.UTC
+#     character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id,character_id, 2)
+#     for raid in character_raids:
+#         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
+#             break
+#         ref_id = get_activity_ref_id(raid)
+#         activity_enum = DestinyActivity(ref_id)
+#         if activity_invalid(raid, activity_enum):
+#             continue
+#
+#         member.raids[activity_enum.name][member_class.name] += 1
+#         if member.raids[activity_enum.name][
+#             member_class.name] == 1:  # only award points for first unique completion of the raid
+#             if member.clan_type == 'Raid':
+#                 member.score += 2
+#             member.score += 5
+#     return member
+
+
+def activity_invalid(activity, activity_enum):
+    if 'No' == activity['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
+        return True
+
+    kills = activity['values']['kills']['basic']['value']
+    completion_time_in_seconds = activity['values']['timePlayedSeconds']['basic']['value']
+    kill_check_fail = kills < activity_enum.threshold_kill
+    time_check_fail = completion_time_in_seconds < activity_enum.threshold_time
+    if kill_check_fail and time_check_fail:
+        return True
+    return False
+
+
+def get_activity_ref_id(activity):
+    ref_id = activity['activityDetails']['referenceId']
+    if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
+        ref_id = 2122313384
+    if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
+        ref_id = 910380154
+    return ref_id
 
 
 def check_collectible_milestone(milestones_list, ms_hash, obj_hash):
@@ -427,6 +489,14 @@ def get_harbinger(member, member_class, milestones_list):
     return member
 
 
+def get_presage(member, member_class, milestones_list):
+    if not member.low_light[member_class.name]:
+        if milestone_not_in_list(milestones_list, PRESAGE_MS_HASH):
+            member.presage[member_class.name] = True
+            member.score += 2
+    return member
+
+
 def apply_score_cap_and_decay(member, clan_type):
     if member.score > 40:
         member.score = 40
@@ -474,7 +544,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 90 columns
+        # 93 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -504,7 +574,8 @@ def write_members_to_csv(mem_list, file_path):
              'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore',
              'Prophecy_H', 'Prophecy_W', 'Prophecy_T',
              'Harbinger_H', 'Harbinger_W', 'Harbinger_T',
-             'GildLevel'])
+             'GildLevel',
+             'Presage_H', 'Presage_W', 'Presage_T'])
         for member in mem_list:
             writer.writerow(
                 [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
@@ -536,7 +607,8 @@ def write_members_to_csv(mem_list, file_path):
                  str(member.privacy), str(member.account_not_exists), str(member.external_score),
                  str(member.prophecy[DestinyClass.Hunter.name]), str(member.prophecy[DestinyClass.Warlock.name]), str(member.prophecy[DestinyClass.Titan.name]),
                  str(member.harbinger[DestinyClass.Hunter.name]), str(member.harbinger[DestinyClass.Warlock.name]), str(member.harbinger[DestinyClass.Titan.name]),
-                 str(member.gild_level)])
+                 str(member.gild_level),
+                 str(member.presage[DestinyClass.Hunter.name]), str(member.presage[DestinyClass.Warlock.name]), str(member.presage[DestinyClass.Titan.name])])
 
 
 def generate_scores(selected_clan):
@@ -615,6 +687,7 @@ def generate_scores(selected_clan):
             curr_member = get_trials(curr_member, curr_class, milestones)
             curr_member = get_prophecy(curr_member, curr_class, milestones)
             curr_member = get_harbinger(curr_member, curr_class, milestones)
+            curr_member = get_presage(curr_member, curr_class, milestones)
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)

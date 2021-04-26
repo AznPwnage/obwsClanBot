@@ -16,19 +16,6 @@ class DestinyClass(enum.Enum):
     Titan = 0
 
 
-class DestinyRaid(enum.Enum):
-    gos = 3458480158
-    dsc = 910380154
-    lw = 2122313384
-
-
-raid_completion_thresholds = {
-    DestinyRaid.gos: {'kills': 40, 'timeInSeconds': 1200},
-    DestinyRaid.dsc: {'kills': 35, 'timeInSeconds': 1200},
-    DestinyRaid.lw: {'kills': 45, 'timeInSeconds': 1500}
-}
-
-
 class DestinyActivity(enum.Enum):
     gos = (3458480158, 4, 40, 1200)
     dsc = (910380154, 4, 35, 1200)
@@ -48,7 +35,7 @@ class DestinyActivity(enum.Enum):
 
     def __new__(cls, activity_hash, activity_mode, threshold_kill, threshold_time):
         entry = object.__new__(cls)
-        entry.activity_hash = entry._value_ = activity_hash # set the value, and the extra attribute
+        entry.activity_hash = entry._value_ = activity_hash  # set the value, and the extra attribute
         entry.activity_mode = activity_mode
         entry.threshold_kill = threshold_kill
         entry.threshold_time = threshold_time
@@ -56,6 +43,9 @@ class DestinyActivity(enum.Enum):
 
     def __repr__(self):
         return f'<{type(self).__name__}.{self.name}: ({self.activity_hash!r}, {self.activity_mode!r}, {self.threshold_kill!r}, {self.threshold_time!r})>'
+
+
+activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st]
 
 
 gild_level_thresholds = {
@@ -158,9 +148,16 @@ def initialize_member(clan_member):
     member.trials5 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
     member.trials7 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
-    member.raids = {DestinyRaid.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-                    DestinyRaid.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-                    DestinyRaid.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0}}
+    member.activities = {
+        DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.prophecy.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.harbinger.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.presage.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.poh.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
+        DestinyActivity.st.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0}
+    }
 
     member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
 
@@ -173,10 +170,6 @@ def initialize_member(clan_member):
     member.inactive = False
 
     member.external_score = 0
-
-    member.prophecy = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.harbinger = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.presage = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
     member.gild_level = 0
 
@@ -230,7 +223,7 @@ def str_to_time(time_str):
     return datetime.strptime(time_str, date_format)
 
 
-def get_weekly_raid_count(member, member_class, week_start, character_id, completion_counter):
+def get_raids(member, member_class, week_start, character_id, completion_counter):
     utc = pytz.UTC
     character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 4)
     for raid in character_raids:
@@ -241,8 +234,8 @@ def get_weekly_raid_count(member, member_class, week_start, character_id, comple
         if activity_invalid(raid, activity_enum):
             continue
 
-        member.raids[activity_enum.name][member_class.name] += 1
-        if member.raids[activity_enum.name][member_class.name] == 1:    # only award points for first unique completion of the raid
+        member.activities[activity_enum.name][member_class.name] += 1
+        if member.activities[activity_enum.name][member_class.name] == 1:    # only award points for first unique completion of the raid
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
@@ -250,24 +243,48 @@ def get_weekly_raid_count(member, member_class, week_start, character_id, comple
     return member, completion_counter
 
 
-# def get_dungeons(member, member_class, week_start, character_id):
-#     utc = pytz.UTC
-#     character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id,character_id, 2)
-#     for raid in character_raids:
-#         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
-#             break
-#         ref_id = get_activity_ref_id(raid)
-#         activity_enum = DestinyActivity(ref_id)
-#         if activity_invalid(raid, activity_enum):
-#             continue
-#
-#         member.raids[activity_enum.name][member_class.name] += 1
-#         if member.raids[activity_enum.name][
-#             member_class.name] == 1:  # only award points for first unique completion of the raid
-#             if member.clan_type == 'Raid':
-#                 member.score += 2
-#             member.score += 5
-#     return member
+def get_dungeons(member, member_class, week_start, character_id):
+    utc = pytz.UTC
+    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 82)
+    for dungeon in character_dungeons:
+        if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
+            break
+
+        ref_id = get_activity_ref_id(dungeon)
+        if ref_id not in DestinyActivity.value2member_map_.keys():
+            continue
+        activity_enum = DestinyActivity(ref_id)
+        if activity_enum not in activities_to_track_by_history:
+            continue
+        if activity_invalid(dungeon, activity_enum):
+            continue
+
+        member.activities[activity_enum.name][member_class.name] += 1
+        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the raid
+            member.score += 2
+    return member
+
+
+def get_story_activities(member, member_class, week_start, character_id):
+    utc = pytz.UTC
+    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 2)
+    for dungeon in character_dungeons:
+        if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
+            break
+
+        ref_id = get_activity_ref_id(dungeon)
+        if ref_id not in DestinyActivity.value2member_map_.keys():
+            continue
+        activity_enum = DestinyActivity(ref_id)
+        if activity_enum not in activities_to_track_by_history:
+            continue
+        if activity_invalid(dungeon, activity_enum):
+            continue
+
+        member.activities[activity_enum.name][member_class.name] += 1
+        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the raid
+            member.score += 2
+    return member
 
 
 def activity_invalid(activity, activity_enum):
@@ -476,7 +493,7 @@ def get_trials(member, member_class, milestones_list):
 def get_prophecy(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
         if milestone_not_in_list(milestones_list, PROPHECY_MS_HASH):
-            member.prophecy[member_class.name] = True
+            member.activities[DestinyActivity.prophecy.name][member_class.name] = True
             member.score += 2
     return member
 
@@ -484,7 +501,7 @@ def get_prophecy(member, member_class, milestones_list):
 def get_harbinger(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
         if milestone_not_in_list(milestones_list, HARBINGER_MS_HASH):
-            member.harbinger[member_class.name] = True
+            member.activities[DestinyActivity.harbinger.name][member_class.name] = True
             member.score += 2
     return member
 
@@ -492,7 +509,7 @@ def get_harbinger(member, member_class, milestones_list):
 def get_presage(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
         if milestone_not_in_list(milestones_list, PRESAGE_MS_HASH):
-            member.presage[member_class.name] = True
+            member.activities[DestinyActivity.presage.name][member_class.name] = True
             member.score += 2
     return member
 
@@ -544,7 +561,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 93 columns
+        # 99 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -575,40 +592,135 @@ def write_members_to_csv(mem_list, file_path):
              'Prophecy_H', 'Prophecy_W', 'Prophecy_T',
              'Harbinger_H', 'Harbinger_W', 'Harbinger_T',
              'GildLevel',
-             'Presage_H', 'Presage_W', 'Presage_T'])
+             'Presage_H', 'Presage_W', 'Presage_T',
+             'POH_H', 'POH_W', 'POH_T',
+             'ST_H', 'ST_W', 'ST_T'])
         for member in mem_list:
             writer.writerow(
-                [str(member.name), str(member.score), str(member.score_delta), str(member.prev_score), str(member.days_last_played),
-                 str(member.date_last_played), str(member.membership_id), str(member.clan_name), str(member.membership_type),
-                 str(member.clan_type), str(member.inactive),
-                 str(member.raids[DestinyRaid.gos.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.gos.name][DestinyClass.Titan.name]),
-                 str(member.raids[DestinyRaid.dsc.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.dsc.name][DestinyClass.Titan.name]),
-                 str(member.raids[DestinyRaid.lw.name][DestinyClass.Hunter.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Warlock.name]), str(member.raids[DestinyRaid.lw.name][DestinyClass.Titan.name]),
-                 str(member.clan_engram[DestinyClass.Hunter.name]), str(member.clan_engram[DestinyClass.Warlock.name]), str(member.clan_engram[DestinyClass.Titan.name]),
-                 str(member.crucible_engram[DestinyClass.Hunter.name]), str(member.crucible_engram[DestinyClass.Warlock.name]), str(member.crucible_engram[DestinyClass.Titan.name]),
-                 str(member.exo_challenge[DestinyClass.Hunter.name]), str(member.exo_challenge[DestinyClass.Warlock.name]), str(member.exo_challenge[DestinyClass.Titan.name]),
-                 str(member.banshee[DestinyClass.Hunter.name]), str(member.banshee[DestinyClass.Warlock.name]), str(member.banshee[DestinyClass.Titan.name]),
-                 str(member.drifter[DestinyClass.Hunter.name]), str(member.drifter[DestinyClass.Warlock.name]), str(member.drifter[DestinyClass.Titan.name]),
-                 str(member.zavala[DestinyClass.Hunter.name]), str(member.zavala[DestinyClass.Warlock.name]), str(member.zavala[DestinyClass.Titan.name]),
-                 str(member.variks[DestinyClass.Hunter.name]), str(member.variks[DestinyClass.Warlock.name]), str(member.variks[DestinyClass.Titan.name]),
-                 str(member.exo_stranger[DestinyClass.Hunter.name]), str(member.exo_stranger[DestinyClass.Warlock.name]), str(member.exo_stranger[DestinyClass.Titan.name]),
-                 str(member.empire_hunt[DestinyClass.Hunter.name]), str(member.empire_hunt[DestinyClass.Warlock.name]), str(member.empire_hunt[DestinyClass.Titan.name]),
-                 str(member.nightfall[DestinyClass.Hunter.name]), str(member.nightfall[DestinyClass.Warlock.name]), str(member.nightfall[DestinyClass.Titan.name]),
-                 str(member.deadly_venatics[DestinyClass.Hunter.name]), str(member.deadly_venatics[DestinyClass.Warlock.name]), str(member.deadly_venatics[DestinyClass.Titan.name]),
-                 str(member.strikes[DestinyClass.Hunter.name]), str(member.strikes[DestinyClass.Warlock.name]), str(member.strikes[DestinyClass.Titan.name]),
-                 str(member.nightfall_100k[DestinyClass.Hunter.name]), str(member.nightfall_100k[DestinyClass.Warlock.name]), str(member.nightfall_100k[DestinyClass.Titan.name]),
-                 str(member.gambit[DestinyClass.Hunter.name]), str(member.gambit[DestinyClass.Warlock.name]), str(member.gambit[DestinyClass.Titan.name]),
-                 str(member.crucible_playlist[DestinyClass.Hunter.name]), str(member.crucible_playlist[DestinyClass.Warlock.name]), str(member.crucible_playlist[DestinyClass.Titan.name]),
-                 str(member.crucible_glory[DestinyClass.Hunter.name]), str(member.crucible_glory[DestinyClass.Warlock.name]), str(member.crucible_glory[DestinyClass.Titan.name]),
-                 str(member.trials3[DestinyClass.Hunter.name]), str(member.trials3[DestinyClass.Warlock.name]), str(member.trials3[DestinyClass.Titan.name]),
-                 str(member.trials5[DestinyClass.Hunter.name]), str(member.trials5[DestinyClass.Warlock.name]), str(member.trials5[DestinyClass.Titan.name]),
-                 str(member.trials7[DestinyClass.Hunter.name]), str(member.trials7[DestinyClass.Warlock.name]), str(member.trials7[DestinyClass.Titan.name]),
-                 str(member.low_light[DestinyClass.Hunter.name]), str(member.low_light[DestinyClass.Warlock.name]), str(member.low_light[DestinyClass.Titan.name]),
-                 str(member.privacy), str(member.account_not_exists), str(member.external_score),
-                 str(member.prophecy[DestinyClass.Hunter.name]), str(member.prophecy[DestinyClass.Warlock.name]), str(member.prophecy[DestinyClass.Titan.name]),
-                 str(member.harbinger[DestinyClass.Hunter.name]), str(member.harbinger[DestinyClass.Warlock.name]), str(member.harbinger[DestinyClass.Titan.name]),
-                 str(member.gild_level),
-                 str(member.presage[DestinyClass.Hunter.name]), str(member.presage[DestinyClass.Warlock.name]), str(member.presage[DestinyClass.Titan.name])])
+                [
+                    str(member.name), str(member.score), str(member.score_delta), str(member.prev_score),
+                    str(member.days_last_played),
+                    str(member.date_last_played), str(member.membership_id), str(member.clan_name),
+                    str(member.membership_type),
+                    str(member.clan_type), str(member.inactive),
+
+                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Titan.name]),
+
+                    str(member.clan_engram[DestinyClass.Hunter.name]),
+                    str(member.clan_engram[DestinyClass.Warlock.name]),
+                    str(member.clan_engram[DestinyClass.Titan.name]),
+
+                    str(member.crucible_engram[DestinyClass.Hunter.name]),
+                    str(member.crucible_engram[DestinyClass.Warlock.name]),
+                    str(member.crucible_engram[DestinyClass.Titan.name]),
+
+                    str(member.exo_challenge[DestinyClass.Hunter.name]),
+                    str(member.exo_challenge[DestinyClass.Warlock.name]),
+                    str(member.exo_challenge[DestinyClass.Titan.name]),
+
+                    str(member.banshee[DestinyClass.Hunter.name]),
+                    str(member.banshee[DestinyClass.Warlock.name]),
+                    str(member.banshee[DestinyClass.Titan.name]),
+
+                    str(member.drifter[DestinyClass.Hunter.name]),
+                    str(member.drifter[DestinyClass.Warlock.name]),
+                    str(member.drifter[DestinyClass.Titan.name]),
+
+                    str(member.zavala[DestinyClass.Hunter.name]),
+                    str(member.zavala[DestinyClass.Warlock.name]),
+                    str(member.zavala[DestinyClass.Titan.name]),
+
+                    str(member.variks[DestinyClass.Hunter.name]),
+                    str(member.variks[DestinyClass.Warlock.name]),
+                    str(member.variks[DestinyClass.Titan.name]),
+
+                    str(member.exo_stranger[DestinyClass.Hunter.name]),
+                    str(member.exo_stranger[DestinyClass.Warlock.name]),
+                    str(member.exo_stranger[DestinyClass.Titan.name]),
+
+                    str(member.empire_hunt[DestinyClass.Hunter.name]),
+                    str(member.empire_hunt[DestinyClass.Warlock.name]),
+                    str(member.empire_hunt[DestinyClass.Titan.name]),
+
+                    str(member.nightfall[DestinyClass.Hunter.name]),
+                    str(member.nightfall[DestinyClass.Warlock.name]),
+                    str(member.nightfall[DestinyClass.Titan.name]),
+
+                    str(member.deadly_venatics[DestinyClass.Hunter.name]),
+                    str(member.deadly_venatics[DestinyClass.Warlock.name]),
+                    str(member.deadly_venatics[DestinyClass.Titan.name]),
+
+                    str(member.strikes[DestinyClass.Hunter.name]),
+                    str(member.strikes[DestinyClass.Warlock.name]),
+                    str(member.strikes[DestinyClass.Titan.name]),
+
+                    str(member.nightfall_100k[DestinyClass.Hunter.name]),
+                    str(member.nightfall_100k[DestinyClass.Warlock.name]),
+                    str(member.nightfall_100k[DestinyClass.Titan.name]),
+
+                    str(member.gambit[DestinyClass.Hunter.name]),
+                    str(member.gambit[DestinyClass.Warlock.name]),
+                    str(member.gambit[DestinyClass.Titan.name]),
+
+                    str(member.crucible_playlist[DestinyClass.Hunter.name]),
+                    str(member.crucible_playlist[DestinyClass.Warlock.name]),
+                    str(member.crucible_playlist[DestinyClass.Titan.name]),
+
+                    str(member.crucible_glory[DestinyClass.Hunter.name]),
+                    str(member.crucible_glory[DestinyClass.Warlock.name]),
+                    str(member.crucible_glory[DestinyClass.Titan.name]),
+
+                    str(member.trials3[DestinyClass.Hunter.name]),
+                    str(member.trials3[DestinyClass.Warlock.name]),
+                    str(member.trials3[DestinyClass.Titan.name]),
+
+                    str(member.trials5[DestinyClass.Hunter.name]),
+                    str(member.trials5[DestinyClass.Warlock.name]),
+                    str(member.trials5[DestinyClass.Titan.name]),
+
+                    str(member.trials7[DestinyClass.Hunter.name]),
+                    str(member.trials7[DestinyClass.Warlock.name]),
+                    str(member.trials7[DestinyClass.Titan.name]),
+
+                    str(member.low_light[DestinyClass.Hunter.name]),
+                    str(member.low_light[DestinyClass.Warlock.name]),
+                    str(member.low_light[DestinyClass.Titan.name]),
+
+                    str(member.privacy), str(member.account_not_exists), str(member.external_score),
+
+                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Titan.name]),
+
+                    str(member.gild_level),
+
+                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.st.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.st.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.st.name][DestinyClass.Titan.name])
+                ]
+            )
 
 
 def generate_scores(selected_clan):
@@ -667,7 +779,9 @@ def generate_scores(selected_clan):
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
             curr_member = get_low_light(curr_member, curr_class, character)
-            curr_member, completion_counter = get_weekly_raid_count(curr_member, curr_class, week_start, character_id, completion_counter)
+            curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
+            curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
+            curr_member = get_story_activities(curr_member, curr_class, week_start, character_id)
             curr_member = get_clan_engram(curr_member, curr_class, milestones)
             curr_member = get_crucible_engram(curr_member, curr_class, milestones)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)

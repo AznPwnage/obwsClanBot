@@ -293,8 +293,12 @@ def activity_invalid(activity, activity_enum):
 
     kills = activity['values']['kills']['basic']['value']
     completion_time_in_seconds = activity['values']['timePlayedSeconds']['basic']['value']
-    kill_check_fail = kills < activity_enum.threshold_kill
-    time_check_fail = completion_time_in_seconds < activity_enum.threshold_time
+    kill_check_fail = False
+    time_check_fail = False
+    if activity_enum.threshold_kill is not None:
+        kill_check_fail = kills < activity_enum.threshold_kill
+    if activity_enum.threshold_time is not None:
+        time_check_fail = completion_time_in_seconds < activity_enum.threshold_time
     if kill_check_fail and time_check_fail:
         return True
     return False
@@ -740,9 +744,9 @@ def generate_scores(selected_clan):
     if path.exists(prev_file_path):
         prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
     members = clan_member_response['results']
+    clan.memberList = []
 
     for mem in members:
-        clan.member_list = []
         name = mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])

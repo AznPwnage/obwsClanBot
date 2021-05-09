@@ -746,7 +746,7 @@ def generate_scores(selected_clan):
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
     if path.exists(prev_file_path):
-        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
+        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id')
     members = clan_member_response['results']
     clan.memberList = []
 

@@ -44,6 +44,10 @@ class DestinyActivity(enum.Enum):
     def __repr__(self):
         return f'<{type(self).__name__}.{self.name}: ({self.activity_hash!r}, {self.activity_mode!r}, {self.threshold_kill!r}, {self.threshold_time!r})>'
 
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
+
 
 activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st]
 
@@ -251,7 +255,7 @@ def get_dungeons(member, member_class, week_start, character_id):
             break
 
         ref_id = get_activity_ref_id(dungeon)
-        if ref_id not in DestinyActivity.value2member_map_.keys():
+        if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
         if activity_enum not in activities_to_track_by_history:
@@ -273,7 +277,7 @@ def get_story_activities(member, member_class, week_start, character_id):
             break
 
         ref_id = get_activity_ref_id(dungeon)
-        if ref_id not in DestinyActivity.value2member_map_.keys():
+        if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
         if activity_enum not in activities_to_track_by_history:

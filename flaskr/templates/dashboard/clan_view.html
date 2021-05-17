@@ -105,12 +105,15 @@
         <th colspan="3">Presage</th>
         <th colspan="3">POH</th>
         <th colspan="3">ST</th>
+        <th colspan="3">Rewiring The Light</th>
+        <th colspan="3">Digital Trove</th>
+        <th colspan="3">Net Crasher</th>
         <th colspan="3">Low Light</th>
         <th rowspan="2">Account doesn't exist</th>
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(28) %}
+        {%- for i in range(31) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -264,6 +267,15 @@
         <td>{{ members[i][96] }}</td> <!-- ST Hunter -->
         <td>{{ members[i][97] }}</td> <!-- ST Warlock -->
         <td>{{ members[i][98] }}</td> <!-- ST Titan -->
+        <td>{%- if members[i][99] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Rewiring The Light Hunter -->
+        <td>{%- if members[i][100] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Rewiring The Light Warlock -->
+        <td>{%- if members[i][101] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Rewiring The Light Titan -->
+        <td>{%- if members[i][102] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Digital Trove Hunter -->
+        <td>{%- if members[i][103] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Digital Trove Warlock -->
+        <td>{%- if members[i][104] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Digital Trove Titan -->
+        <td>{%- if members[i][105] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Hunter -->
+        <td>{%- if members[i][106] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Warlock -->
+        <td>{%- if members[i][107] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Titan -->
         <td>{%- if members[i][77] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
         <td>{%- if members[i][78] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
         <td>{%- if members[i][79] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->

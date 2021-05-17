@@ -30,7 +30,7 @@ class ClanMember:
                  trials3=None, empire_hunt=None, nightfall=None, deadly_venatics=None,
                  strikes=None, nightfall_100k=None, gambit=None, crucible_playlist=None, crucible_glory=None,
                  trials5=None, trials7=None, privacy=None, account_not_exists=None, low_light=None, inactive=None,
-                 external_score=None, gild_level=None):
+                 external_score=None, gild_level=None, rewiring_the_light=None, digital_trove=None, net_crasher=None):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
@@ -67,3 +67,6 @@ class ClanMember:
         self.inactive = inactive
         self.external_score = external_score
         self.gild_level = gild_level
+        self.rewiring_the_light = rewiring_the_light
+        self.digital_trove = digital_trove
+        self.net_crasher = net_crasher

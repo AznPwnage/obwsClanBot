@@ -85,6 +85,10 @@ class DestinyMilestone(enum.Enum):
     prophecy = ('825965416', None, 2)
     harbinger = ('1086730368', None, 2)
     presage = ('3927548661', None, 2)
+    digital_trove = ('1684722553 ', None, 2)
+    net_crasher = ('966446952', None, 2)
+    rewiring_the_light = ('3341030123', 594674637, 2)
+
 
     def __init__(self, milestone_hash, objective_hash, clan_score):
         self.milestone_hash = milestone_hash
@@ -105,6 +109,7 @@ class DestinyMilestone(enum.Enum):
     def has_value(cls, value):
         return value in cls._value2member_map_
 
+CURRENT_SEASON_HASH = 2809059429
 
 MIN_LIGHT = 1200
 
@@ -196,6 +201,9 @@ def initialize_member(clan_member):
     member.trials3 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
     member.trials5 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
     member.trials7 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.rewiring_the_light = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.digital_trove = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.net_crasher = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
     member.activities = {
         DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
@@ -628,7 +636,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 99 columns
+        # 108 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -661,7 +669,10 @@ def write_members_to_csv(mem_list, file_path):
              'GildLevel',
              'Presage_H', 'Presage_W', 'Presage_T',
              'POH_H', 'POH_W', 'POH_T',
-             'ST_H', 'ST_W', 'ST_T'])
+             'ST_H', 'ST_W', 'ST_T',
+             'RewiringTheLight_H', 'RewiringTheLight_W', 'RewiringTheLight_T',
+             'DigitalTrove_H', 'DigitalTrove_W', 'DigitalTrove_T',
+             'NetCrasher_H', 'NetCrasher_W', 'NetCrasher_T'])
         for member in mem_list:
             writer.writerow(
                 [
@@ -785,7 +796,19 @@ def write_members_to_csv(mem_list, file_path):
 
                     str(member.activities[DestinyActivity.st.name][DestinyClass.Hunter.name]),
                     str(member.activities[DestinyActivity.st.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.st.name][DestinyClass.Titan.name])
+                    str(member.activities[DestinyActivity.st.name][DestinyClass.Titan.name]),
+
+                    str(member.rewiring_the_light[DestinyClass.Hunter.name]),
+                    str(member.rewiring_the_light[DestinyClass.Warlock.name]),
+                    str(member.rewiring_the_light[DestinyClass.Titan.name]),
+
+                    str(member.digital_trove[DestinyClass.Hunter.name]),
+                    str(member.digital_trove[DestinyClass.Warlock.name]),
+                    str(member.digital_trove[DestinyClass.Titan.name]),
+
+                    str(member.net_crasher[DestinyClass.Hunter.name]),
+                    str(member.net_crasher[DestinyClass.Warlock.name]),
+                    str(member.net_crasher[DestinyClass.Titan.name]),
                 ]
             )
 
@@ -840,6 +863,7 @@ def generate_scores(selected_clan):
         characters = profile['Response']['characters']['data']  # check light level
         character_progressions = profile['Response']['characterProgressions']['data']
         character_activities = profile['Response']['characterActivities']['data']
+        owns_current_season = CURRENT_SEASON_HASH in profile['Response']['profile']['data']['seasonHashes']
         for character_id in character_progressions.keys():  # iterate over single member's characters
             milestones = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
@@ -878,6 +902,7 @@ def generate_scores(selected_clan):
                 if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.exo_stranger):
                     curr_member.exo_stranger[curr_class.name] = True
                     curr_member.score += DestinyMilestone.exo_stranger.clan_score
+
                 if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.empire_hunt):
                     curr_member.empire_hunt[curr_class.name] = True
                     curr_member.score += DestinyMilestone.empire_hunt.clan_score
@@ -902,6 +927,17 @@ def generate_scores(selected_clan):
                 if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_glory):
                     curr_member.crucible_glory[curr_class.name] = True
                     curr_member.score += DestinyMilestone.crucible_glory.clan_score
+
+                if owns_current_season:
+                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
+                        curr_member.rewiring_the_light[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
+                    if get_milestone_completion_status(curr_member, curr_class, milestones,DestinyMilestone.digital_trove):
+                        curr_member.digital_trove[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.digital_trove.clan_score
+                    if get_milestone_completion_status(curr_member, curr_class, milestones,DestinyMilestone.net_crasher):
+                        curr_member.net_crasher[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.net_crasher.clan_score
             else:
                 curr_member = get_clan_engram(curr_member, curr_class, milestones)
                 curr_member = get_crucible_engram(curr_member, curr_class, milestones)

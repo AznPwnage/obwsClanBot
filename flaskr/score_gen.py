@@ -49,7 +49,7 @@ class DestinyActivity(enum.Enum):
         return value in cls._value2member_map_
 
 
-activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st]
+activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage]
 
 
 gild_level_thresholds = {
@@ -198,14 +198,14 @@ def initialize_member(clan_member):
     member.trials7 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
 
     member.activities = {
-        DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.prophecy.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.harbinger.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.presage.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.poh.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0},
-        DestinyActivity.st.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0,DestinyClass.Titan.name: 0}
+        DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.prophecy.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.harbinger.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.presage.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.poh.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.st.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0}
     }
 
     member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
@@ -853,7 +853,7 @@ def generate_scores(selected_clan):
             curr_member = get_trials(curr_member, curr_class, milestones)
             curr_member = get_prophecy(curr_member, curr_class, milestones)
             curr_member = get_harbinger(curr_member, curr_class, milestones)
-            curr_member = get_presage(curr_member, curr_class, milestones)
+            # curr_member = get_presage(curr_member, curr_class, milestones)
 
             use_milestone_enum = True
             if use_milestone_enum:

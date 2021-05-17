@@ -615,9 +615,14 @@ def apply_gild_cap(member):
 
 
 def check_inactive(member, clan_type, completion_counter):
-    if member.days_last_played > 5:
+    # if member.days_last_played > 5:
+    #     member.inactive = True
+    #     return member
+    for char_completion in member.clan_engram:
         member.inactive = True
-        return member
+        if member.clan_engram[char_completion]:
+            member.inactive = False
+            break
     if clan_type == 'Regional':
         return member
     if clan_type == 'PVP':

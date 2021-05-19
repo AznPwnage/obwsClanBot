@@ -89,7 +89,6 @@ class DestinyMilestone(enum.Enum):
     net_crasher = ('966446952', None, 2)
     rewiring_the_light = ('3341030123', 594674637, 2)
 
-
     def __init__(self, milestone_hash, objective_hash, clan_score):
         self.milestone_hash = milestone_hash
         self.objective_hash = objective_hash
@@ -108,6 +107,7 @@ class DestinyMilestone(enum.Enum):
     @classmethod
     def has_value(cls, value):
         return value in cls._value2member_map_
+
 
 CURRENT_SEASON_HASH = 2809059429
 
@@ -561,7 +561,7 @@ def get_trials(member, member_class, milestones_list):
                     member.trials7[member_class.name] = True
                     if 'PVP' == member.clan_type:
                         member.score += 2
-                    member.score += 4
+                    member.score += 5
     return member
 
 
@@ -934,13 +934,14 @@ def generate_scores(selected_clan):
                     curr_member.score += DestinyMilestone.crucible_glory.clan_score
 
                 if owns_current_season:
+                    # need to add aggregate activity stats call here
                     if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
                         curr_member.rewiring_the_light[curr_class.name] = True
                         curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones,DestinyMilestone.digital_trove):
+                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
                         curr_member.digital_trove[curr_class.name] = True
                         curr_member.score += DestinyMilestone.digital_trove.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones,DestinyMilestone.net_crasher):
+                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
                         curr_member.net_crasher[curr_class.name] = True
                         curr_member.score += DestinyMilestone.net_crasher.clan_score
             else:

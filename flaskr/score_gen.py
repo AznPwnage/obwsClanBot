@@ -148,6 +148,8 @@ PRESAGE_MS_HASH = '3927548661'
 
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
+OVERRIDE_HASHES = [25688104, 2865532048, 3933916447, 612985278]
+
 MEMBERSHIP_IDS_TO_IGNORE = ['4611686018468017900',  # Renk
                             '4611686018467476681',  # Daramir
                             '4611686018467377928',  # Halioon
@@ -372,6 +374,17 @@ def get_activity_ref_id(activity):
     if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
         ref_id = 910380154
     return ref_id
+
+
+def check_aggregate_stats(aggregate_stats, activity_hashes):
+    if 'activities' not in aggregate_stats['Response']:
+        print('No activities')
+        return False
+    for activity in aggregate_stats['Response']['activities']:
+        if activity['activityHash'] in activity_hashes:
+            if activity['values']['activityCompletions']['basic']['value'] > 0:
+                return True
+    return False
 
 
 def check_collectible_milestone(milestones_list, ms_hash, obj_hash):
@@ -884,6 +897,8 @@ def generate_scores(selected_clan):
         character_activities = profile['Response']['characterActivities']['data']
         owns_current_season = CURRENT_SEASON_HASH in profile['Response']['profile']['data']['seasonHashes']
         for character_id in character_progressions.keys():  # iterate over single member's characters
+            aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+            unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, OVERRIDE_HASHES)
             milestones = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
             character = characters[character_id]
@@ -948,16 +963,16 @@ def generate_scores(selected_clan):
                     curr_member.score += DestinyMilestone.crucible_glory.clan_score
 
                 if owns_current_season:
-                    # need to add aggregate activity stats call here
-                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
-                        curr_member.rewiring_the_light[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
-                        curr_member.digital_trove[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.digital_trove.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
-                        curr_member.net_crasher[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.net_crasher.clan_score
+                    if unlocked_override_milestones:
+                        if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
+                            curr_member.rewiring_the_light[curr_class.name] = True
+                            curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
+                        if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
+                            curr_member.digital_trove[curr_class.name] = True
+                            curr_member.score += DestinyMilestone.digital_trove.clan_score
+                        if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
+                            curr_member.net_crasher[curr_class.name] = True
+                            curr_member.score += DestinyMilestone.net_crasher.clan_score
             else:
                 curr_member = get_clan_engram(curr_member, curr_class, milestones)
                 curr_member = get_crucible_engram(curr_member, curr_class, milestones)

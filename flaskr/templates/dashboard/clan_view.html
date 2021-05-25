@@ -81,6 +81,8 @@
         <th colspan="3">GOS</th>
         <th colspan="3">DSC</th>
         <th colspan="3">LW</th>
+        <th colspan="3">VOG</th>
+        <th colspan="3">VOGC</th>
         <th colspan="3">Clan Engram By Class</th>
         <th colspan="3">Crucible Engram</th>
         <th colspan="3">Exo Challenge</th>
@@ -113,7 +115,7 @@
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(31) %}
+        {%- for i in range(33) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -195,6 +197,12 @@
         <td>{{ members[i][17] }}</td> <!-- LW Hunter -->
         <td>{{ members[i][18] }}</td> <!-- LW Warlock -->
         <td>{{ members[i][19] }}</td> <!-- LW Titan -->
+        <td>{{ members[i][108] }}</td> <!-- VOG Hunter -->
+        <td>{{ members[i][109] }}</td> <!-- VOG Warlock -->
+        <td>{{ members[i][110] }}</td> <!-- VOG Titan -->
+        <td>{{ members[i][111] }}</td> <!-- VOG Challenge Hunter -->
+        <td>{{ members[i][112] }}</td> <!-- VOG Challenge Warlock -->
+        <td>{{ members[i][113] }}</td> <!-- VOG Challenge Titan -->
         <td>{%- if members[i][20] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Hunter -->
         <td>{%- if members[i][21] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Warlock -->
         <td>{%- if members[i][22] == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Titan -->

@@ -66,7 +66,7 @@ def diff_view():
     sort_by = request.args.get('sort_by', None)
     reverse = request.args.get('reverse', None)
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date_sstr, '%Y-%m-%d')
 
     members_who_left, members_who_joined = score_gen.get_clan_member_diff(clan_name, start_date, end_date)
     if sort_by is not None:
@@ -123,7 +123,7 @@ def write_member_string_to_csv(file_path, member_data):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         csvfile.write(
-            'Name,Score,ScoreDelta,PreviousScore,DaysLastPlayed,DateLastPlayed,Id,Clan,MemberShipType,ClanType,Inactive,GOS_H,GOS_W,GOS_T,DSC_H,DSC_W,DSC_T,LW_H,LW_W,LW_T,ClanEngram_H,ClanEngram_W,ClanEngram_T,CrucibleEngram_H,CrucibleEngram_W,CrucibleEngram_T,ExoChallenge_H,ExoChallenge_W,ExoChallenge_T,SpareParts_H,SpareParts_W,SpareParts_T,ShadySchemes_H,ShadySchemes_W,ShadySchemes_T,VanguardServices_H,VanguardServices_W,VanguardServices_T,Variks_H,Variks_W,Variks_T,ExoStranger_H,ExoStranger_W,ExoStranger_T,EmpireHunt_H,EmpireHunt_W,EmpireHunt_T,NightFall_H,NightFall_W,NightFall_T,DeadlyVenatics_H,DeadlyVenatics_W,DeadlyVenatics_T,Strikes_H,Strikes_W,Strikes_T,Nightfall100k_H,Nightfall100k_W,Nightfall100k_T,Gambit_H,Gambit_W,Gambit_T,CruciblePlaylist_H,CruciblePlaylist_W,CruciblePlaylist_T,CrucibleGlory_H,CrucibleGlory_W,CrucibleGlory_T,Trials3_H,Trials3_W,Trials3_T,Trials5_H,Trials5_W,Trials5_T,Trials7_H,Trials7_W,Trials7_T,LowLight_H,LowLight_W,LowLight_T,PrivacyFlag,AccountExistsFlag,ExternalScore,Prophecy_H,Prophecy_W,Prophecy_T,Harbinger_H,Harbinger_W,Harbinger_T,GildLevel,Presage_H,Presage_W,Presage_T,POH_H,POH_W,POH_T,ST_H,ST_W,ST_T,RewiringTheLight_H,RewiringTheLight_W,RewiringTheLight_T,DigitalTrove_H,DigitalTrove_W,DigitalTrove_T,NetCrasher_H,NetCrasher_W,NetCrasher_T')
+            'Name,Score,ScoreDelta,PreviousScore,DaysLastPlayed,DateLastPlayed,Id,Clan,MemberShipType,ClanType,Inactive,GOS_H,GOS_W,GOS_T,DSC_H,DSC_W,DSC_T,LW_H,LW_W,LW_T,ClanEngram_H,ClanEngram_W,ClanEngram_T,CrucibleEngram_H,CrucibleEngram_W,CrucibleEngram_T,ExoChallenge_H,ExoChallenge_W,ExoChallenge_T,SpareParts_H,SpareParts_W,SpareParts_T,ShadySchemes_H,ShadySchemes_W,ShadySchemes_T,VanguardServices_H,VanguardServices_W,VanguardServices_T,Variks_H,Variks_W,Variks_T,ExoStranger_H,ExoStranger_W,ExoStranger_T,EmpireHunt_H,EmpireHunt_W,EmpireHunt_T,NightFall_H,NightFall_W,NightFall_T,DeadlyVenatics_H,DeadlyVenatics_W,DeadlyVenatics_T,Strikes_H,Strikes_W,Strikes_T,Nightfall100k_H,Nightfall100k_W,Nightfall100k_T,Gambit_H,Gambit_W,Gambit_T,CruciblePlaylist_H,CruciblePlaylist_W,CruciblePlaylist_T,CrucibleGlory_H,CrucibleGlory_W,CrucibleGlory_T,Trials3_H,Trials3_W,Trials3_T,Trials5_H,Trials5_W,Trials5_T,Trials7_H,Trials7_W,Trials7_T,LowLight_H,LowLight_W,LowLight_T,PrivacyFlag,AccountExistsFlag,ExternalScore,Prophecy_H,Prophecy_W,Prophecy_T,Harbinger_H,Harbinger_W,Harbinger_T,GildLevel,Presage_H,Presage_W,Presage_T,POH_H,POH_W,POH_T,ST_H,ST_W,ST_T,RewiringTheLight_H,RewiringTheLight_W,RewiringTheLight_T,DigitalTrove_H,DigitalTrove_W,DigitalTrove_T,NetCrasher_H,NetCrasher_W,NetCrasher_T,VOG_H,VOG_W,VOG_T,VOGC_H,VOGC_W,VOGC_T')
         csvfile.write('\r\n')
         csvfile.write(member_data)
 

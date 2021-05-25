@@ -20,6 +20,8 @@ class DestinyActivity(enum.Enum):
     gos = (3458480158, 4, 40, 1200)
     dsc = (910380154, 4, 35, 1200)
     lw = (2122313384, 4, 45, 1500)
+    vog = (3881495763, 4, 45, 1500)
+    vog_challenge = (1485585878, 4, 45, 1500)
     poh = (2582501063, 82, None, None)
     prophecy = (1077850348, 82, None, None)
     st = (2032534090, 2, None, None)
@@ -209,6 +211,8 @@ def initialize_member(clan_member):
         DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
         DestinyActivity.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
         DestinyActivity.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.vog.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
+        DestinyActivity.vog_challenge.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
         DestinyActivity.prophecy.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
         DestinyActivity.harbinger.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
         DestinyActivity.presage.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
@@ -641,7 +645,7 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 108 columns
+        # 114 columns
         writer.writerow(
             ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
              'MemberShipType', 'ClanType', 'Inactive',
@@ -677,7 +681,9 @@ def write_members_to_csv(mem_list, file_path):
              'ST_H', 'ST_W', 'ST_T',
              'RewiringTheLight_H', 'RewiringTheLight_W', 'RewiringTheLight_T',
              'DigitalTrove_H', 'DigitalTrove_W', 'DigitalTrove_T',
-             'NetCrasher_H', 'NetCrasher_W', 'NetCrasher_T'])
+             'NetCrasher_H', 'NetCrasher_W', 'NetCrasher_T',
+             'VOG_H', 'VOG_W', 'VOG_T',
+             'VOGC_H', 'VOGC_W', 'VOGC_T'])
         for member in mem_list:
             writer.writerow(
                 [
@@ -814,6 +820,14 @@ def write_members_to_csv(mem_list, file_path):
                     str(member.net_crasher[DestinyClass.Hunter.name]),
                     str(member.net_crasher[DestinyClass.Warlock.name]),
                     str(member.net_crasher[DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Titan.name]),
+
+                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Hunter.name]),
+                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Warlock.name]),
+                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Titan.name])
                 ]
             )
 

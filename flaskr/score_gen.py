@@ -698,13 +698,13 @@ def generate_scores(selected_clan):
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
     curr_member_list = []
     clan = clans[selected_clan]
-    curr_week_folder = f'{week_start:%Y-%m-%d}'
+    curr_week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
     prev_df = pd.DataFrame()
     for prev_week_clan in clans:
-        prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+        prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
         if path.exists(prev_file_path):
             prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id'))
     members = clan_member_response['results']

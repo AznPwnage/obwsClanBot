@@ -114,7 +114,7 @@ def inactive_view():
 def get_file_path(clan_name, selected_date):
     dt = datetime.strptime(selected_date, '%Y-%m-%d')
     week_start = score_gen.get_week_start(dt)
-    week_folder = f'{week_start:%Y-%m-%d}'
+    week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
     return path.join(week_folder, clan_name + '.csv')
 
 

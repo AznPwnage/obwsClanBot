@@ -855,12 +855,14 @@ def generate_scores(selected_clan):
     curr_member_list = []
     clan = clans[selected_clan]
     curr_week_folder = f'{week_start:%Y-%m-%d}'
-    prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clan.name + '.csv')
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
-    if path.exists(prev_file_path):
-        prev_df = pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id')
+    prev_df = pd.DataFrame()
+    for prev_week_clan in clans:
+        prev_file_path = path.join(f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+        if path.exists(prev_file_path):
+            prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id'))
     members = clan_member_response['results']
     clan.memberList = []
 

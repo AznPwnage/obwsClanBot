@@ -147,6 +147,8 @@ MEMBERSHIP_IDS_TO_IGNORE = ['4611686018468017900',  # Renk
 
 clans = clan_lib.ClanGroup().get_clans()
 
+prev_df = pd.DataFrame()
+
 
 def initialize_member(clan_member):
     member = clan_lib.ClanMember(clan_member.name, clan_member.membership_id, clan_member.clan_name,
@@ -278,6 +280,8 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
 def get_dungeons(member, member_class, week_start, character_id):
     utc = pytz.UTC
     character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 82)
+    character_story_activities = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 2)
+    character_dungeons.extend(character_story_activities)
     for dungeon in character_dungeons:
         if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
@@ -292,29 +296,7 @@ def get_dungeons(member, member_class, week_start, character_id):
             continue
 
         member.activities[activity_enum.name][member_class.name] += 1
-        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the raid
-            member.score += 2
-    return member
-
-
-def get_story_activities(member, member_class, week_start, character_id):
-    utc = pytz.UTC
-    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 2)
-    for dungeon in character_dungeons:
-        if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
-            break
-
-        ref_id = get_activity_ref_id(dungeon)
-        if not DestinyActivity.has_value(ref_id):
-            continue
-        activity_enum = DestinyActivity(ref_id)
-        if activity_enum not in activities_to_track_by_history:
-            continue
-        if activity_invalid(dungeon, activity_enum):
-            continue
-
-        member.activities[activity_enum.name][member_class.name] += 1
-        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the raid
+        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the dungeon
             member.score += 2
     return member
 
@@ -702,11 +684,12 @@ def generate_scores(selected_clan):
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
-    prev_df = pd.DataFrame()
-    for prev_week_clan in clans:
-        prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
-        if path.exists(prev_file_path):
-            prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id'))
+    global prev_df
+    if prev_df.empty:
+        for prev_week_clan in clans:
+            prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+            if path.exists(prev_file_path):
+                prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id'))
     members = clan_member_response['results']
     clan.memberList = []
 
@@ -743,21 +726,16 @@ def generate_scores(selected_clan):
         character_activities = profile['Response']['characterActivities']['data']
         owns_current_season = CURRENT_SEASON_HASH in profile['Response']['profile']['data']['seasonHashes']
         for character_id in character_progressions.keys():  # iterate over single member's characters
-            aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-            unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, OVERRIDE_HASHES)
             milestones = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
+
             curr_member = get_low_light(curr_member, curr_class, character)
             curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
             curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
-            curr_member = get_story_activities(curr_member, curr_class, week_start, character_id)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
             curr_member = get_trials(curr_member, curr_class, milestones)
-            curr_member = get_prophecy(curr_member, curr_class, milestones)
-            curr_member = get_harbinger(curr_member, curr_class, milestones)
-            # curr_member = get_presage(curr_member, curr_class, milestones)
 
             if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.clan_engram):
                 curr_member.clan_engram[curr_class.name] = True
@@ -805,8 +783,16 @@ def generate_scores(selected_clan):
             if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_glory):
                 curr_member.crucible_glory[curr_class.name] = True
                 curr_member.score += DestinyMilestone.crucible_glory.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.harbinger):
+                curr_member.activities[DestinyActivity.harbinger.name][curr_class.name] = True
+                curr_member.score += DestinyMilestone.harbinger.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.prophecy):
+                curr_member.activities[DestinyActivity.prophecy.name][curr_class.name] = True
+                curr_member.score += DestinyMilestone.prophecy.clan_score
 
             if owns_current_season:
+                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+                unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, OVERRIDE_HASHES)
                 if unlocked_override_milestones:
                     if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
                         curr_member.rewiring_the_light[curr_class.name] = True

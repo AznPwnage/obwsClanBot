@@ -115,37 +115,6 @@ CURRENT_SEASON_HASH = 2809059429
 
 MIN_LIGHT = 1200
 
-CLAN_ENGRAM_MS_HASH = '3603098564'  #
-CLAN_ENGRAM_OBJ_HASH = 1001409310  #
-CRUCIBLE_MS_HASH = '2594202463'  #
-CRUCIBLE_OBJ_HASH = 4026431786  #
-EXO_CHALLENGE_POWERFUL_MS_HASH = '979073379'  #
-EXO_CHALLENGE_PINNACLE_MS_HASH = '1713200903'  #
-BANSHEE_ENGRAM_MS_HASH = '3899487295'  #
-BANSHEE_ENGRAM_OBJ_HASH = 313458118  #
-DRIFTER_ENGRAM_MS_HASH = '3802603984'  #
-DRIFTER_ENGRAM_OBJ_HASH = 967175154  #
-ZAVALA_ENGRAM_MS_HASH = '2709491520'  #
-ZAVALA_ENGRAM_OBJ_HASH = 2338381314  #
-VARIKS_ENGRAM_MS_HASH = '2540726600'  #
-VARIKS_ENGRAM_OBJ_HASH = 1619867321  #
-EXO_STRANGER_MS_HASH = '1424672028'  #
-EXO_STRANGER_OBJ_HASH = 340542773  #
-EMPIRE_HUNT_MS_HASH = '291895718'  #
-NIGHTFALL_MS_HASH = '1942283261'  #
-DEADLY_VENATICS_MS_HASH = '2406589846'
-STRIKES_MS_HASH = '1437935813'
-NIGHTFALL_100K_MS_HASH = '2029743966'
-GAMBIT_MS_HASH = '3448738070'
-CRUCIBLE_PLAYLIST_MS_HASH = '3312774044'
-CRUCIBLE_GLORY_MS_HASH = '1368032265'
-TRIALS3_MS_HASH = '3628293757'
-TRIALS5_MS_HASH = '3628293755'
-TRIALS7_MS_HASH = '3628293753'
-PROPHECY_MS_HASH = '825965416'
-HARBINGER_MS_HASH = '1086730368'
-PRESAGE_MS_HASH = '3927548661'
-
 EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
 
 OVERRIDE_HASHES = [25688104, 2865532048, 3933916447, 612985278]
@@ -416,22 +385,6 @@ def get_milestone_completion_status(member, member_class, milestones_list, miles
     return False
 
 
-def get_clan_engram(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, CLAN_ENGRAM_MS_HASH, CLAN_ENGRAM_OBJ_HASH):
-            member.clan_engram[member_class.name] = True
-            member.score += 4
-    return member
-
-
-def get_crucible_engram(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, CRUCIBLE_MS_HASH, CRUCIBLE_OBJ_HASH):
-            member.crucible_engram[member_class.name] = True
-            member.score += 4
-    return member
-
-
 def build_activity_hashes(activities_arr):
     activity_hash_arr = []
     for activity in activities_arr:
@@ -448,133 +401,25 @@ def check_arr_contains(hash_arr, check_arr):
 
 def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
     if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, EXO_CHALLENGE_HASHES):
-        if milestone_not_in_list(milestones_list, EXO_CHALLENGE_POWERFUL_MS_HASH) and milestone_not_in_list(milestones_list, EXO_CHALLENGE_PINNACLE_MS_HASH):
+        if milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_powerful.milestone_hash) and milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_pinnacle.milestone_hash):
             member.exo_challenge[member_class.name] = True
             member.score += 1
     return member
 
 
-def get_banshee(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, BANSHEE_ENGRAM_MS_HASH, BANSHEE_ENGRAM_OBJ_HASH):
-            member.banshee[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_drifter(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, DRIFTER_ENGRAM_MS_HASH, DRIFTER_ENGRAM_OBJ_HASH):
-            member.drifter[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_zavala(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, ZAVALA_ENGRAM_MS_HASH, ZAVALA_ENGRAM_OBJ_HASH):
-            member.zavala[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_variks(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, VARIKS_ENGRAM_MS_HASH, VARIKS_ENGRAM_OBJ_HASH):
-            member.variks[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_exo_stranger(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if check_collectible_milestone(milestones_list, EXO_STRANGER_MS_HASH, EXO_STRANGER_OBJ_HASH):
-            member.exo_stranger[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_empire_hunt(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, EMPIRE_HUNT_MS_HASH):
-            member.empire_hunt[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_nightfall(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, NIGHTFALL_MS_HASH):
-            member.nightfall[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_deadly_venatics(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, DEADLY_VENATICS_MS_HASH):
-            member.deadly_venatics[member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_strikes(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, STRIKES_MS_HASH):
-            member.strikes[member_class.name] = True
-            member.score += 3
-    return member
-
-
-def get_nightfall_100k(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, NIGHTFALL_100K_MS_HASH):
-            member.nightfall_100k[member_class.name] = True
-            member.score += 3
-    return member
-
-
-def get_gambit(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, GAMBIT_MS_HASH):
-            member.gambit[member_class.name] = True
-            member.score += 3
-    return member
-
-
-def get_crucible_playlist(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, CRUCIBLE_PLAYLIST_MS_HASH):
-            member.crucible_playlist[member_class.name] = True
-            if 'PVP' == member.clan_type:
-                member.score += 2
-            member.score += 3
-    return member
-
-
-def get_crucible_glory(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, CRUCIBLE_GLORY_MS_HASH):
-            member.crucible_glory[member_class.name] = True
-            if 'PVP' == member.clan_type:
-                member.score += 2
-            member.score += 3
-    return member
-
-
 def get_trials(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, TRIALS3_MS_HASH):
+        if milestone_not_in_list(milestones_list, DestinyMilestone.trials3.milestone_hash):
             member.trials3[member_class.name] = True
             if 'PVP' == member.clan_type:
                 member.score += 2
             member.score += 2
-            if milestone_not_in_list(milestones_list, TRIALS5_MS_HASH):
+            if milestone_not_in_list(milestones_list, DestinyMilestone.trials5.milestone_hash):
                 member.trials5[member_class.name] = True
                 if 'PVP' == member.clan_type:
                     member.score += 2
                 member.score += 3
-                if milestone_not_in_list(milestones_list, TRIALS7_MS_HASH):
+                if milestone_not_in_list(milestones_list, DestinyMilestone.trials7.milestone_hash):
                     member.trials7[member_class.name] = True
                     if 'PVP' == member.clan_type:
                         member.score += 2
@@ -584,7 +429,7 @@ def get_trials(member, member_class, milestones_list):
 
 def get_prophecy(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, PROPHECY_MS_HASH):
+        if milestone_not_in_list(milestones_list, DestinyMilestone.prophecy.milestone_hash):
             member.activities[DestinyActivity.prophecy.name][member_class.name] = True
             member.score += 2
     return member
@@ -592,7 +437,7 @@ def get_prophecy(member, member_class, milestones_list):
 
 def get_harbinger(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, HARBINGER_MS_HASH):
+        if milestone_not_in_list(milestones_list, DestinyMilestone.harbinger.milestone_hash):
             member.activities[DestinyActivity.harbinger.name][member_class.name] = True
             member.score += 2
     return member
@@ -600,7 +445,7 @@ def get_harbinger(member, member_class, milestones_list):
 
 def get_presage(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, PRESAGE_MS_HASH):
+        if milestone_not_in_list(milestones_list, DestinyMilestone.presage.milestone_hash):
             member.activities[DestinyActivity.presage.name][member_class.name] = True
             member.score += 2
     return member
@@ -851,7 +696,6 @@ def generate_scores(selected_clan):
     week_start = get_week_start(curr_dt)
     prev_week = (week_start - timedelta(days=7))
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
-    prev_df = None
     curr_member_list = []
     clan = clans[selected_clan]
     curr_week_folder = f'{week_start:%Y-%m-%d}'
@@ -915,82 +759,64 @@ def generate_scores(selected_clan):
             curr_member = get_harbinger(curr_member, curr_class, milestones)
             # curr_member = get_presage(curr_member, curr_class, milestones)
 
-            use_milestone_enum = True
-            if use_milestone_enum:
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.clan_engram):
-                    curr_member.clan_engram[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.clan_engram.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible):
-                    curr_member.crucible_engram[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.crucible.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.banshee_engram):
-                    curr_member.banshee[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.banshee_engram.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.drifter_engram):
-                    curr_member.drifter[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.drifter_engram.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.zavala_engram):
-                    curr_member.zavala[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.zavala_engram.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.variks_engram):
-                    curr_member.variks[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.variks_engram.clan_score
-                if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.exo_stranger):
-                    curr_member.exo_stranger[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.exo_stranger.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.clan_engram):
+                curr_member.clan_engram[curr_class.name] = True
+                curr_member.score += DestinyMilestone.clan_engram.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible):
+                curr_member.crucible_engram[curr_class.name] = True
+                curr_member.score += DestinyMilestone.crucible.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.banshee_engram):
+                curr_member.banshee[curr_class.name] = True
+                curr_member.score += DestinyMilestone.banshee_engram.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.drifter_engram):
+                curr_member.drifter[curr_class.name] = True
+                curr_member.score += DestinyMilestone.drifter_engram.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.zavala_engram):
+                curr_member.zavala[curr_class.name] = True
+                curr_member.score += DestinyMilestone.zavala_engram.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.variks_engram):
+                curr_member.variks[curr_class.name] = True
+                curr_member.score += DestinyMilestone.variks_engram.clan_score
+            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.exo_stranger):
+                curr_member.exo_stranger[curr_class.name] = True
+                curr_member.score += DestinyMilestone.exo_stranger.clan_score
 
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.empire_hunt):
-                    curr_member.empire_hunt[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.empire_hunt.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall):
-                    curr_member.nightfall[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.nightfall.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.deadly_venatics):
-                    curr_member.deadly_venatics[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.deadly_venatics.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.strikes):
-                    curr_member.strikes[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.strikes.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall_100k):
-                    curr_member.nightfall_100k[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.nightfall_100k.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.gambit):
-                    curr_member.gambit[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.gambit.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_playlist):
-                    curr_member.crucible_playlist[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.crucible_playlist.clan_score
-                if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_glory):
-                    curr_member.crucible_glory[curr_class.name] = True
-                    curr_member.score += DestinyMilestone.crucible_glory.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.empire_hunt):
+                curr_member.empire_hunt[curr_class.name] = True
+                curr_member.score += DestinyMilestone.empire_hunt.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall):
+                curr_member.nightfall[curr_class.name] = True
+                curr_member.score += DestinyMilestone.nightfall.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.deadly_venatics):
+                curr_member.deadly_venatics[curr_class.name] = True
+                curr_member.score += DestinyMilestone.deadly_venatics.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.strikes):
+                curr_member.strikes[curr_class.name] = True
+                curr_member.score += DestinyMilestone.strikes.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall_100k):
+                curr_member.nightfall_100k[curr_class.name] = True
+                curr_member.score += DestinyMilestone.nightfall_100k.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.gambit):
+                curr_member.gambit[curr_class.name] = True
+                curr_member.score += DestinyMilestone.gambit.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_playlist):
+                curr_member.crucible_playlist[curr_class.name] = True
+                curr_member.score += DestinyMilestone.crucible_playlist.clan_score
+            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_glory):
+                curr_member.crucible_glory[curr_class.name] = True
+                curr_member.score += DestinyMilestone.crucible_glory.clan_score
 
-                if owns_current_season:
-                    if unlocked_override_milestones:
-                        if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
-                            curr_member.rewiring_the_light[curr_class.name] = True
-                            curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
-                        if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
-                            curr_member.digital_trove[curr_class.name] = True
-                            curr_member.score += DestinyMilestone.digital_trove.clan_score
-                        if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
-                            curr_member.net_crasher[curr_class.name] = True
-                            curr_member.score += DestinyMilestone.net_crasher.clan_score
-            else:
-                curr_member = get_clan_engram(curr_member, curr_class, milestones)
-                curr_member = get_crucible_engram(curr_member, curr_class, milestones)
-                curr_member = get_banshee(curr_member, curr_class, milestones)
-                curr_member = get_drifter(curr_member, curr_class, milestones)
-                curr_member = get_zavala(curr_member, curr_class, milestones)
-                curr_member = get_variks(curr_member, curr_class, milestones)
-                curr_member = get_exo_stranger(curr_member, curr_class, milestones)
-                curr_member = get_empire_hunt(curr_member, curr_class, milestones)
-                curr_member = get_nightfall(curr_member, curr_class, milestones)
-                curr_member = get_deadly_venatics(curr_member, curr_class, milestones)
-                curr_member = get_strikes(curr_member, curr_class, milestones)
-                curr_member = get_nightfall_100k(curr_member, curr_class, milestones)
-                curr_member = get_gambit(curr_member, curr_class, milestones)
-                curr_member = get_crucible_playlist(curr_member, curr_class, milestones)
-                curr_member = get_crucible_glory(curr_member, curr_class, milestones)
+            if owns_current_season:
+                if unlocked_override_milestones:
+                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
+                        curr_member.rewiring_the_light[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
+                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
+                        curr_member.digital_trove[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.digital_trove.clan_score
+                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
+                        curr_member.net_crasher[curr_class.name] = True
+                        curr_member.score += DestinyMilestone.net_crasher.clan_score
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)

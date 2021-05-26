@@ -20,12 +20,75 @@ Will need to add a key.txt file in your local repo, with the Bungie API key in i
 
 
 # TODOs
-- score gilding
-- tracking clan swaps
-- track inactivity period (research)
-- update breadcrumbs
+A. Back end stuff:
+  1. Revamp code base
+    a. Move hard coded variables to files
+    b. Cleanup UI code
+    c. Cleanup HTTP Requests etc.
+    d. Graceful error handling
+  2. Add in state save, for when score generation fails on a single user
+B. Front end stuff:
+  1. Look into either hosting solutions OR providing a separate distributable for clan members
+  2. Add inactive notification into clan_view (can later have it as part of hosted web app so users can input the notification themselves)
+  3. Add in score generation for individual users/list of users
+  4. User authorization (required if hosting a web app)
+  5. Look into Discord bot integration so we can kick Zwift (can do tons of stuff - autoroles, inactive checks, to name a few)
+  6. Update breadcrumbs
 
 # PATCH NOTES
+
+#### v1.2.10:
+- Added clan swap tracking
+
+#### v1.2.9:
+- Added aggregate activity check for override
+
+#### v1.2.8:
+- Added VOG and VOG Challenge Mode to tracking
+- Added files to .gitignore
+- Added __pycache__
+- Create .gitignore
+- Modified trials 7 wins score
+
+#### v1.2.7:
+- Moved inactive check to clan engram completion
+
+#### v1.2.6:
+- Added tracking for Season of Splicer milestones
+- Moved presage tracking to activity history
+- Initial implementation of DestinyMilestone enum
+
+#### v1.2.5:
+- Fixed GildLevel col missing from prev_df
+- Fixed enum._value2member_map_ error
+
+#### v1.2.4:
+- Fix for invalid check on dungeons and story activities
+- Fix for regenerating scores
+
+#### v1.2.3:
+- Dungeon tracking implementation
+- Migrated to DestinyActivity enum usage
+- Implemented POH and ST tracking
+- Added presage
+- Added missing GildLevel header to save to csv
+- Modified get_activity_history to add mode param
+- Added DestinyActivity enum
+- Modified get_weekly_raid_count for better code reusability
+
+#### v1.2.2:
+- Fixed applyDisplayScoreColor function in gild view
+
+#### v1.2.1:
+- Fixed applyDisplayScoreColor function
+- ADded gild level revert validation
+
+#### v1.2.0:
+- Updated README
+- Added max-height for inactives popup for Firefox
+- Added inactive popup to inactives view page
+- Fixed gild level numbers in dropdown in clan view
+- Full implementation of score gilding
 
 #### v1.1.3:
 - Fixed string sort to ignore capitalization

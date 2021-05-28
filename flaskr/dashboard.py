@@ -66,7 +66,7 @@ def diff_view():
     sort_by = request.args.get('sort_by', None)
     reverse = request.args.get('reverse', None)
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date_sstr, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
     members_who_left, members_who_joined = score_gen.get_clan_member_diff(clan_name, start_date, end_date)
     if sort_by is not None:

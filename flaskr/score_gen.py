@@ -8,6 +8,22 @@ import pytz
 import os.path as path
 import os
 import pandas as pd
+from configparser import ConfigParser
+
+parser = ConfigParser()
+parser.read('configs.ini')
+
+CURRENT_SEASON_HASH = parser.getint('seasonal_variables', 'current_season_hash')
+
+MIN_LIGHT = parser.getint('seasonal_variables', 'min_light')
+
+MOD_ALTS = dict(parser.items('mod_alts')).values()
+
+gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
+
+EXO_CHALLENGE_HASHES = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+
+OVERRIDE_HASHES = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
 
 
 class DestinyClass(enum.Enum):
@@ -52,15 +68,6 @@ class DestinyActivity(enum.Enum):
 
 
 activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage]
-
-
-gild_level_thresholds = {
-    0: 720,
-    1: 2160,
-    2: 4320,
-    3: 7920,
-    4: 99999
-}
 
 
 class DestinyMilestone(enum.Enum):
@@ -110,40 +117,6 @@ class DestinyMilestone(enum.Enum):
     def has_value(cls, value):
         return value in cls._value2member_map_
 
-
-CURRENT_SEASON_HASH = 2809059429
-
-MIN_LIGHT = 1200
-
-EXO_CHALLENGE_HASHES = [1262994080, 2361093350, 3784931086]
-
-OVERRIDE_HASHES = [25688104, 2865532048, 3933916447, 612985278]
-
-MEMBERSHIP_IDS_TO_IGNORE = ['4611686018468017900',  # Renk
-                            '4611686018467476681',  # Daramir
-                            '4611686018467377928',  # Halioon
-                            '4611686018511983802',  # Bena's alt
-                            '4611686018512061584',  # Jjljunkins0101
-                            '4611686018513522502',  # Fencervenser
-                            '4611686018512275371',  # PGDR
-                            '4611686018508301419',  # obwsperidot
-                            '4611686018505313756',  # Ell3mental
-                            '4611686018508326111',  # FizbanTWO
-                            '4611686018508299936',  # VoluspaTheSeer
-                            '4611686018508327663',  # Petidor
-                            '4611686018506792489',  # Nar2n
-                            '4611686018511981905',  # AltPwnage
-                            '4611686018490231638',  # Распутин
-                            '4611686018509035256',  # CalusPerfected,
-                            '4611686018492000698',  # Renk6
-                            '4611686018490330934',  # Renk3
-                            '4611686018490255441',  # Renk2
-                            '4611686018490338905',  # Renk5
-                            '4611686018508286343',  # Rarinredbull6
-                            '4611686018471980460',  # Renk4
-                            '4611686018508307348',  # Renk8
-                            '4611686018506086618',  # Renk-6
-                            ]
 
 clans = clan_lib.ClanGroup().get_clans()
 
@@ -697,7 +670,7 @@ def generate_scores(selected_clan):
         name = mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
-        if membership_id not in MEMBERSHIP_IDS_TO_IGNORE:
+        if membership_id not in MOD_ALTS:
             clan.add_member(name, membership_type, membership_id)
 
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)

@@ -32,6 +32,11 @@ class DestinyClass(enum.Enum):
     Titan = 0
 
 
+class DestinyActivityModeType(enum.Enum):
+    Dungeon = 2
+    StoryActivity = 82
+
+
 class DestinyActivity(enum.Enum):
     gos = (3458480158, 4, 40, 1200)
     dsc = (910380154, 4, 35, 1200)
@@ -67,7 +72,7 @@ class DestinyActivity(enum.Enum):
         return value in cls._value2member_map_
 
 
-activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage]
+activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage, DestinyActivity.presage_master]
 
 
 class DestinyMilestone(enum.Enum):
@@ -251,10 +256,16 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
 
 
 def get_dungeons(member, member_class, week_start, character_id):
+
+    member = process_dungeons(member, member_class, week_start, character_id, DestinyActivityModeType.Dungeon.value)
+    member = process_dungeons(member, member_class, week_start, character_id, DestinyActivityModeType.StoryActivity.value)
+
+    return member
+
+
+def process_dungeons(member, member_class, week_start, character_id, activity_mode_type):
+    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, activity_mode_type)
     utc = pytz.UTC
-    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 82)
-    character_story_activities = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 2)
-    character_dungeons.extend(character_story_activities)
     for dungeon in character_dungeons:
         if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
@@ -267,6 +278,8 @@ def get_dungeons(member, member_class, week_start, character_id):
             continue
         if activity_invalid(dungeon, activity_enum):
             continue
+        if activity_enum == DestinyActivity.presage_master:
+            activity_enum = DestinyActivity.presage
 
         member.activities[activity_enum.name][member_class.name] += 1
         if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the dungeon

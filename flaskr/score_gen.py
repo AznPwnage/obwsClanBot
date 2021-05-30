@@ -13,28 +13,25 @@ from configparser import ConfigParser
 parser = ConfigParser()
 parser.read('configs.ini')
 
-CURRENT_SEASON_HASH = parser.getint('seasonal_variables', 'current_season_hash')
+current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 
-MIN_LIGHT = parser.getint('seasonal_variables', 'min_light')
+min_light = parser.getint('seasonal_variables', 'min_light')
 
-MOD_ALTS = dict(parser.items('mod_alts')).values()
+mod_alts = dict(parser.items('mod_alts')).values()
 
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 
-EXO_CHALLENGE_HASHES = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
 
-OVERRIDE_HASHES = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+override_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+
+destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
 
 
 class DestinyClass(enum.Enum):
     Hunter = 1
     Warlock = 2
     Titan = 0
-
-
-class DestinyActivityModeType(enum.Enum):
-    Dungeon = 2
-    StoryActivity = 82
 
 
 class DestinyActivity(enum.Enum):
@@ -189,7 +186,7 @@ def initialize_member(clan_member):
 
 
 def get_low_light(member, member_class, char_to_check):
-    if char_to_check['light'] >= MIN_LIGHT:
+    if char_to_check['light'] >= min_light:
         member.low_light[member_class.name] = False
     return member
 
@@ -257,8 +254,8 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
 
 def get_dungeons(member, member_class, week_start, character_id):
 
-    member = process_dungeons(member, member_class, week_start, character_id, DestinyActivityModeType.Dungeon.value)
-    member = process_dungeons(member, member_class, week_start, character_id, DestinyActivityModeType.StoryActivity.value)
+    member = process_dungeons(member, member_class, week_start, character_id, destiny_activity_mode_type['dungeon'])
+    member = process_dungeons(member, member_class, week_start, character_id, destiny_activity_mode_type['story_activity'])
 
     return member
 
@@ -368,7 +365,7 @@ def check_arr_contains(hash_arr, check_arr):
 
 
 def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
-    if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, EXO_CHALLENGE_HASHES):
+    if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, exo_challenge_hashes):
         if milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_powerful.milestone_hash) and milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_pinnacle.milestone_hash):
             member.exo_challenge[member_class.name] = True
             member.score += 1
@@ -683,7 +680,7 @@ def generate_scores(selected_clan):
         name = mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
-        if membership_id not in MOD_ALTS:
+        if membership_id not in mod_alts:
             clan.add_member(name, membership_type, membership_id)
 
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)
@@ -710,7 +707,7 @@ def generate_scores(selected_clan):
         characters = profile['Response']['characters']['data']  # check light level
         character_progressions = profile['Response']['characterProgressions']['data']
         character_activities = profile['Response']['characterActivities']['data']
-        owns_current_season = CURRENT_SEASON_HASH in profile['Response']['profile']['data']['seasonHashes']
+        owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
         for character_id in character_progressions.keys():  # iterate over single member's characters
             milestones = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
@@ -778,7 +775,7 @@ def generate_scores(selected_clan):
 
             if owns_current_season:
                 aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-                unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, OVERRIDE_HASHES)
+                unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
                 if unlocked_override_milestones:
                     if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
                         curr_member.rewiring_the_light[curr_class.name] = True

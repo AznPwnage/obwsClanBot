@@ -802,7 +802,7 @@ def generate_all_scores():
 
 def get_file_path(selected_clan, date):
     week_start = get_week_start(date)
-    week_folder = f'{week_start:%Y-%m-%d}'
+    week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
     return path.join(week_folder, selected_clan + '.csv')
 
 

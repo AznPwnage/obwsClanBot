@@ -1,3 +1,4 @@
+import copy
 import enum
 
 from . import request
@@ -10,28 +11,11 @@ import os
 import pandas as pd
 from configparser import ConfigParser
 
-parser = ConfigParser()
-parser.read('configs.ini')
-
-current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
-
-min_light = parser.getint('seasonal_variables', 'min_light')
-
-mod_alts = dict(parser.items('mod_alts')).values()
-
-gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
-
-exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
-
-override_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
-
-destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
-
 
 class DestinyClass(enum.Enum):
-    Hunter = 1
-    Warlock = 2
-    Titan = 0
+    hunter = 1
+    warlock = 2
+    titan = 0
 
 
 class DestinyActivity(enum.Enum):
@@ -69,7 +53,13 @@ class DestinyActivity(enum.Enum):
         return value in cls._value2member_map_
 
 
-activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage, DestinyActivity.presage_master]
+class DestinyMilestone1:
+    def __init__(self, name, ms_hash, obj_hash, score, collectible):
+        self.name = name
+        self.ms_hash = ms_hash
+        self.obj_hash = obj_hash
+        self.score = score
+        self.collectible = collectible
 
 
 class DestinyMilestone(enum.Enum):
@@ -120,6 +110,34 @@ class DestinyMilestone(enum.Enum):
         return value in cls._value2member_map_
 
 
+parser = ConfigParser()
+parser.read('configs.ini')
+
+current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
+
+min_light = parser.getint('seasonal_variables', 'min_light')
+
+mod_alts = dict(parser.items('mod_alts')).values()
+
+gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
+
+exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+
+override_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+
+destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
+
+milestones1 = []
+for x in parser.items('milestone'):
+    values = x[1].split(',')
+    values[1] = int(values[1]) if values[1] != 'None' else None
+    values[2] = int(values[2]) if values[2] != 'None' else None
+    values[3] = True if values[3] == 'True' else False
+    milestones1.append(DestinyMilestone1(x[0], values[0], values[1], values[2], values[3]))
+
+
+activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage, DestinyActivity.presage_master]
+
 clans = clan_lib.ClanGroup().get_clans()
 
 prev_df = pd.DataFrame()
@@ -131,44 +149,35 @@ def initialize_member(clan_member):
     member.privacy = False
     member.account_not_exists = False
 
-    member.clan_engram = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.crucible_engram = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    destiny_class_bool_dict = {DestinyClass.hunter.name: False, DestinyClass.warlock.name: False, DestinyClass.titan.name: False}
+    destiny_class_count_dict = {DestinyClass.hunter.name: 0, DestinyClass.warlock.name: 0, DestinyClass.titan.name: 0}
 
-    member.exo_challenge = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.banshee = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.drifter = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.zavala = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.variks = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.exo_stranger = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.empire_hunt = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.nightfall = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.deadly_venatics = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.strikes = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.nightfall_100k = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.gambit = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.crucible_playlist = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.crucible_glory = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.trials3 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.trials5 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.trials7 = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.rewiring_the_light = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.digital_trove = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
-    member.net_crasher = {DestinyClass.Hunter.name: False, DestinyClass.Warlock.name: False, DestinyClass.Titan.name: False}
+    member.clan_engram = copy.copy(destiny_class_bool_dict)
+    member.crucible_engram = copy.copy(destiny_class_bool_dict)
 
-    member.activities = {
-        DestinyActivity.gos.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.dsc.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.lw.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.vog.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.vog_challenge.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.prophecy.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.harbinger.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.presage.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.poh.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0},
-        DestinyActivity.st.name: {DestinyClass.Hunter.name: 0, DestinyClass.Warlock.name: 0, DestinyClass.Titan.name: 0}
-    }
+    for m in milestones1:
+        member.set(m.name, copy.copy(destiny_class_bool_dict))
 
-    member.low_light = {DestinyClass.Hunter.name: True, DestinyClass.Warlock.name: True, DestinyClass.Titan.name: True}
+    member.exo_challenge = copy.copy(destiny_class_bool_dict)
+    member.trials3 = copy.copy(destiny_class_bool_dict)
+    member.trials5 = copy.copy(destiny_class_bool_dict)
+    member.trials7 = copy.copy(destiny_class_bool_dict)
+    member.rewiring_the_light = copy.copy(destiny_class_bool_dict)
+    member.digital_trove = copy.copy(destiny_class_bool_dict)
+    member.net_crasher = copy.copy(destiny_class_bool_dict)
+
+    member.set(DestinyActivity.gos.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.dsc.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.lw.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.vog.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.vog_challenge.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.prophecy.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.harbinger.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.presage.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.poh.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.st.name, copy.copy(destiny_class_count_dict))
+
+    member.low_light = {DestinyClass.hunter.name: True, DestinyClass.warlock.name: True, DestinyClass.titan.name: True}
 
     member.score = 0
     member.score_delta = 0
@@ -194,15 +203,15 @@ def get_low_light(member, member_class, char_to_check):
 def get_prev_week_score(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
-            member.prev_score = int(df.loc[int(member.membership_id)]['Score'])
+            member.prev_score = int(df.loc[int(member.membership_id)]['score'])
     return member
 
 
 def get_prev_gild_level(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
-            if 'GildLevel' in df.columns:
-                member.gild_level = int(df.loc[int(member.membership_id)]['GildLevel'])
+            if 'gild_level' in df.columns:
+                member.gild_level = int(df.loc[int(member.membership_id)]['gild_level'])
     return member
 
 
@@ -243,8 +252,8 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
         if activity_invalid(raid, activity_enum):
             continue
 
-        member.activities[activity_enum.name][member_class.name] += 1
-        if member.activities[activity_enum.name][member_class.name] == 1:    # only award points for first unique completion of the raid
+        member.get(activity_enum.name)[member_class.name] += 1
+        if member.get(activity_enum.name)[member_class.name] == 1:    # only award points for first unique completion of the raid
             if member.clan_type == 'Raid':
                 member.score += 2
             member.score += 5
@@ -278,8 +287,8 @@ def process_dungeons(member, member_class, week_start, character_id, activity_mo
         if activity_enum == DestinyActivity.presage_master:
             activity_enum = DestinyActivity.presage
 
-        member.activities[activity_enum.name][member_class.name] += 1
-        if member.activities[activity_enum.name][member_class.name] == 1:  # only award points for first unique completion of the dungeon
+        member.get(activity_enum.name)[member_class.name] += 1
+        if member.get(activity_enum.name)[member_class.name] == 1:  # only award points for first unique completion of the dungeon
             member.score += 2
     return member
 
@@ -350,6 +359,17 @@ def get_milestone_completion_status(member, member_class, milestones_list, miles
     return False
 
 
+def get_milestone_completion_status1(member, member_class, milestones_list, milestone):
+    if not member.low_light[member_class.name]:
+        if milestone.collectible:
+            if check_collectible_milestone(milestones_list, milestone.ms_hash, milestone.obj_hash):
+                return True
+        else:
+            if milestone_not_in_list(milestones_list, milestone.ms_hash):
+                return True
+    return False
+
+
 def build_activity_hashes(activities_arr):
     activity_hash_arr = []
     for activity in activities_arr:
@@ -389,30 +409,6 @@ def get_trials(member, member_class, milestones_list):
                     if 'PVP' == member.clan_type:
                         member.score += 2
                     member.score += 5
-    return member
-
-
-def get_prophecy(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, DestinyMilestone.prophecy.milestone_hash):
-            member.activities[DestinyActivity.prophecy.name][member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_harbinger(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, DestinyMilestone.harbinger.milestone_hash):
-            member.activities[DestinyActivity.harbinger.name][member_class.name] = True
-            member.score += 2
-    return member
-
-
-def get_presage(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, DestinyMilestone.presage.milestone_hash):
-            member.activities[DestinyActivity.presage.name][member_class.name] = True
-            member.score += 2
     return member
 
 
@@ -468,191 +464,11 @@ def write_members_to_csv(mem_list, file_path):
         os.remove(file_path)
     with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        # 114 columns
-        writer.writerow(
-            ['Name', 'Score', 'ScoreDelta', 'PreviousScore', 'DaysLastPlayed', 'DateLastPlayed', 'Id', 'Clan',
-             'MemberShipType', 'ClanType', 'Inactive',
-             'GOS_H', 'GOS_W', 'GOS_T',
-             'DSC_H', 'DSC_W', 'DSC_T',
-             'LW_H', 'LW_W', 'LW_T',
-             'ClanEngram_H', 'ClanEngram_W', 'ClanEngram_T',
-             'CrucibleEngram_H', 'CrucibleEngram_W', 'CrucibleEngram_T',
-             'ExoChallenge_H', 'ExoChallenge_W', 'ExoChallenge_T',
-             'SpareParts_H', 'SpareParts_W', 'SpareParts_T',
-             'ShadySchemes_H', 'ShadySchemes_W', 'ShadySchemes_T',
-             'VanguardServices_H', 'VanguardServices_W', 'VanguardServices_T',
-             'Variks_H', 'Variks_W', 'Variks_T',
-             'ExoStranger_H', 'ExoStranger_W', 'ExoStranger_T',
-             'EmpireHunt_H', 'EmpireHunt_W', 'EmpireHunt_T',
-             'NightFall_H', 'NightFall_W', 'NightFall_T',
-             'DeadlyVenatics_H', 'DeadlyVenatics_W', 'DeadlyVenatics_T',
-             'Strikes_H', 'Strikes_W', 'Strikes_T',
-             'Nightfall100k_H', 'Nightfall100k_W', 'Nightfall100k_T',
-             'Gambit_H', 'Gambit_W', 'Gambit_T',
-             'CruciblePlaylist_H', 'CruciblePlaylist_W', 'CruciblePlaylist_T',
-             'CrucibleGlory_H', 'CrucibleGlory_W', 'CrucibleGlory_T',
-             'Trials3_H', 'Trials3_W', 'Trials3_T',
-             'Trials5_H', 'Trials5_W', 'Trials5_T',
-             'Trials7_H', 'Trials7_W', 'Trials7_T',
-             'LowLight_H', 'LowLight_W', 'LowLight_T',
-             'PrivacyFlag', 'AccountExistsFlag', 'ExternalScore',
-             'Prophecy_H', 'Prophecy_W', 'Prophecy_T',
-             'Harbinger_H', 'Harbinger_W', 'Harbinger_T',
-             'GildLevel',
-             'Presage_H', 'Presage_W', 'Presage_T',
-             'POH_H', 'POH_W', 'POH_T',
-             'ST_H', 'ST_W', 'ST_T',
-             'RewiringTheLight_H', 'RewiringTheLight_W', 'RewiringTheLight_T',
-             'DigitalTrove_H', 'DigitalTrove_W', 'DigitalTrove_T',
-             'NetCrasher_H', 'NetCrasher_W', 'NetCrasher_T',
-             'VOG_H', 'VOG_W', 'VOG_T',
-             'VOGC_H', 'VOGC_W', 'VOGC_T'])
+        h, v = mem_list[0].flatten()
+        writer.writerow(h)
         for member in mem_list:
-            writer.writerow(
-                [
-                    str(member.name), str(member.score), str(member.score_delta), str(member.prev_score),
-                    str(member.days_last_played),
-                    str(member.date_last_played), str(member.membership_id), str(member.clan_name),
-                    str(member.membership_type),
-                    str(member.clan_type), str(member.inactive),
-
-                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.gos.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.dsc.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.lw.name][DestinyClass.Titan.name]),
-
-                    str(member.clan_engram[DestinyClass.Hunter.name]),
-                    str(member.clan_engram[DestinyClass.Warlock.name]),
-                    str(member.clan_engram[DestinyClass.Titan.name]),
-
-                    str(member.crucible_engram[DestinyClass.Hunter.name]),
-                    str(member.crucible_engram[DestinyClass.Warlock.name]),
-                    str(member.crucible_engram[DestinyClass.Titan.name]),
-
-                    str(member.exo_challenge[DestinyClass.Hunter.name]),
-                    str(member.exo_challenge[DestinyClass.Warlock.name]),
-                    str(member.exo_challenge[DestinyClass.Titan.name]),
-
-                    str(member.banshee[DestinyClass.Hunter.name]),
-                    str(member.banshee[DestinyClass.Warlock.name]),
-                    str(member.banshee[DestinyClass.Titan.name]),
-
-                    str(member.drifter[DestinyClass.Hunter.name]),
-                    str(member.drifter[DestinyClass.Warlock.name]),
-                    str(member.drifter[DestinyClass.Titan.name]),
-
-                    str(member.zavala[DestinyClass.Hunter.name]),
-                    str(member.zavala[DestinyClass.Warlock.name]),
-                    str(member.zavala[DestinyClass.Titan.name]),
-
-                    str(member.variks[DestinyClass.Hunter.name]),
-                    str(member.variks[DestinyClass.Warlock.name]),
-                    str(member.variks[DestinyClass.Titan.name]),
-
-                    str(member.exo_stranger[DestinyClass.Hunter.name]),
-                    str(member.exo_stranger[DestinyClass.Warlock.name]),
-                    str(member.exo_stranger[DestinyClass.Titan.name]),
-
-                    str(member.empire_hunt[DestinyClass.Hunter.name]),
-                    str(member.empire_hunt[DestinyClass.Warlock.name]),
-                    str(member.empire_hunt[DestinyClass.Titan.name]),
-
-                    str(member.nightfall[DestinyClass.Hunter.name]),
-                    str(member.nightfall[DestinyClass.Warlock.name]),
-                    str(member.nightfall[DestinyClass.Titan.name]),
-
-                    str(member.deadly_venatics[DestinyClass.Hunter.name]),
-                    str(member.deadly_venatics[DestinyClass.Warlock.name]),
-                    str(member.deadly_venatics[DestinyClass.Titan.name]),
-
-                    str(member.strikes[DestinyClass.Hunter.name]),
-                    str(member.strikes[DestinyClass.Warlock.name]),
-                    str(member.strikes[DestinyClass.Titan.name]),
-
-                    str(member.nightfall_100k[DestinyClass.Hunter.name]),
-                    str(member.nightfall_100k[DestinyClass.Warlock.name]),
-                    str(member.nightfall_100k[DestinyClass.Titan.name]),
-
-                    str(member.gambit[DestinyClass.Hunter.name]),
-                    str(member.gambit[DestinyClass.Warlock.name]),
-                    str(member.gambit[DestinyClass.Titan.name]),
-
-                    str(member.crucible_playlist[DestinyClass.Hunter.name]),
-                    str(member.crucible_playlist[DestinyClass.Warlock.name]),
-                    str(member.crucible_playlist[DestinyClass.Titan.name]),
-
-                    str(member.crucible_glory[DestinyClass.Hunter.name]),
-                    str(member.crucible_glory[DestinyClass.Warlock.name]),
-                    str(member.crucible_glory[DestinyClass.Titan.name]),
-
-                    str(member.trials3[DestinyClass.Hunter.name]),
-                    str(member.trials3[DestinyClass.Warlock.name]),
-                    str(member.trials3[DestinyClass.Titan.name]),
-
-                    str(member.trials5[DestinyClass.Hunter.name]),
-                    str(member.trials5[DestinyClass.Warlock.name]),
-                    str(member.trials5[DestinyClass.Titan.name]),
-
-                    str(member.trials7[DestinyClass.Hunter.name]),
-                    str(member.trials7[DestinyClass.Warlock.name]),
-                    str(member.trials7[DestinyClass.Titan.name]),
-
-                    str(member.low_light[DestinyClass.Hunter.name]),
-                    str(member.low_light[DestinyClass.Warlock.name]),
-                    str(member.low_light[DestinyClass.Titan.name]),
-
-                    str(member.privacy), str(member.account_not_exists), str(member.external_score),
-
-                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.prophecy.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.harbinger.name][DestinyClass.Titan.name]),
-
-                    str(member.gild_level),
-
-                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.presage.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.poh.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.st.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.st.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.st.name][DestinyClass.Titan.name]),
-
-                    str(member.rewiring_the_light[DestinyClass.Hunter.name]),
-                    str(member.rewiring_the_light[DestinyClass.Warlock.name]),
-                    str(member.rewiring_the_light[DestinyClass.Titan.name]),
-
-                    str(member.digital_trove[DestinyClass.Hunter.name]),
-                    str(member.digital_trove[DestinyClass.Warlock.name]),
-                    str(member.digital_trove[DestinyClass.Titan.name]),
-
-                    str(member.net_crasher[DestinyClass.Hunter.name]),
-                    str(member.net_crasher[DestinyClass.Warlock.name]),
-                    str(member.net_crasher[DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.vog.name][DestinyClass.Titan.name]),
-
-                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Hunter.name]),
-                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Warlock.name]),
-                    str(member.activities[DestinyActivity.vog_challenge.name][DestinyClass.Titan.name])
-                ]
-            )
+            h, v = member.flatten()
+            writer.writerow(v)
 
 
 def generate_scores(selected_clan):
@@ -672,7 +488,7 @@ def generate_scores(selected_clan):
         for prev_week_clan in clans:
             prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
-                prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['Score', 'Id', 'Name', 'GildLevel'], index_col='Id'))
+                prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id'))
     members = clan_member_response['results']
     clan.memberList = []
 
@@ -709,7 +525,7 @@ def generate_scores(selected_clan):
         character_activities = profile['Response']['characterActivities']['data']
         owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
         for character_id in character_progressions.keys():  # iterate over single member's characters
-            milestones = character_progressions[character_id]['milestones']
+            milestones_list = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
@@ -717,73 +533,25 @@ def generate_scores(selected_clan):
             curr_member = get_low_light(curr_member, curr_class, character)
             curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
             curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
-            curr_member = get_exo_challenge(curr_member, curr_class, milestones, activity_hashes)
-            curr_member = get_trials(curr_member, curr_class, milestones)
+            curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
+            curr_member = get_trials(curr_member, curr_class, milestones_list)
 
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.clan_engram):
-                curr_member.clan_engram[curr_class.name] = True
-                curr_member.score += DestinyMilestone.clan_engram.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible):
-                curr_member.crucible_engram[curr_class.name] = True
-                curr_member.score += DestinyMilestone.crucible.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.banshee_engram):
-                curr_member.banshee[curr_class.name] = True
-                curr_member.score += DestinyMilestone.banshee_engram.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.drifter_engram):
-                curr_member.drifter[curr_class.name] = True
-                curr_member.score += DestinyMilestone.drifter_engram.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.zavala_engram):
-                curr_member.zavala[curr_class.name] = True
-                curr_member.score += DestinyMilestone.zavala_engram.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.variks_engram):
-                curr_member.variks[curr_class.name] = True
-                curr_member.score += DestinyMilestone.variks_engram.clan_score
-            if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.exo_stranger):
-                curr_member.exo_stranger[curr_class.name] = True
-                curr_member.score += DestinyMilestone.exo_stranger.clan_score
-
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.empire_hunt):
-                curr_member.empire_hunt[curr_class.name] = True
-                curr_member.score += DestinyMilestone.empire_hunt.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall):
-                curr_member.nightfall[curr_class.name] = True
-                curr_member.score += DestinyMilestone.nightfall.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.deadly_venatics):
-                curr_member.deadly_venatics[curr_class.name] = True
-                curr_member.score += DestinyMilestone.deadly_venatics.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.strikes):
-                curr_member.strikes[curr_class.name] = True
-                curr_member.score += DestinyMilestone.strikes.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.nightfall_100k):
-                curr_member.nightfall_100k[curr_class.name] = True
-                curr_member.score += DestinyMilestone.nightfall_100k.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.gambit):
-                curr_member.gambit[curr_class.name] = True
-                curr_member.score += DestinyMilestone.gambit.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_playlist):
-                curr_member.crucible_playlist[curr_class.name] = True
-                curr_member.score += DestinyMilestone.crucible_playlist.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.crucible_glory):
-                curr_member.crucible_glory[curr_class.name] = True
-                curr_member.score += DestinyMilestone.crucible_glory.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.harbinger):
-                curr_member.activities[DestinyActivity.harbinger.name][curr_class.name] = True
-                curr_member.score += DestinyMilestone.harbinger.clan_score
-            if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.prophecy):
-                curr_member.activities[DestinyActivity.prophecy.name][curr_class.name] = True
-                curr_member.score += DestinyMilestone.prophecy.clan_score
+            for m in milestones1:
+                if get_milestone_completion_status1(curr_member, curr_class, milestones_list, m):
+                    curr_member.get(m.name)[curr_class.name] = True
+                    curr_member.score += m.score
 
             if owns_current_season:
                 aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
                 unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
                 if unlocked_override_milestones:
-                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.rewiring_the_light):
+                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.rewiring_the_light):
                         curr_member.rewiring_the_light[curr_class.name] = True
                         curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.digital_trove):
+                    if get_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.digital_trove):
                         curr_member.digital_trove[curr_class.name] = True
                         curr_member.score += DestinyMilestone.digital_trove.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones, DestinyMilestone.net_crasher):
+                    if get_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.net_crasher):
                         curr_member.net_crasher[curr_class.name] = True
                         curr_member.score += DestinyMilestone.net_crasher.clan_score
 
@@ -814,8 +582,8 @@ def get_left_diff_df(left_df, right_df):
 def get_clan_member_diff(selected_clan, start_date, end_date):
     start_file_path = get_file_path(selected_clan, start_date)
     end_file_path = get_file_path(selected_clan, end_date)
-    start_df = pd.read_csv(start_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
-    end_df = pd.read_csv(end_file_path, usecols=['Score', 'Id', 'Name'], index_col='Id')
+    start_df = pd.read_csv(start_file_path, usecols=['score', 'membership_id', 'name'], index_col='membership_id')
+    end_df = pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name'], index_col='membership_id')
     members_who_left = get_left_diff_df(start_df, end_df)
     members_who_joined = get_left_diff_df(end_df, start_df)
     return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')

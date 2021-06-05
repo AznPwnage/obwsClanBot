@@ -38,8 +38,8 @@
                 <tbody>
                 {%- for member in members_who_left -%}
                 <tr>
-                    <td>{{ member['Name'] }}</td>  <!-- Name -->
-                    <td class="score">{{ member['Score'] }}</td>  <!-- Score -->
+                    <td>{{ member.name }}</td>  <!-- Name -->
+                    <td class="score">{{ member.score }}</td>  <!-- Score -->
                 </tr>
                 {%- endfor -%}
                 </tbody>
@@ -68,8 +68,8 @@
                 <tbody>
                 {%- for member in members_who_joined -%}
                 <tr>
-                    <td>{{ member['Name'] }}</td>  <!-- Name -->
-                    <td class="score">{{ member['Score'] }}</td>  <!-- Score -->
+                    <td>{{ member.name }}</td>  <!-- Name -->
+                    <td class="score">{{ member.score }}</td>  <!-- Score -->
                 </tr>
                 {%- endfor -%}
                 </tbody>

@@ -31,8 +31,8 @@
         <tbody>
           {%- for member in members -%}
           <tr>
-            <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
-            <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+            <td><div style="height: 25px">{{ member.name }}</div></td>  <!-- Name -->
+            <td class="score" width="50px" align="center"><b>{{ member.score }}</b></td>  <!-- Score -->
           </tr>
           {%- endfor -%}
         </tbody>
@@ -67,10 +67,10 @@
             </thead>
             <tbody>
               {%- for member in members -%}
-                {%- if member[7] == clan -%}
+                {%- if member.clan_name == clan -%}
                 <tr>
-                  <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
-                  <td class="score" width="50px" align="center"><b>{{ member[1] }}</b></td>  <!-- Score -->
+                  <td><div style="height: 25px">{{ member.name }}</div></td>  <!-- Name -->
+                  <td class="score" width="50px" align="center"><b>{{ member.score }}</b></td>  <!-- Score -->
                 </tr>
                 {%- endif -%}
               {%- endfor -%}
@@ -171,8 +171,8 @@ function copyNames_click(clan) {
     var m = {{members|tojson}};
     var member_names = "<h3>"+clan+"</h3>\r\n";
     for (var i = 0; i < m.length; i++) {
-        if (m[i][7] == clan) {
-            member_names = member_names.concat(m[i][0],"\r\n");
+        if (m[i].clan_name == clan) {
+            member_names = member_names.concat(m[i].name,"\r\n");
         }
     }
     createPopup(member_names);

@@ -27,9 +27,9 @@
     <tbody>
       {%- for member in members -%}
       <tr>
-        <td><div style="height: 25px">{{ member[0] }}</div></td>  <!-- Name -->
-        <td width="50px" align="center"><b class="score">{{ member[1] }}</b></td>  <!-- Score -->
-        <td width="50px" align="center"><div class="score">{{ member[3] }}</div></td>  <!-- Previous Score -->
+        <td><div style="height: 25px">{{ member.name }}</div></td>  <!-- Name -->
+        <td width="50px" align="center"><b class="score">{{ member.score }}</b></td>  <!-- Score -->
+        <td width="50px" align="center"><div class="score">{{ member.prev_score }}</div></td>  <!-- Previous Score -->
       </tr>
       {%- endfor -%}
     </tbody>
@@ -94,15 +94,29 @@ function applyDisplayScoreColor(score, gildLevel, element) {
 function calculateDisplayScore(i, element) {
        var score = +element.innerHTML;
        var m = {{members|tojson}};
-       var gildLevel = m[i][89];
+       var gildLevel = m[i].gild_level;
        var displayScore = score;
        if (gildLevel == 0) {
        } else if (gildLevel == 1) {
-            displayScore = displayScore - 720;
+            if (displayScore >= 720) {
+              displayScore = displayScore - 720;
+            } else {
+              gildLevel = gildLevel - 1;
+            }
        } else if (gildLevel == 2) {
-            displayScore = displayScore - 2160;
+            if (displayScore >= 2160) {
+              displayScore = displayScore - 2160;
+            } else {
+              displayScore = displayScore - 720;
+              gildLevel = gildLevel - 1;
+            }
        } else if (gildLevel == 3) {
-            displayScore = displayScore - 4320;
+            if (displayScore >= 4320) {
+              displayScore = displayScore - 4320;
+            } else {
+              displayScore = displayScore - 2160;
+              gildLevel = gildLevel - 1;
+            }
        } else {
             displayScore = displayScore - 4320;
        }

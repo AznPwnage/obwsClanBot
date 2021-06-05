@@ -3,6 +3,7 @@ import os
 import os.path as path
 import urllib
 from datetime import datetime
+from . import clan as clan_lib
 
 from flask import (
     Blueprint, redirect, render_template, request, url_for
@@ -27,7 +28,7 @@ def clan_view():
     selected_date = request.args.get('selected_date', None)
     file_path = get_file_path(clan_name, selected_date)
 
-    members = read_score_file(file_path, sort_by, reverse, col_type)
+    members = read_score_file1(file_path, sort_by, reverse, col_type)
     return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name,
                            selected_date=selected_date)
 
@@ -53,7 +54,7 @@ def discord_view():
     selected_date = request.args.get('selected_date', None)
     file_path = get_file_path(clan_name, selected_date)
 
-    members = read_score_file(file_path, sort_by, reverse, col_type)
+    members = read_score_file1(file_path, sort_by, reverse, col_type)
     return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name,
                            selected_date=selected_date)
 
@@ -88,9 +89,10 @@ def save_to_csv():
     url = request.args.get('old_url', None).replace('%26', '&')
 
     m = urllib.parse.unquote(m)
+    mem_list = clan_lib.build_clan_members_from_json_string(m)
 
     file_path = get_file_path(clan, date)
-    write_member_string_to_csv(file_path, m)
+    score_gen.write_members_to_csv(mem_list, file_path)
 
     return redirect(url)
 
@@ -118,16 +120,6 @@ def get_file_path(clan_name, selected_date):
     return path.join(week_folder, clan_name + '.csv')
 
 
-def write_member_string_to_csv(file_path, member_data):
-    if path.exists(file_path):
-        os.remove(file_path)
-    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-        csvfile.write(
-            'Name,Score,ScoreDelta,PreviousScore,DaysLastPlayed,DateLastPlayed,Id,Clan,MemberShipType,ClanType,Inactive,GOS_H,GOS_W,GOS_T,DSC_H,DSC_W,DSC_T,LW_H,LW_W,LW_T,ClanEngram_H,ClanEngram_W,ClanEngram_T,CrucibleEngram_H,CrucibleEngram_W,CrucibleEngram_T,ExoChallenge_H,ExoChallenge_W,ExoChallenge_T,SpareParts_H,SpareParts_W,SpareParts_T,ShadySchemes_H,ShadySchemes_W,ShadySchemes_T,VanguardServices_H,VanguardServices_W,VanguardServices_T,Variks_H,Variks_W,Variks_T,ExoStranger_H,ExoStranger_W,ExoStranger_T,EmpireHunt_H,EmpireHunt_W,EmpireHunt_T,NightFall_H,NightFall_W,NightFall_T,DeadlyVenatics_H,DeadlyVenatics_W,DeadlyVenatics_T,Strikes_H,Strikes_W,Strikes_T,Nightfall100k_H,Nightfall100k_W,Nightfall100k_T,Gambit_H,Gambit_W,Gambit_T,CruciblePlaylist_H,CruciblePlaylist_W,CruciblePlaylist_T,CrucibleGlory_H,CrucibleGlory_W,CrucibleGlory_T,Trials3_H,Trials3_W,Trials3_T,Trials5_H,Trials5_W,Trials5_T,Trials7_H,Trials7_W,Trials7_T,LowLight_H,LowLight_W,LowLight_T,PrivacyFlag,AccountExistsFlag,ExternalScore,Prophecy_H,Prophecy_W,Prophecy_T,Harbinger_H,Harbinger_W,Harbinger_T,GildLevel,Presage_H,Presage_W,Presage_T,POH_H,POH_W,POH_T,ST_H,ST_W,ST_T,RewiringTheLight_H,RewiringTheLight_W,RewiringTheLight_T,DigitalTrove_H,DigitalTrove_W,DigitalTrove_T,NetCrasher_H,NetCrasher_W,NetCrasher_T,VOG_H,VOG_W,VOG_T,VOGC_H,VOGC_W,VOGC_T')
-        csvfile.write('\r\n')
-        csvfile.write(member_data)
-
-
 def read_score_file(file_path, sort_by, reverse, col_type):
     members = []
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -151,13 +143,42 @@ def read_score_file(file_path, sort_by, reverse, col_type):
     return members
 
 
+def read_score_file1(file_path, sort_by, reverse, col_type):
+    members = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        csv_reader = csv.reader(f)
+        headers = next(csv_reader)
+        if sort_by is not None:
+            sort_by = int(sort_by)
+            if reverse is None:
+                reverse = False
+            else:
+                reverse = True
+            if col_type == 'int':
+                members = sorted(csv_reader, key=lambda item: int(item[sort_by]), reverse=reverse)
+            elif col_type == 'date':
+                members = sorted(csv_reader, key=lambda item: item[sort_by][:10], reverse=reverse)
+            elif col_type == 'str':
+                members = sorted(csv_reader, key=lambda item: item[sort_by].lower(), reverse=reverse)
+        else:
+            for row in csv_reader:
+                members.append(row)
+    mem_list = []
+    for member in members:
+        mem_as_json = {}
+        for i in range(len(headers)):
+            mem_as_json[headers[i]] = member[i]
+        mem_list.append(mem_as_json)
+    return mem_list
+
+
 def get_inactive_members(clan_name, selected_date):
     inactive_members = []
 
     file_path = get_file_path(clan_name, selected_date)
-    members = read_score_file(file_path, None, None, None)
+    members = read_score_file1(file_path, None, None, None)
 
     for m in members:
-        if m[10] == 'True':
+        if m['inactive'] == 'True':
             inactive_members.append(m)
     return inactive_members

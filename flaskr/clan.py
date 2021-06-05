@@ -1,3 +1,6 @@
+import json
+
+import jsonpickle
 import pandas as pd
 
 
@@ -24,49 +27,52 @@ class Clan:
 
 
 class ClanMember:
-    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, score=None, score_delta=None,
-                 prev_score=None, date_last_played=None, days_last_played=None, activities=None, clan_engram=None, crucible_engram=None,
-                 exo_challenge=None, banshee=None, drifter=None, zavala=None, variks=None, exo_stranger=None,
-                 trials3=None, empire_hunt=None, nightfall=None, deadly_venatics=None,
-                 strikes=None, nightfall_100k=None, gambit=None, crucible_playlist=None, crucible_glory=None,
-                 trials5=None, trials7=None, privacy=None, account_not_exists=None, low_light=None, inactive=None,
-                 external_score=None, gild_level=None, rewiring_the_light=None, digital_trove=None, net_crasher=None):
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
         self.membership_type = membership_type
         self.clan_type = clan_type
-        self.score = score
-        self.score_delta = score_delta
-        self.prev_score = prev_score
-        self.date_last_played = date_last_played
-        self.days_last_played = days_last_played
-        self.activities = activities
-        self.clan_engram = clan_engram
-        self.crucible_engram = crucible_engram
-        self.exo_challenge = exo_challenge
-        self.banshee = banshee
-        self.drifter = drifter
-        self.zavala = zavala
-        self.variks = variks
-        self.exo_stranger = exo_stranger
-        self.trials3 = trials3
-        self.empire_hunt = empire_hunt
-        self.nightfall = nightfall
-        self.deadly_venatics = deadly_venatics
-        self.strikes = strikes
-        self.nightfall_100k = nightfall_100k
-        self.gambit = gambit
-        self.crucible_playlist = crucible_playlist
-        self.crucible_glory = crucible_glory
-        self.trials5 = trials5
-        self.trials7 = trials7
-        self.privacy = privacy
-        self.account_not_exists = account_not_exists
-        self.low_light = low_light
-        self.inactive = inactive
-        self.external_score = external_score
-        self.gild_level = gild_level
-        self.rewiring_the_light = rewiring_the_light
-        self.digital_trove = digital_trove
-        self.net_crasher = net_crasher
+
+    def get(self, attr_name):
+        return getattr(self, attr_name)
+
+    def set(self, attr_name, attr_val):
+        return setattr(self, attr_name, attr_val)
+
+    def flatten(self):
+        attrs = self.__dict__
+        header = []
+        values = []
+        for key, value in attrs.items():
+            header, value = recursive_flatten(header, values, key, value)
+        return header, value
+
+    def to_json(self):
+        attr_dict = {}
+        h, v = self.flatten()
+        for i in range(len(h)):
+            attr_dict[h[i]] = v[i]
+        return attr_dict
+
+
+def recursive_flatten(header, values, key, value):
+    if type(value) == dict:
+        for k, v in value.items():
+            recursive_flatten(header, values, key + '_' + k, v)
+    else:
+        header.append(key)
+        values.append(value)
+    return header, values
+
+
+def build_clan_members_from_json_string(json_string):
+    json_strings = json_string.split('\r\n')[:-1]
+    mem_list = []
+    for json_string in json_strings:
+        json_obj = json.loads(json_string)
+        m = ClanMember(None, None, None, None, None)
+        for k, v in json_obj.items():
+            m.set(k, v)
+        mem_list.append(m)
+    return mem_list

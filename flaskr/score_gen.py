@@ -53,7 +53,7 @@ class DestinyActivity(enum.Enum):
         return value in cls._value2member_map_
 
 
-class DestinyMilestone1:
+class DestinyMilestone:
     def __init__(self, name, ms_hash, obj_hash, score, collectible):
         self.name = name
         self.ms_hash = ms_hash
@@ -62,56 +62,20 @@ class DestinyMilestone1:
         self.collectible = collectible
 
 
-class DestinyMilestone(enum.Enum):
-    clan_engram = ('3603098564', 1001409310, 4)
-    crucible = ('2594202463', 4026431786, 4)
-    exo_challenge_powerful = ('979073379', None, 1)
-    exo_challenge_pinnacle = ('1713200903', None, 1)
-    banshee_engram = ('3899487295', 313458118, 2)
-    drifter_engram = ('3802603984', 967175154, 2)
-    zavala_engram = ('2709491520', 2338381314, 2)
-    variks_engram = ('2540726600', 1619867321, 2)
-    exo_stranger = ('1424672028', 340542773, 2)
-    empire_hunt = ('291895718', None, 2)
-    nightfall = ('1942283261', None, 2)
-    deadly_venatics = ('2406589846', None, 2)
-    strikes = ('1437935813', None, 3)
-    nightfall_100k = ('2029743966', None, 3)
-    gambit = ('3448738070', None, 3)
-    crucible_playlist = ('3312774044', None, 3)
-    crucible_glory = ('1368032265', None, 3)
-    trials3 = ('3628293757', None, 2)
-    trials5 = ('3628293755', None, 3)
-    trials7 = ('3628293753', None, 5)
-    prophecy = ('825965416', None, 2)
-    harbinger = ('1086730368', None, 2)
-    presage = ('3927548661', None, 2)
-    digital_trove = ('1684722553 ', None, 2)
-    net_crasher = ('966446952', None, 2)
-    rewiring_the_light = ('3341030123', 594674637, 2)
-
-    def __init__(self, milestone_hash, objective_hash, clan_score):
-        self.milestone_hash = milestone_hash
-        self.objective_hash = objective_hash
-        self.clan_score = clan_score
-
-    def __new__(cls, milestone_hash, objective_hash, clan_score):
-        entry = object.__new__(cls)
-        entry.milestone_hash = entry._value_ = milestone_hash  # set the value, and the extra attribute
-        entry.objective_hash = objective_hash
-        entry.clan_score = clan_score
-        return entry
-
-    def __repr__(self):
-        return f'<{type(self).__name__}.{self.name}: ({self.milestone_hash!r}, {self.objective_hash!r}, {self.clan_score!r})>'
-
-    @classmethod
-    def has_value(cls, value):
-        return value in cls._value2member_map_
-
-
 parser = ConfigParser()
 parser.read('configs.ini')
+
+
+def build_milestones_from_config(section_name):
+    milestones_dict = {}
+    for x in parser.items(section_name):
+        config = x[1].split(',')
+        config[1] = int(config[1]) if config[1] != 'None' else None
+        config[2] = int(config[2]) if config[2] != 'None' else None
+        config[3] = True if config[3] == 'True' else False
+        milestones_dict[x[0]] = (DestinyMilestone(x[0], config[0], config[1], config[2], config[3]))
+    return milestones_dict
+
 
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 
@@ -127,20 +91,15 @@ override_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_h
 
 destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
 
-milestones1 = []
-for x in parser.items('milestone'):
-    values = x[1].split(',')
-    values[1] = int(values[1]) if values[1] != 'None' else None
-    values[2] = int(values[2]) if values[2] != 'None' else None
-    values[3] = True if values[3] == 'True' else False
-    milestones1.append(DestinyMilestone1(x[0], values[0], values[1], values[2], values[3]))
-
-
 activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage, DestinyActivity.presage_master]
 
 clans = clan_lib.ClanGroup().get_clans()
 
 prev_df = pd.DataFrame()
+
+milestones = build_milestones_from_config('milestones')
+milestones_seasonal = build_milestones_from_config('milestones_seasonal')
+milestones_special = build_milestones_from_config('milestones_special')
 
 
 def initialize_member(clan_member):
@@ -152,19 +111,15 @@ def initialize_member(clan_member):
     destiny_class_bool_dict = {DestinyClass.hunter.name: False, DestinyClass.warlock.name: False, DestinyClass.titan.name: False}
     destiny_class_count_dict = {DestinyClass.hunter.name: 0, DestinyClass.warlock.name: 0, DestinyClass.titan.name: 0}
 
-    member.clan_engram = copy.copy(destiny_class_bool_dict)
-    member.crucible_engram = copy.copy(destiny_class_bool_dict)
-
-    for m in milestones1:
+    for m in milestones.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
 
-    member.exo_challenge = copy.copy(destiny_class_bool_dict)
-    member.trials3 = copy.copy(destiny_class_bool_dict)
-    member.trials5 = copy.copy(destiny_class_bool_dict)
-    member.trials7 = copy.copy(destiny_class_bool_dict)
-    member.rewiring_the_light = copy.copy(destiny_class_bool_dict)
-    member.digital_trove = copy.copy(destiny_class_bool_dict)
-    member.net_crasher = copy.copy(destiny_class_bool_dict)
+    for m in milestones_seasonal.values():
+        member.set(m.name, copy.copy(destiny_class_bool_dict))
+
+    for m in milestones_special.values():
+        member.set(m.name, copy.copy(destiny_class_bool_dict))
+    member.set('exo_challenge', copy.copy(destiny_class_count_dict))
 
     member.set(DestinyActivity.gos.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.dsc.name, copy.copy(destiny_class_count_dict))
@@ -354,13 +309,6 @@ def get_collectible_milestone_completion_status(member, member_class, milestones
 
 def get_milestone_completion_status(member, member_class, milestones_list, milestone):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, milestone.milestone_hash):
-            return True
-    return False
-
-
-def get_milestone_completion_status1(member, member_class, milestones_list, milestone):
-    if not member.low_light[member_class.name]:
         if milestone.collectible:
             if check_collectible_milestone(milestones_list, milestone.ms_hash, milestone.obj_hash):
                 return True
@@ -386,29 +334,36 @@ def check_arr_contains(hash_arr, check_arr):
 
 def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
     if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, exo_challenge_hashes):
-        if milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_powerful.milestone_hash) and milestone_not_in_list(milestones_list, DestinyMilestone.exo_challenge_pinnacle.milestone_hash):
-            member.exo_challenge[member_class.name] = True
-            member.score += 1
+        m1 = milestones_special.get('exo_challenge_powerful')
+        m2 = milestones_special.get('exo_challenge_pinnacle')
+        m1_not_in_list = milestone_not_in_list(milestones_list, m1.ms_hash)
+        m2_not_in_list = milestone_not_in_list(milestones_list, m2.ms_hash)
+        if m1_not_in_list and m2_not_in_list:
+            member.get('exo_challenge')[member_class.name] = True
+            member.score += m1.score
     return member
 
 
 def get_trials(member, member_class, milestones_list):
     if not member.low_light[member_class.name]:
-        if milestone_not_in_list(milestones_list, DestinyMilestone.trials3.milestone_hash):
-            member.trials3[member_class.name] = True
+        m = milestones_special.get('trials3')
+        if milestone_not_in_list(milestones_list, m.ms_hash):
+            member.get(m.name)[member_class.name] = True
             if 'PVP' == member.clan_type:
                 member.score += 2
-            member.score += 2
-            if milestone_not_in_list(milestones_list, DestinyMilestone.trials5.milestone_hash):
-                member.trials5[member_class.name] = True
+            member.score += m.score
+            m = milestones_special.get('trials5')
+            if milestone_not_in_list(milestones_list, m.ms_hash):
+                member.get(m.name)[member_class.name] = True
                 if 'PVP' == member.clan_type:
                     member.score += 2
-                member.score += 3
-                if milestone_not_in_list(milestones_list, DestinyMilestone.trials7.milestone_hash):
-                    member.trials7[member_class.name] = True
+                member.score += m.score
+                m = milestones_special.get('trials7')
+                if milestone_not_in_list(milestones_list, m.ms_hash):
+                    member.get(m.name)[member_class.name] = True
                     if 'PVP' == member.clan_type:
                         member.score += 2
-                    member.score += 5
+                    member.score += m.score
     return member
 
 
@@ -536,8 +491,8 @@ def generate_scores(selected_clan):
             curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
             curr_member = get_trials(curr_member, curr_class, milestones_list)
 
-            for m in milestones1:
-                if get_milestone_completion_status1(curr_member, curr_class, milestones_list, m):
+            for m in milestones.values():
+                if get_milestone_completion_status(curr_member, curr_class, milestones_list, m):
                     curr_member.get(m.name)[curr_class.name] = True
                     curr_member.score += m.score
 
@@ -545,15 +500,10 @@ def generate_scores(selected_clan):
                 aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
                 unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
                 if unlocked_override_milestones:
-                    if get_collectible_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.rewiring_the_light):
-                        curr_member.rewiring_the_light[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.rewiring_the_light.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.digital_trove):
-                        curr_member.digital_trove[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.digital_trove.clan_score
-                    if get_milestone_completion_status(curr_member, curr_class, milestones_list, DestinyMilestone.net_crasher):
-                        curr_member.net_crasher[curr_class.name] = True
-                        curr_member.score += DestinyMilestone.net_crasher.clan_score
+                    for m in milestones_seasonal.values():
+                        if get_milestone_completion_status(curr_member, curr_class, milestones_list, m):
+                            curr_member.get(m.name)[curr_class.name] = True
+                            curr_member.score += m.score
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)

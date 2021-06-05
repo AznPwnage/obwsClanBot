@@ -1,14 +1,13 @@
 import csv
-import os
 import os.path as path
 import urllib
 from datetime import datetime
-from . import clan as clan_lib
 
 from flask import (
     Blueprint, redirect, render_template, request, url_for
 )
 
+from . import clan as clan_lib
 from . import score_gen
 
 dashboard = Blueprint('dashboard', __name__)
@@ -28,7 +27,7 @@ def clan_view():
     selected_date = request.args.get('selected_date', None)
     file_path = get_file_path(clan_name, selected_date)
 
-    members = read_score_file1(file_path, sort_by, reverse, col_type)
+    members = read_score_file(file_path, sort_by, reverse, col_type)
     return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name,
                            selected_date=selected_date)
 
@@ -54,7 +53,7 @@ def discord_view():
     selected_date = request.args.get('selected_date', None)
     file_path = get_file_path(clan_name, selected_date)
 
-    members = read_score_file1(file_path, sort_by, reverse, col_type)
+    members = read_score_file(file_path, sort_by, reverse, col_type)
     return render_template('dashboard/discord_view.html', members=members, clan_name=clan_name,
                            selected_date=selected_date)
 
@@ -66,15 +65,19 @@ def diff_view():
     end_date_str = request.args.get('end_date', None)
     sort_by = request.args.get('sort_by', None)
     reverse = request.args.get('reverse', None)
+    col_type = request.args.get('col_type', None)
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
     end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
     members_who_left, members_who_joined = score_gen.get_clan_member_diff(clan_name, start_date, end_date)
     if sort_by is not None:
-        if reverse is None:
-            members_who_left = members_who_left.sort_values(sort_by, ascending=True)
-        else:
-            members_who_left = members_who_left.sort_values(sort_by, ascending=False)
+        reverse = reverse is not None
+        if col_type == 'int':
+            members_who_left = sorted(members_who_left, key=lambda item: int(item[sort_by]), reverse=reverse)
+            members_who_joined = sorted(members_who_joined, key=lambda item: int(item[sort_by]), reverse=reverse)
+        elif col_type == 'str':
+            members_who_left = sorted(members_who_left, key=lambda item: item[sort_by].lower(), reverse=reverse)
+            members_who_joined = sorted(members_who_joined, key=lambda item: item[sort_by].lower(), reverse=reverse)
 
     return render_template('dashboard/diff_view.html', members_who_left=members_who_left,
                            members_who_joined=members_who_joined, clan_name=clan_name,
@@ -124,51 +127,29 @@ def read_score_file(file_path, sort_by, reverse, col_type):
     members = []
     with open(file_path, 'r', encoding='utf-8') as f:
         csv_reader = csv.reader(f)
-        next(csv_reader)
-        if sort_by is not None:
-            sort_by = int(sort_by)
-            if reverse is None:
-                reverse = False
-            else:
-                reverse = True
-            if col_type == 'int':
-                members = sorted(csv_reader, key=lambda item: int(item[sort_by]), reverse=reverse)
-            elif col_type == 'date':
-                members = sorted(csv_reader, key=lambda item: item[sort_by][:10], reverse=reverse)
-            elif col_type == 'str':
-                members = sorted(csv_reader, key=lambda item: item[sort_by].lower(), reverse=reverse)
-        else:
-            for row in csv_reader:
-                members.append(row)
-    return members
-
-
-def read_score_file1(file_path, sort_by, reverse, col_type):
-    members = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        csv_reader = csv.reader(f)
         headers = next(csv_reader)
-        if sort_by is not None:
-            sort_by = int(sort_by)
-            if reverse is None:
-                reverse = False
-            else:
-                reverse = True
-            if col_type == 'int':
-                members = sorted(csv_reader, key=lambda item: int(item[sort_by]), reverse=reverse)
-            elif col_type == 'date':
-                members = sorted(csv_reader, key=lambda item: item[sort_by][:10], reverse=reverse)
-            elif col_type == 'str':
-                members = sorted(csv_reader, key=lambda item: item[sort_by].lower(), reverse=reverse)
-        else:
-            for row in csv_reader:
-                members.append(row)
+        for row in csv_reader:
+            members.append(row)
     mem_list = []
     for member in members:
         mem_as_json = {}
         for i in range(len(headers)):
             mem_as_json[headers[i]] = member[i]
         mem_list.append(mem_as_json)
+    if sort_by is not None:
+        reverse = reverse is not None
+        if sort_by == 'inactive':
+            reverse = not reverse
+
+        if sort_by == 'clan_engram':
+            reverse = not reverse
+            mem_list = sorted(mem_list, key=lambda item: str(item[sort_by + '_hunter'] == 'True' or item[sort_by + '_warlock'] == 'True' or item[sort_by + '_titan'] == 'True'), reverse=reverse)
+        elif col_type == 'int':
+            mem_list = sorted(mem_list, key=lambda item: int(item[sort_by]), reverse=reverse)
+        elif col_type == 'date':
+            mem_list = sorted(mem_list, key=lambda item: item[sort_by][:10], reverse=reverse)
+        elif col_type == 'str':
+            mem_list = sorted(mem_list, key=lambda item: item[sort_by].lower(), reverse=reverse)
     return mem_list
 
 
@@ -176,7 +157,7 @@ def get_inactive_members(clan_name, selected_date):
     inactive_members = []
 
     file_path = get_file_path(clan_name, selected_date)
-    members = read_score_file1(file_path, None, None, None)
+    members = read_score_file(file_path, None, None, None)
 
     for m in members:
         if m['inactive'] == 'True':

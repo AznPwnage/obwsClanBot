@@ -11,16 +11,16 @@
     <thead>
       <tr>
         <th>Name<br/>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='name', col_type='str', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='name', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
         <th>Score New<br/>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='score', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
         <th>Score Old<br/>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
-          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='prev_score', col_type='int', selected_date='%s'%selected_date ) }}"><font size="2">▲</font></a>
+          <a href="{{ url_for('dashboard.discord_view', clan_name='%s'%clan_name, sort_by='prev_score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font size="2">▼</font></a>
         </th>
       </tr>
     </thead>

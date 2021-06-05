@@ -16,66 +16,66 @@
     <thead>
     <tr>
         <th rowspan="2">Name<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='name', col_type='str', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='0', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='name', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
             <br>
         </th>
         <th rowspan="2">Score<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='score', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='1', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Display Score<br/>
         </th>
         <th rowspan="2">Previous Score<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='prev_score', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='3', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='prev_score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">External Score<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='external_score', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='82', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='external_score', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Gild Level<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='83', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='gild_level', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='83', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='gild_level', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Score Delta<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='score_delta', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='2', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='score_delta', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Days Last Played<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='days_last_played', col_type='int', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='4', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='days_last_played', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Date Last Played<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='date_last_played', col_type='date', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='5', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='date_last_played', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Inactive<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='inactive', col_type='str', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='10', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='inactive', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th rowspan="2">Clan Engram<br/>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='21', col_type='date', selected_date='%s'%selected_date ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='clan_engram', col_type='str', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
-            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='21', col_type='date', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='clan_engram', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
         <th colspan="3">GOS</th>
@@ -344,22 +344,20 @@ function addExternalScore(i) {
     var m = {{members|tojson}};
     var old_external_score = m[i].external_score;
     var new_external_score = document.getElementById("externalScore_".concat(i)).value;
-    var external_score = +new_external_score - +old_external_score;
     var gild_level = +document.getElementById("gildLevel_".concat(i)).value
-
     var old_score = m[i].score;
-    external_score = applyGildCap(+old_score, +external_score, gild_level, i);
 
-    var new_score = +external_score + +old_score;
+    var original_score = +old_score - +old_external_score;
+
+    new_external_score = applyGildCap(original_score, new_external_score, gild_level, i);
+
+    var new_score = +original_score + +new_external_score;
+    var new_score_delta = +new_score - +m[i].prev_score;
+
     document.getElementById("score_".concat(i)).innerHTML = new_score;
-
-    var prev_score = document.getElementById("prevScore_".concat(i)).innerHTML;
-    var new_score_delta = +new_score - +prev_score;
     document.getElementById("scoreDelta_".concat(i)).innerHTML = new_score_delta;
-
-    document.getElementById("externalScore_".concat(i)).value = external_score;
+    document.getElementById("externalScore_".concat(i)).value = new_external_score;
     calculateDisplayScore(i);
-
     applyScoreColor(new_score, document.getElementById("score_td_".concat(i)));
 }
 </script>
@@ -466,7 +464,6 @@ $('#saveScores_btn').click( function(e){
             .replace("url_placeholder", window.location.href.replaceAll("&", "%26"))
             .replaceAll("amp;", "");
 
-<!--    console.log(url_to_hit);-->
     window.location.href = url_to_hit;
 });
 </script>
@@ -487,10 +484,10 @@ function updateGildLevel(i) {
 }
 </script>
 <script>
-function applyGildCap(oldScore, externalScore, gildLevel, i) {
+function applyGildCap(originalScore, newExternalScore, gildLevel, i) {
     var gildLevelThresholds = new Map([[0, 720],[1,2160],[2,4320],[3,7920],[4,99999]]);
     var gildLevelThreshold = gildLevelThresholds.get(gildLevel);
-    var potentialScore = oldScore + externalScore;
+    var potentialScore = +originalScore + +newExternalScore;
     if (gildLevel != 4) {
         var optionElement = document.getElementById("option".concat(gildLevel+1) + "_".concat(i));
     }
@@ -498,12 +495,12 @@ function applyGildCap(oldScore, externalScore, gildLevel, i) {
         if (gildLevel != 4) {
             optionElement.disabled = false;
         }
-        return (gildLevelThreshold - oldScore);
+        return (+gildLevelThreshold - +originalScore);
     }
     if (gildLevel != 4) {
         optionElement.disabled = true;
     }
-    return externalScore;
+    return newExternalScore;
 }
 </script>
 <script>

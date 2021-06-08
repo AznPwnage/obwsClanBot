@@ -203,6 +203,8 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
         ref_id = get_activity_ref_id(raid)
+        if not DestinyActivity.has_value(ref_id):
+            continue
         activity_enum = DestinyActivity(ref_id)
         if activity_invalid(raid, activity_enum):
             continue
@@ -271,6 +273,8 @@ def get_activity_ref_id(activity):
         ref_id = 2122313384
     if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
         ref_id = 910380154
+    if ref_id == 3711931140:  # Hack for guided games VOG.
+        ref_id = 3881495763
     return ref_id
 
 

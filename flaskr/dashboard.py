@@ -91,7 +91,7 @@ def save_to_csv():
     date = request.args.get('date', None)
     url = request.args.get('old_url', None).replace('%26', '&')
 
-    m = urllib.parse.unquote(m)
+    m = m.replace('\"', '')
     mem_list = clan_lib.build_clan_members_from_json_string(m)
 
     file_path = get_file_path(clan, date)

@@ -475,6 +475,12 @@ def generate_scores(selected_clan):
             curr_member_list.append(curr_member)
             continue
 
+        if curr_member.membership_type != '3':
+            linked_profiles = request.BungieApiCall().get_linked_profiles(curr_member.membership_type, curr_member.membership_id, 'true')
+            for profileWithError in linked_profiles['Response']['profilesWithErrors']:
+                if profileWithError['infoCard']['membershipType'] == 3:
+                    curr_member.name = profileWithError['infoCard']['displayName']
+
         curr_member = get_prev_week_score(curr_member, prev_df)
         curr_member = get_date_last_played(curr_member, profile, curr_dt)
         curr_member = get_prev_gild_level(curr_member, prev_df)

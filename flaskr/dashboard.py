@@ -60,7 +60,6 @@ def discord_view():
 
 @dashboard.route('/diff')
 def diff_view():
-    clan_name = request.args.get('clan_name', None)
     start_date_str = request.args.get('start_date', None)
     end_date_str = request.args.get('end_date', None)
     sort_by = request.args.get('sort_by', None)
@@ -69,7 +68,7 @@ def diff_view():
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
     end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
-    members_who_left, members_who_joined = score_gen.get_clan_member_diff(clan_name, start_date, end_date)
+    members_who_left, members_who_joined = score_gen.get_clan_member_diff(start_date, end_date)
     if sort_by is not None:
         reverse = reverse is not None
         if col_type == 'int':
@@ -79,9 +78,7 @@ def diff_view():
             members_who_left = sorted(members_who_left, key=lambda item: item[sort_by].lower(), reverse=reverse)
             members_who_joined = sorted(members_who_joined, key=lambda item: item[sort_by].lower(), reverse=reverse)
 
-    return render_template('dashboard/diff_view.html', members_who_left=members_who_left,
-                           members_who_joined=members_who_joined, clan_name=clan_name,
-                           start_date=start_date_str, end_date=end_date_str)
+    return render_template('dashboard/diff_view.html', members_who_left=members_who_left, members_who_joined=members_who_joined, start_date=start_date_str, end_date=end_date_str)
 
 
 @dashboard.route('/save')

@@ -539,11 +539,21 @@ def get_left_diff_df(left_df, right_df):
     return left_df[left_df.index.isin(diff_index.tolist())].reset_index()
 
 
-def get_clan_member_diff(selected_clan, start_date, end_date):
-    start_file_path = get_file_path(selected_clan, start_date)
-    end_file_path = get_file_path(selected_clan, end_date)
-    start_df = pd.read_csv(start_file_path, usecols=['score', 'membership_id', 'name'], index_col='membership_id')
-    end_df = pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name'], index_col='membership_id')
+def get_clan_member_diff(start_date, end_date):
+    start_df = pd.DataFrame()
+    end_df = pd.DataFrame()
+    for clan in clans:
+        clan = clans[clan]
+        start_file_path = get_file_path(clan.name, start_date)
+        end_file_path = get_file_path(clan.name, end_date)
+        if start_df.empty:
+            start_df = pd.read_csv(start_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')
+        else:
+            start_df = pd.concat([start_df, pd.read_csv(start_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')])
+        if end_df.empty:
+            end_df = pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')
+        else:
+            end_df = pd.concat([end_df, pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')])
     members_who_left = get_left_diff_df(start_df, end_df)
     members_who_joined = get_left_diff_df(end_df, start_df)
     return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')

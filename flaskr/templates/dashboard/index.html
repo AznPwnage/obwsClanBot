@@ -71,16 +71,6 @@
         </select>
         </td>
         <td>
-            Clan: <select id="diffView_clanPick">
-            <option value="Emerald">Emerald</option>
-            <option value="Jade">Jade</option>
-            <option value="Peridot">Peridot</option>
-            <option value="Ruby">Ruby</option>
-            <option value="Garnet">Garnet</option>
-            <option value="Thulite">Thulite</option>
-            <option value="Onyx">Onyx</option>
-            <option value="Topaz">Topaz</option>
-        </select>
         </td>
         <td>
             Clan: <select id="inactiveView_clanPick">
@@ -161,8 +151,7 @@ $('#diffView_btn').click( function(e){
     var selectedClan = $("#diffView_clanPick").val()
     var startDate = $("#diffView_startDatePick").val()
     var endDate = $("#diffView_endDatePick").val()
-    var url = "{{ url_for('dashboard.diff_view', clan_name='selectedClan', start_date='startDate', end_date='endDate') }}"
-            .replace("selectedClan", selectedClan)
+    var url = "{{ url_for('dashboard.diff_view', start_date='startDate', end_date='endDate') }}"
             .replace("startDate", startDate)
             .replace("endDate", endDate)
             .replaceAll("amp;", "");

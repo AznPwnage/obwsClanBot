@@ -120,6 +120,7 @@ def initialize_member(clan_member):
     for m in milestones_special.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
     member.set('exo_challenge', copy.copy(destiny_class_count_dict))
+    member.set('clan_xp', copy.copy(destiny_class_count_dict))
 
     member.set(DestinyActivity.gos.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.dsc.name, copy.copy(destiny_class_count_dict))
@@ -371,6 +372,19 @@ def get_trials(member, member_class, milestones_list):
     return member
 
 
+def get_clan_xp(member, member_class, uninstanced_item_objectives):
+    if not member.low_light[member_class.name]:
+        m = milestones_special.get('clan_xp')
+        if not milestone_not_in_list(uninstanced_item_objectives, m.ms_hash):
+            for objective in uninstanced_item_objectives[m.ms_hash]:
+                if objective['objectiveHash'] == m.obj_hash:
+                    print(objective)
+                    member.get(m.name)[member_class.name] = objective['progress']
+                    if objective['progress'] >= 5000:
+                        member.score += m.score
+    return member
+
+
 def apply_score_cap_and_decay(member, clan_type):
     if member.score > 40:
         member.score = 40
@@ -396,15 +410,17 @@ def apply_gild_cap(member):
     return member
 
 
-def check_inactive(member, clan_type, completion_counter):
-    # if member.days_last_played > 5:
-    #     member.inactive = True
-    #     return member
-    for char_completion in member.clan_engram:
-        member.inactive = True
-        if member.clan_engram[char_completion]:
-            member.inactive = False
-            break
+def check_inactive(member, clan_type, completion_counter, clan_level):
+    if clan_level == 6:
+        if member.days_last_played > 5:
+            member.inactive = True
+            return member
+    else:
+        for xp in member.clan_xp.values():
+            member.inactive = True
+            if xp >= 5000:
+                member.inactive = False
+                break
     if clan_type == 'Regional':
         return member
     if clan_type == 'PVP':
@@ -492,14 +508,20 @@ def generate_scores(selected_clan):
         for character_id in character_progressions.keys():  # iterate over single member's characters
             milestones_list = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
+            uninstanced_item_objectives = character_progressions[character_id]['uninstancedItemObjectives']
+            progressions = character_progressions[character_id]['progressions']
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
+
+            clan_level = progressions['584850370']['level']
+            print(type(clan_level))
 
             curr_member = get_low_light(curr_member, curr_class, character)
             curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
             curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
             curr_member = get_trials(curr_member, curr_class, milestones_list)
+            curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
 
             for m in milestones.values():
                 if get_milestone_completion_status(curr_member, curr_class, milestones_list, m):
@@ -516,7 +538,7 @@ def generate_scores(selected_clan):
                             curr_member.score += m.score
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
-        curr_member = check_inactive(curr_member, clan.clan_type, completion_counter)
+        curr_member = check_inactive(curr_member, clan.clan_type, completion_counter, clan_level)
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)

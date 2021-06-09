@@ -16,7 +16,7 @@
     </thead>
     <tbody>
     <tr>
-        <td class="bottomCell">
+        <td class="bottomCell" style="vertical-align: top">
                         {%- if members_who_left -%}
             <table class="fullTable">
                 <thead>
@@ -39,6 +39,12 @@
                         <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='clan_name', col_type='str', start_date='%s'%start_date, end_date='%s'%end_date, reverse='1' ) }}"><font
                                 size="2">▼</font></a>
                     </th>
+                    <th>Date<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='date', col_type='date', start_date='%s'%start_date, end_date='%s'%end_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='date', col_type='date', start_date='%s'%start_date, end_date='%s'%end_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -47,6 +53,7 @@
                     <td>{{ member.name }}</td>  <!-- Name -->
                     <td class="score">{{ member.score }}</td>  <!-- Score -->
                     <td>{{ member.clan_name }}</td> <!-- Clan -->
+                    <td>{{ member.date }}</td> <!-- Date -->
                 </tr>
                 {%- endfor -%}
                 </tbody>
@@ -76,6 +83,12 @@
                         <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='clan_name', col_type='str', start_date='%s'%start_date, end_date='%s'%end_date, reverse='1' ) }}"><font
                                 size="2">▼</font></a>
                     </th>
+                    <th>Date<br/>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='date', col_type='date', start_date='%s'%start_date, end_date='%s'%end_date ) }}"><font
+                                size="2">▲</font></a>
+                        <a href="{{ url_for('dashboard.diff_view', clan_name='%s'%clan_name, sort_by='date', col_type='date', start_date='%s'%start_date, end_date='%s'%end_date, reverse='1' ) }}"><font
+                                size="2">▼</font></a>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -84,6 +97,7 @@
                     <td>{{ member.name }}</td>  <!-- Name -->
                     <td class="score">{{ member.score }}</td>  <!-- Score -->
                     <td>{{ member.clan_name }}</td> <!-- Clan -->
+                    <td>{{ member.date }}</td> <!-- Date -->
                 </tr>
                 {%- endfor -%}
                 </tbody>

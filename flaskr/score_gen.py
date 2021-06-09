@@ -554,6 +554,27 @@ def get_clan_member_diff(start_date, end_date):
             end_df = pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')
         else:
             end_df = pd.concat([end_df, pd.read_csv(end_file_path, usecols=['score', 'membership_id', 'name', 'clan_name'], index_col='membership_id')])
+
+    diff_date_iterator = get_week_start(start_date)
+    mid_df = pd.DataFrame()
+    while diff_date_iterator <= get_week_start(end_date):
+        for clan in clans:
+            clan = clans[clan]
+            file_path = get_file_path(clan.name, diff_date_iterator)
+            temp_df = pd.read_csv(file_path, usecols=['score', 'membership_id', 'name', 'clan_name'])
+            temp_df['date'] = datetime.strftime(diff_date_iterator, '%Y-%m-%d')
+            if mid_df.empty:
+                mid_df = temp_df
+            else:
+                mid_df = pd.concat([mid_df, temp_df])
+        diff_date_iterator = diff_date_iterator + timedelta(days=7)
+    idx = mid_df.groupby(['membership_id'], sort=False)['date'].transform(max) == mid_df['date']
+    mid_df = mid_df[idx]
+
     members_who_left = get_left_diff_df(start_df, end_df)
     members_who_joined = get_left_diff_df(end_df, start_df)
+
+    members_who_left = mid_df.loc[mid_df['membership_id'].isin(members_who_left['membership_id'].tolist())]
+    members_who_joined = mid_df.loc[mid_df['membership_id'].isin(members_who_joined['membership_id'].tolist())]
+
     return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')

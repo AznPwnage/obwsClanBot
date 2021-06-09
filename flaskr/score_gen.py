@@ -568,13 +568,15 @@ def get_clan_member_diff(start_date, end_date):
             else:
                 mid_df = pd.concat([mid_df, temp_df])
         diff_date_iterator = diff_date_iterator + timedelta(days=7)
-    idx = mid_df.groupby(['membership_id'], sort=False)['date'].transform(max) == mid_df['date']
-    mid_df = mid_df[idx]
+    idx_left = mid_df.groupby(['membership_id'], sort=False)['date'].transform(max) == mid_df['date']
+    idx_joined = mid_df.groupby(['membership_id'], sort=False)['date'].transform(min) == mid_df['date']
+    mid_df_left = mid_df[idx_left]
+    mid_df_joined = mid_df[idx_joined]
 
     members_who_left = get_left_diff_df(start_df, end_df)
     members_who_joined = get_left_diff_df(end_df, start_df)
 
-    members_who_left = mid_df.loc[mid_df['membership_id'].isin(members_who_left['membership_id'].tolist())]
-    members_who_joined = mid_df.loc[mid_df['membership_id'].isin(members_who_joined['membership_id'].tolist())]
+    members_who_left = mid_df_left.loc[mid_df_left['membership_id'].isin(members_who_left['membership_id'].tolist())]
+    members_who_joined = mid_df_joined.loc[mid_df_joined['membership_id'].isin(members_who_joined['membership_id'].tolist())]
 
     return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')

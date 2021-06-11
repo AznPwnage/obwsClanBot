@@ -477,6 +477,7 @@ def generate_scores(selected_clan):
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
 
+        clan_level = 0
         completion_counter = 0
         curr_member = initialize_member(clan.memberList[j])
         profile = profile_responses[j].json()

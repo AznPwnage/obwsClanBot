@@ -83,6 +83,8 @@ min_light = parser.getint('seasonal_variables', 'min_light')
 
 mod_alts = dict(parser.items('mod_alts')).values()
 
+mods = dict(parser.items('mods')).values()
+
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 
 exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
@@ -411,6 +413,8 @@ def apply_gild_cap(member):
 
 
 def check_inactive(member, clan_type, completion_counter, clan_level):
+    if member.membership_id in mods:
+        return member
     if clan_level == 6:
         if member.days_last_played > 5:
             member.inactive = True

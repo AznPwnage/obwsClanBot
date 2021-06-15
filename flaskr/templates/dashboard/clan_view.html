@@ -447,9 +447,6 @@ $('#saveScores_btn').click( function(e){
         var score = document.getElementById("score_".concat(i)).innerHTML;
         var score_delta = document.getElementById("scoreDelta_".concat(i)).innerHTML;
         var gild_level = +document.getElementById("gildLevel_".concat(i)).value
-        if (m[i].name.includes(",")) {
-            m[i].name = "\"" + m[i].name + "\"";
-        }
         m[i].score = score;
         m[i].external_score = external_score;
         m[i].score_delta = score_delta;

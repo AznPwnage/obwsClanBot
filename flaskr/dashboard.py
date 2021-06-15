@@ -1,7 +1,6 @@
 import csv
 import os.path as path
-import urllib
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import (
     Blueprint, redirect, render_template, request, url_for
@@ -88,7 +87,6 @@ def save_to_csv():
     date = request.args.get('date', None)
     url = request.args.get('old_url', None).replace('%26', '&')
 
-    m = m.replace('\"', '')
     mem_list = clan_lib.build_clan_members_from_json_string(m)
 
     file_path = get_file_path(clan, date)
@@ -115,6 +113,9 @@ def inactive_view():
 
 def get_file_path(clan_name, selected_date):
     dt = datetime.strptime(selected_date, '%Y-%m-%d')
+    curr_dt = datetime.now(timezone.utc)
+    if dt.date() == curr_dt.date():
+        dt = curr_dt
     week_start = score_gen.get_week_start(dt)
     week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
     return path.join(week_folder, clan_name + '.csv')

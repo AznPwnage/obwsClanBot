@@ -283,7 +283,6 @@ def get_activity_ref_id(activity):
 
 def check_aggregate_stats(aggregate_stats, activity_hashes):
     if 'activities' not in aggregate_stats['Response']:
-        print('No activities')
         return False
     for activity in aggregate_stats['Response']['activities']:
         if activity['activityHash'] in activity_hashes:
@@ -380,7 +379,6 @@ def get_clan_xp(member, member_class, uninstanced_item_objectives):
         if not milestone_not_in_list(uninstanced_item_objectives, m.ms_hash):
             for objective in uninstanced_item_objectives[m.ms_hash]:
                 if objective['objectiveHash'] == m.obj_hash:
-                    print(objective)
                     member.get(m.name)[member_class.name] = objective['progress']
                     if objective['progress'] >= 5000:
                         member.score += m.score
@@ -519,7 +517,6 @@ def generate_scores(selected_clan):
             curr_class = DestinyClass(character['classType'])
 
             clan_level = progressions['584850370']['level']
-            print(type(clan_level))
 
             curr_member = get_low_light(curr_member, curr_class, character)
             curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)

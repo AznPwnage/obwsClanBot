@@ -500,6 +500,8 @@ def generate_scores(selected_clan):
                 if profileWithError['infoCard']['membershipType'] == 3:
                     curr_member.name = profileWithError['infoCard']['displayName']
 
+        member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
+
         curr_member = get_prev_week_score(curr_member, prev_df)
         curr_member = get_date_last_played(curr_member, profile, curr_dt)
         curr_member = get_prev_gild_level(curr_member, prev_df)
@@ -540,7 +542,8 @@ def generate_scores(selected_clan):
                             curr_member.score += m.score
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
-        curr_member = check_inactive(curr_member, clan.clan_type, completion_counter, clan_level)
+        if not member_joined_this_week:
+            curr_member = check_inactive(curr_member, clan.clan_type, completion_counter, clan_level)
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)

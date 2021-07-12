@@ -49,3 +49,6 @@ class BungieApiCall:
 
     def get_linked_profiles(self, membership_type, membership_id, get_all_memberships):
         return r.get(self.get_api_root() + 'Destiny2/' + membership_type + '/Profile/' + membership_id + '/LinkedProfiles/?getAllMemberships=' + get_all_memberships, headers=self.get_header()).json()
+
+    def get_pgcr(self, pgcr_id):
+        return r.get(self.get_api_root() + 'Destiny2/Stats/PostGameCarnageReport/' + pgcr_id, headers=self.get_header()).json()

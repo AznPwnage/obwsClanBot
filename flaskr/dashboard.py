@@ -17,6 +17,14 @@ def index():
     return render_template('dashboard/index.html')
 
 
+@dashboard.route('/crapup', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        f = request.files['file']
+        score_gen.crap_scores(f)
+        return redirect(url_for('dashboard.index'))
+
+
 @dashboard.route('/clan')
 def clan_view():
     clan_name = request.args.get('clan_name', None)
@@ -77,7 +85,8 @@ def diff_view():
             members_who_left = sorted(members_who_left, key=lambda item: item[sort_by].lower(), reverse=reverse)
             members_who_joined = sorted(members_who_joined, key=lambda item: item[sort_by].lower(), reverse=reverse)
 
-    return render_template('dashboard/diff_view.html', members_who_left=members_who_left, members_who_joined=members_who_joined, start_date=start_date_str, end_date=end_date_str)
+    return render_template('dashboard/diff_view.html', members_who_left=members_who_left,
+                           members_who_joined=members_who_joined, start_date=start_date_str, end_date=end_date_str)
 
 
 @dashboard.route('/save')
@@ -138,7 +147,9 @@ def read_score_file(file_path, sort_by, reverse, col_type):
 
         if sort_by == 'clan_engram':
             reverse = not reverse
-            mem_list = sorted(mem_list, key=lambda item: str(item[sort_by + '_hunter'] == 'True' or item[sort_by + '_warlock'] == 'True' or item[sort_by + '_titan'] == 'True'), reverse=reverse)
+            mem_list = sorted(mem_list, key=lambda item: str(
+                item[sort_by + '_hunter'] == 'True' or item[sort_by + '_warlock'] == 'True' or item[
+                    sort_by + '_titan'] == 'True'), reverse=reverse)
         elif col_type == 'int':
             mem_list = sorted(mem_list, key=lambda item: int(item[sort_by]), reverse=reverse)
         elif col_type == 'date':

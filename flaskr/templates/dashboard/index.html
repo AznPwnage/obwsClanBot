@@ -13,6 +13,7 @@
     <th>Discord view</th>
     <th>Diff</th>
     <th>Inactives</th>
+    <th>C.R.A.P.</th>
     </thead>
     <tbody>
     <tr>
@@ -30,6 +31,7 @@
         <td>
             Date:<input type="date" id="inactiveView_datePick">
         </td>
+        <td></td>
     </tr>
     <tr>
         <td>
@@ -89,6 +91,12 @@
             <option value="All">All</option>
         </select>
         </td>
+        <td>
+            <form action = "http://localhost:5000/crapup" method=post enctype=multipart/form-data>
+              <input type=file name=file>
+              <input type=submit value=Upload>
+            </form>
+        </td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -106,6 +114,7 @@
         <td class="bottomCell">
             <input id="inactiveView_btn" type="button" value="Go"/>
         </td>
+        <td class="bottomCell"></td>
     </tr>
     </tbody>
 </table>

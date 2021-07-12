@@ -1,11 +1,13 @@
 import copy
 import enum
+import json
+from collections import OrderedDict
 
-from . import request
+from . import request, d2activity, metrics
 from . import clan as clan_lib
 import csv
 from datetime import datetime, timezone, timedelta
-import pytz
+from pytz import UTC as utc
 import os.path as path
 import os
 import pandas as pd
@@ -176,7 +178,6 @@ def get_prev_gild_level(member, df):
 
 
 def get_date_last_played(member, prof, dt):
-    utc = pytz.UTC
     last_dt_str = prof['Response']['profile']['data']['dateLastPlayed']
     last_dt = utc.localize(datetime.strptime(last_dt_str, '%Y-%m-%dT%H:%M:%SZ'))
     member.date_last_played = last_dt_str
@@ -202,12 +203,11 @@ def str_to_time(time_str):
 
 
 def get_raids(member, member_class, week_start, character_id, completion_counter):
-    utc = pytz.UTC
-    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 4)
+    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, destiny_activity_mode_type['raid'])
     for raid in character_raids:
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
-        ref_id = get_activity_ref_id(raid)
+        ref_id = convert_guided_games_ref_ids(raid)
         if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
@@ -233,12 +233,11 @@ def get_dungeons(member, member_class, week_start, character_id):
 
 def process_dungeons(member, member_class, week_start, character_id, activity_mode_type):
     character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, activity_mode_type)
-    utc = pytz.UTC
     for dungeon in character_dungeons:
         if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
 
-        ref_id = get_activity_ref_id(dungeon)
+        ref_id = convert_guided_games_ref_ids(dungeon)
         if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
@@ -272,7 +271,7 @@ def activity_invalid(activity, activity_enum):
     return False
 
 
-def get_activity_ref_id(activity):
+def convert_guided_games_ref_ids(activity):
     ref_id = activity['activityDetails']['referenceId']
     if ref_id == 1661734046:  # Hack because Bungie API has 2 separate LW Raids. Bungie API is a mess.
         ref_id = 2122313384
@@ -450,24 +449,38 @@ def write_members_to_csv(mem_list, file_path):
             writer.writerow(v)
 
 
-def generate_scores(selected_clan):
-
-    curr_dt = datetime.now(timezone.utc)
-    week_start = get_week_start(curr_dt)
-    prev_week = (week_start - timedelta(days=7))
-    clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
-    curr_member_list = []
-    clan = clans[selected_clan]
-    curr_week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
-    curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
-    if not path.exists(curr_week_folder):
-        os.makedirs(curr_week_folder)
+def build_prev_df():
     global prev_df
     if prev_df.empty:
         for prev_week_clan in clans:
-            prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+            prev_file_path = path.join('scoreData', f'{get_prev_week():%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
-                prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id'))
+                prev_df = prev_df.append(
+                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id'))
+
+
+def get_prev_week(week_start):
+    return week_start - timedelta(days=7)
+
+
+def get_curr_week_start():
+    curr_dt = datetime.now(timezone.utc)
+    return get_week_start(curr_dt)
+
+
+def get_curr_date():
+    return datetime.now(timezone.utc)
+
+
+def generate_scores(selected_clan):
+    clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
+    curr_member_list = []
+    clan = clans[selected_clan]
+    curr_week_folder = path.join('scoreData', f'{get_curr_week_start():%Y-%m-%d}')
+    curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
+    if not path.exists(curr_week_folder):
+        os.makedirs(curr_week_folder)
+
     members = clan_member_response['results']
     clan.memberList = []
 
@@ -505,7 +518,7 @@ def generate_scores(selected_clan):
         member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
 
         curr_member = get_prev_week_score(curr_member, prev_df)
-        curr_member = get_date_last_played(curr_member, profile, curr_dt)
+        curr_member = get_date_last_played(curr_member, profile, get_curr_date())
         curr_member = get_prev_gild_level(curr_member, prev_df)
 
         characters = profile['Response']['characters']['data']  # check light level
@@ -523,8 +536,8 @@ def generate_scores(selected_clan):
             clan_level = progressions['584850370']['level']
 
             curr_member = get_low_light(curr_member, curr_class, character)
-            curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
-            curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
+            curr_member, completion_counter = get_raids(curr_member, curr_class, get_curr_week_start(), character_id, completion_counter)
+            curr_member = get_dungeons(curr_member, curr_class, get_curr_week_start(), character_id)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
             curr_member = get_trials(curr_member, curr_class, milestones_list)
             curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
@@ -609,3 +622,124 @@ def get_clan_member_diff(start_date, end_date):
     members_who_joined = mid_df_joined.loc[mid_df_joined['membership_id'].isin(members_who_joined['membership_id'].tolist())]
 
     return members_who_left.to_dict(orient='records'), members_who_joined.to_dict(orient='records')
+
+
+def crap_scores(raw_input):
+    pgcr_ids = process_raw_input(raw_input)
+    pgcr_ids = remove_same_pgcr_ids(pgcr_ids)
+    activities = build_activities_from_pgcr(pgcr_ids)
+    activities = find_same_fireteams(activities)
+    save_activities(activities)
+
+
+# Returns a list of pgcr ids from the raw input
+def process_raw_input(raw_input):
+    urls = extract_urls(raw_input)
+    pgcrs = extract_pgcr_ids(urls)
+    return pgcrs
+
+
+# Returns a list of urls from the raw input, verifying that only urls of allowed websites are provided
+def extract_urls(raw_input):
+    urls = []
+    raw_string = raw_input.read().decode('utf-8')
+    messages = json.loads(raw_string)
+    for message_id in messages:
+        message = messages[message_id]
+        for url in message['destinytracker']:
+            urls.append(url)
+        for url in message['raidreport']:
+            urls.append(url)
+    return urls
+
+
+def extract_pgcr_ids(urls):
+    pgcr_ids = []
+    for url in urls:
+        if 'raid.report' in url:
+            pgcr_ids.append(url.split('pgcr/', 1)[1])
+        if 'destinytracker' in url:
+            pgcr_ids.append(url.split('pgcr/', 1)[1])
+    pgcr_ids = list(OrderedDict.fromkeys(pgcr_ids))
+    return pgcr_ids
+
+
+# Returns a subset of new_pgcr_ids, after removing any duplicates from the existing pgcr_ids
+def remove_same_pgcr_ids(new_pgcr_ids):
+    #TODO: Implement logic
+    return new_pgcr_ids
+
+
+# Returns a list of D2Activity objects with a list in ft_members that have been verified as having completed the activity
+def build_activities_from_pgcr(pgcr_ids):
+    metrics.start_timer('build_activities_from_pgcr')
+
+    activities = []
+    for pgcr_id in pgcr_ids:
+        metrics.start_timer('get_pgcr_api_call')
+        # TODO: handle case of pgcr id being invalid
+        response = request.BungieApiCall().get_pgcr(pgcr_id)['Response']
+        metrics.end_timer('get_pgcr_api_call')
+        activity = verify_and_build_activity(response)
+        if activity is not None and len(activity.ft_members) > 0:
+            activity.pgcr_id = pgcr_id
+            activities.append(activity)
+
+    metrics.end_timer('build_activities_from_pgcr')
+    return activities
+
+
+def verify_and_build_activity(activity_json):
+    activity = d2activity.D2Activity()
+    activity.date = activity_json['period']
+    if not verify_activity_time_period(activity):
+        return None
+    player_data = extract_player_data_from_activity_json(activity_json)
+    activity.ft_members = player_data
+    return activity
+
+
+def verify_activity_time_period(activity):
+    if utc.localize(str_to_time(activity.date)) < get_curr_week_start():
+        return False
+    return True
+
+
+def extract_player_data_from_activity_json(activity_json):
+    player_data = []
+    for entry in activity_json['entries']:
+        if not validate_activity_participation(activity_json, entry):
+            continue
+        player = d2activity.D2ActivityPlayer()
+        player.membership_id = entry['player']['destinyUserInfo']['membershipId']
+        player.display_name = entry['player']['destinyUserInfo']['displayName']
+        player_data.append(player)
+    player_data.sort(key=lambda x: x.membership_id, reverse=True)
+    return player_data
+
+
+def validate_activity_participation(activity_json, entry):
+    if destiny_activity_mode_type['raid'] == activity_json['activityDetails']['mode']:
+        return validate_raid_participation(activity_json, entry)
+
+
+def validate_raid_participation(activity_json, entry):
+    ref_id = convert_guided_games_ref_ids(activity_json)
+    if not DestinyActivity.has_value(ref_id):
+        return False
+    activity_enum = DestinyActivity(ref_id)
+    if activity_invalid(entry, activity_enum):
+        return False
+    return True
+
+
+# Returns a subset of new_activities, removing all that are considered as the same fireteam
+def find_same_fireteams(new_activities):
+    # TODO: Implement logic
+    return new_activities
+
+
+# Writes the D2Activity objects to persistent storage
+def save_activities(activities):
+    # TODO: Implement logic
+    return None

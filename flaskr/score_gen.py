@@ -79,6 +79,8 @@ def build_milestones_from_config(section_name):
 
 
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
+season_splicer_hash = parser.getint('seasonal_variables', 'season_splicer_hash')
+season_chosen_hash = parser.getint('seasonal_variables', 'season_chosen_hash')
 
 min_light = parser.getint('seasonal_variables', 'min_light')
 
@@ -86,11 +88,15 @@ mod_alts = dict(parser.items('mod_alts')).values()
 
 mods = dict(parser.items('mods')).values()
 
+trials_enabled = parser.getboolean('seasonal_variables', 'trials_enabled')
+
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 
 exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
-
-override_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
+empire_hunt_hashes = dict([(x[0], int(x[1])) for x in parser.items('empire_hunt_hashes')]).values()
+battleground_hashes = dict([(x[0], int(x[1])) for x in parser.items('battleground_hashes')]).values()
+override_hashes = dict([(x[0], int(x[1])) for x in parser.items('override_hashes')]).values()
+shattered_realms_hashes = dict([(x[0], int(x[1])) for x in parser.items('shattered_realms_hashes')]).values()
 
 destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
 
@@ -102,6 +108,8 @@ prev_df = pd.DataFrame()
 
 milestones = build_milestones_from_config('milestones')
 milestones_seasonal = build_milestones_from_config('milestones_seasonal')
+milestones_splicer = build_milestones_from_config('milestones_splicer')
+milestones_chosen = build_milestones_from_config('milestones_chosen')
 milestones_special = build_milestones_from_config('milestones_special')
 
 
@@ -115,6 +123,12 @@ def initialize_member(clan_member):
     destiny_class_count_dict = {DestinyClass.hunter.name: 0, DestinyClass.warlock.name: 0, DestinyClass.titan.name: 0}
 
     for m in milestones.values():
+        member.set(m.name, copy.copy(destiny_class_bool_dict))
+
+    for m in milestones_chosen.values():
+        member.set(m.name, copy.copy(destiny_class_bool_dict))
+
+    for m in milestones_splicer.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
 
     for m in milestones_seasonal.values():
@@ -387,6 +401,31 @@ def get_clan_xp(member, member_class, uninstanced_item_objectives):
     return member
 
 
+def get_astral_alignment(curr_member, curr_class, milestones_list):
+    m = milestones_seasonal.get('astral_alignment1')
+    curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
+    if curr_member.get(m.name)[curr_class.name]:
+        m = milestones_seasonal.get('astral_alignment2')
+        curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
+        if curr_member.get(m.name)[curr_class.name]:
+            m = milestones_seasonal.get('astral_alignment3')
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
+    return curr_member
+
+
+def iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_to_iterate_over):
+    for m in milestones_to_iterate_over.values():
+        curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
+    return curr_member
+
+
+def check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestone):
+    if get_milestone_completion_status(curr_member, curr_class, milestones_list, milestone):
+        curr_member.get(milestone.name)[curr_class.name] = True
+        curr_member.score += milestone.score
+    return curr_member
+
+
 def apply_score_cap_and_decay(member, clan_type):
     if member.score > 40:
         member.score = 40
@@ -472,7 +511,7 @@ def generate_scores(selected_clan):
     clan.memberList = []
 
     for mem in members:
-        name = mem['destinyUserInfo']['LastSeenDisplayName']
+        name = mem['destinyUserInfo']['bungieGlobalDisplayName'] if mem['destinyUserInfo']['bungieGlobalDisplayName'] != '' else mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
         if membership_id not in mod_alts:
@@ -496,12 +535,6 @@ def generate_scores(selected_clan):
             curr_member_list.append(curr_member)
             continue
 
-        if curr_member.membership_type != '3':
-            linked_profiles = request.BungieApiCall().get_linked_profiles(curr_member.membership_type, curr_member.membership_id, 'true')
-            for profileWithError in linked_profiles['Response']['profilesWithErrors']:
-                if profileWithError['infoCard']['membershipType'] == 3:
-                    curr_member.name = profileWithError['infoCard']['displayName']
-
         member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
 
         curr_member = get_prev_week_score(curr_member, prev_df)
@@ -511,7 +544,11 @@ def generate_scores(selected_clan):
         characters = profile['Response']['characters']['data']  # check light level
         character_progressions = profile['Response']['characterProgressions']['data']
         character_activities = profile['Response']['characterActivities']['data']
+
         owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
+        owns_season_splicer = season_splicer_hash in profile['Response']['profile']['data']['seasonHashes']
+        owns_season_chosen = season_chosen_hash in profile['Response']['profile']['data']['seasonHashes']
+
         for character_id in character_progressions.keys():  # iterate over single member's characters
             milestones_list = character_progressions[character_id]['milestones']
             activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
@@ -519,6 +556,7 @@ def generate_scores(selected_clan):
             progressions = character_progressions[character_id]['progressions']
             character = characters[character_id]
             curr_class = DestinyClass(character['classType'])
+            aggregate_activity_stats = None
 
             clan_level = progressions['584850370']['level']
 
@@ -526,22 +564,42 @@ def generate_scores(selected_clan):
             curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
             curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
             curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
-            curr_member = get_trials(curr_member, curr_class, milestones_list)
             curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
 
-            for m in milestones.values():
-                if get_milestone_completion_status(curr_member, curr_class, milestones_list, m):
-                    curr_member.get(m.name)[curr_class.name] = True
-                    curr_member.score += m.score
+            aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+            unlocked_empire_hunt_milestones = check_aggregate_stats(aggregate_activity_stats, empire_hunt_hashes)
+            if unlocked_empire_hunt_milestones:
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('empire_hunt'))
 
-            if owns_current_season:
-                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+            if trials_enabled:
+                curr_member = get_trials(curr_member, curr_class, milestones_list)
+
+            curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
+
+            if owns_season_chosen:
+                if aggregate_activity_stats is None:
+                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+                unlocked_battleground_milestones = check_aggregate_stats(aggregate_activity_stats, battleground_hashes)
+                if unlocked_battleground_milestones:
+                    curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_chosen)
+
+            if owns_season_splicer:
+                if aggregate_activity_stats is None:
+                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
                 unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
                 if unlocked_override_milestones:
-                    for m in milestones_seasonal.values():
-                        if get_milestone_completion_status(curr_member, curr_class, milestones_list, m):
-                            curr_member.get(m.name)[curr_class.name] = True
-                            curr_member.score += m.score
+                    curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_splicer)
+
+            if owns_current_season:
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wf_compass'))
+
+                curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
+
+                if aggregate_activity_stats is None:
+                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
+                unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
+                if unlocked_shattered_realms:
+                    curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('shattered_champions'))
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         if not member_joined_this_week:

@@ -72,7 +72,7 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='inactive', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
-        <th rowspan="2">Clan Engram<br/>
+        <th rowspan="2">Clan XP<br/>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='clan_engram', col_type='str', selected_date='%s'%selected_date ) }}"><font
                     size="2">▲</font></a>
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='clan_engram', col_type='str', selected_date='%s'%selected_date, reverse='1' ) }}"><font
@@ -187,7 +187,7 @@
             {%- endif -%}
         </td>  <!-- Inactive -->
         <td>
-            {%- if members[i].clan_xp_hunter | int >= 5000 or members[i].clan_xp_warlock | int >= 5000 or members[i].clan_xp_titan | int >= 5000 -%}
+            {%- if ( members[i].clan_xp_hunter | int + members[i].clan_xp_warlock | int + members[i].clan_xp_titan | int ) >= 5000 -%}
             ✔️
             {%- endif -%}
         </td>

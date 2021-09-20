@@ -433,13 +433,13 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
     if clan_level == 6:
         if member.days_last_played > 5:
             member.inactive = True
-            return member
     else:
+        total_xp = 0
+        member.inactive = True
         for xp in member.clan_xp.values():
-            member.inactive = True
-            if xp >= 5000:
-                member.inactive = False
-                break
+            total_xp += xp
+        if total_xp >= 5000:
+            member.inactive = False
     if clan_type == 'Regional':
         return member
     if clan_type == 'PVP':
@@ -498,6 +498,7 @@ def generate_scores(selected_clan):
 
         clan_level = 0
         completion_counter = 0
+        clan_xp = 0
         curr_member = initialize_member(clan.memberList[j])
         profile = profile_responses[j].json()
         print(str(j+1) + '/' + str(len(profile_responses)) + ':' + curr_member.name)

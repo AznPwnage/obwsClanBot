@@ -81,14 +81,13 @@ def build_milestones_from_config(section_name):
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 season_splicer_hash = parser.getint('seasonal_variables', 'season_splicer_hash')
 season_chosen_hash = parser.getint('seasonal_variables', 'season_chosen_hash')
+current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
 
 min_light = parser.getint('seasonal_variables', 'min_light')
 
 mod_alts = dict(parser.items('mod_alts')).values()
 
 mods = dict(parser.items('mods')).values()
-
-trials_enabled = parser.getboolean('seasonal_variables', 'trials_enabled')
 
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 
@@ -366,29 +365,6 @@ def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
     return member
 
 
-def get_trials(member, member_class, milestones_list):
-    if not member.low_light[member_class.name]:
-        m = milestones_special.get('trials3')
-        if milestone_not_in_list(milestones_list, m.ms_hash):
-            member.get(m.name)[member_class.name] = True
-            if 'PVP' == member.clan_type:
-                member.score += 2
-            member.score += m.score
-            m = milestones_special.get('trials5')
-            if milestone_not_in_list(milestones_list, m.ms_hash):
-                member.get(m.name)[member_class.name] = True
-                if 'PVP' == member.clan_type:
-                    member.score += 2
-                member.score += m.score
-                m = milestones_special.get('trials7')
-                if milestone_not_in_list(milestones_list, m.ms_hash):
-                    member.get(m.name)[member_class.name] = True
-                    if 'PVP' == member.clan_type:
-                        member.score += 2
-                    member.score += m.score
-    return member
-
-
 def get_clan_xp(member, member_class, uninstanced_item_objectives):
     if not member.low_light[member_class.name]:
         m = milestones_special.get('clan_xp')
@@ -548,6 +524,7 @@ def generate_scores(selected_clan):
         owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
         owns_season_splicer = season_splicer_hash in profile['Response']['profile']['data']['seasonHashes']
         owns_season_chosen = season_chosen_hash in profile['Response']['profile']['data']['seasonHashes']
+        owns_current_expansion = profile['Response']['profile']['data']['versionsOwned'] > current_expansion_value
 
         for character_id in character_progressions.keys():  # iterate over single member's characters
             milestones_list = character_progressions[character_id]['milestones']
@@ -570,9 +547,6 @@ def generate_scores(selected_clan):
             unlocked_empire_hunt_milestones = check_aggregate_stats(aggregate_activity_stats, empire_hunt_hashes)
             if unlocked_empire_hunt_milestones:
                 curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('empire_hunt'))
-
-            if trials_enabled:
-                curr_member = get_trials(curr_member, curr_class, milestones_list)
 
             curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
 
@@ -600,6 +574,10 @@ def generate_scores(selected_clan):
                 unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
                 if unlocked_shattered_realms:
                     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('shattered_champions'))
+
+            if owns_current_expansion:
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('trials50'))
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('trials7'))
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         if not member_joined_this_week:

@@ -99,9 +99,8 @@
         <th colspan="3">Gambit</th>
         <th colspan="3">Crucible Playlist</th>
         <th colspan="3">Crucible Glory</th>
-        <th colspan="3">Trials 3 wins</th>
-        <th colspan="3">Trials 5 wins</th>
-        <th colspan="3">Trials 7 wins</th>
+        <th colspan="3">Trials 50 Wins</th>
+        <th colspan="3">Trials 7 Wins</th>
         <th colspan="3">Prophecy</th>
         <th colspan="3">Harbinger</th>
         <th colspan="3">Presage</th>
@@ -119,7 +118,7 @@
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(37) %}
+        {%- for i in range(36) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -255,15 +254,12 @@
         <td>{%- if members[i].crucible_glory_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
         <td>{%- if members[i].crucible_glory_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
         <td>{%- if members[i].crucible_glory_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
-        <td>{%- if members[i].trials3_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Hunter -->
-        <td>{%- if members[i].trials3_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Warlock -->
-        <td>{%- if members[i].trials3_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 3 Titan -->
-        <td>{%- if members[i].trials5_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Hunter -->
-        <td>{%- if members[i].trials5_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Warlock -->
-        <td>{%- if members[i].trials5_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 5 Titan -->
-        <td>{%- if members[i].trials7_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Hunter -->
-        <td>{%- if members[i].trials7_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Warlock -->
-        <td>{%- if members[i].trials7_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Titan -->
+        <td>{%- if members[i].trials50_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Hunter -->
+        <td>{%- if members[i].trials50_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Warlock -->
+        <td>{%- if members[i].trials50_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Titan -->
+        <td>{%- if members[i].trials7_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Hunter -->
+        <td>{%- if members[i].trials7_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Warlock -->
+        <td>{%- if members[i].trials7_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Titan -->
         <td>{%- if members[i].prophecy_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Hunter -->
         <td>{%- if members[i].prophecy_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Warlock -->
         <td>{%- if members[i].prophecy_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Titan -->

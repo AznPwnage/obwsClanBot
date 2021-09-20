@@ -536,6 +536,9 @@ def generate_scores(selected_clan):
             curr_class = DestinyClass(character['classType'])
             aggregate_activity_stats = None
 
+            if '584850370' not in progressions.keys():
+                # Member left clan within the time that it took to reach their profile in the code
+                break
             clan_level = progressions['584850370']['level']
 
             curr_member = get_low_light(curr_member, curr_class, character)

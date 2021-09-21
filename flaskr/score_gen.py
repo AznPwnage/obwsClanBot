@@ -389,6 +389,15 @@ def get_astral_alignment(curr_member, curr_class, milestones_list):
     return curr_member
 
 
+def get_trials(curr_member, curr_class, milestones_list, milestone, clan_type):
+    if get_milestone_completion_status(curr_member, curr_class, milestones_list, milestone):
+        curr_member.get(milestone.name)[curr_class.name] = True
+        curr_member.score += milestone.score
+        if clan_type == 'PVP':
+            curr_member.score += 2
+    return curr_member
+
+
 def iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_to_iterate_over):
     for m in milestones_to_iterate_over.values():
         curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
@@ -580,8 +589,8 @@ def generate_scores(selected_clan):
                     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('shattered_champions'))
 
             if owns_current_expansion:
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('trials50'))
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('trials7'))
+                curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'), clan.clan_type)
+                curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'), clan.clan_type)
 
         curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
         if not member_joined_this_week:

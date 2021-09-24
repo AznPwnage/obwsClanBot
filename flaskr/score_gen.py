@@ -1,5 +1,6 @@
 import copy
 import enum
+from collections import OrderedDict
 
 from . import request
 from . import clan as clan_lib
@@ -90,6 +91,7 @@ mod_alts = dict(parser.items('mod_alts')).values()
 mods = dict(parser.items('mods')).values()
 
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
+rejoin_lookback_map = dict([(int(x[0]), int(x[1])) for x in parser.items('rejoin_lookback')])
 
 exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
 empire_hunt_hashes = dict([(x[0], int(x[1])) for x in parser.items('empire_hunt_hashes')]).values()
@@ -104,6 +106,7 @@ activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, Desti
 clans = clan_lib.ClanGroup().get_clans()
 
 prev_df = pd.DataFrame()
+lookback_df = pd.DataFrame()
 
 milestones = build_milestones_from_config('milestones')
 milestones_seasonal = build_milestones_from_config('milestones_seasonal')
@@ -462,6 +465,48 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
     return member
 
 
+def perform_lookback(member, df):
+    if df is not None:
+        if int(member.membership_id) in df.index:
+            latest_row = lookback_df.loc[int(member.membership_id)].sort_values('date', ascending=False).head(1)
+            latest_row.reset_index(inplace=True)
+            lookback_score = int(latest_row.values[0][2])
+            lookback_date_str = str(latest_row.values[0][4])
+
+            print('lookback score: {0}'.format(lookback_score))
+
+            lookback_weeks = get_lookback_weeks(lookback_score)
+            weeks_looked_back = get_weeks_looked_back(lookback_date_str)
+
+            print('lookback_weeks: {0}, weeks_looked_back: {1}'.format(lookback_weeks, weeks_looked_back))
+
+            if weeks_looked_back <= lookback_weeks:
+                member.prev_score += lookback_score
+                if 'gild_level' in df.columns:
+                    member.gild_level = int(latest_row['gild_level'])
+    return member
+
+
+def get_lookback_weeks(score):
+    lookback_weeks = 0
+    score_thresholds = list(rejoin_lookback_map.keys())
+    for i in range(len(score_thresholds)):
+        if i == len(score_thresholds):
+            if score_thresholds[i] <= score:
+                lookback_weeks = rejoin_lookback_map.get(score_thresholds[i])
+            return lookback_weeks
+        if score_thresholds[i] <= score < score_thresholds[i + 1]:
+            return rejoin_lookback_map.get(score_thresholds[i])
+        if score < score_thresholds[i]:
+            return 0
+
+
+def get_weeks_looked_back(old_date_str):
+    old_week_start = datetime.strptime(old_date_str, '%Y-%m-%d')
+    curr_week_start = get_week_start(datetime.now())
+    return (curr_week_start - old_week_start).days / 7
+
+
 def write_members_to_csv(mem_list, file_path):
     if path.exists(file_path):  # this week's data is already generated for this clan, delete it
         os.remove(file_path)
@@ -482,16 +527,31 @@ def generate_scores(selected_clan):
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
     curr_member_list = []
     clan = clans[selected_clan]
+
     curr_week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
+
     global prev_df
     if prev_df.empty:
         for prev_week_clan in clans:
             prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
                 prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id'))
+
+    global lookback_df
+    if lookback_df.empty:
+        max_lookback = max(rejoin_lookback_map.values())
+        for i in range(1, max_lookback):
+            lookback_week = (week_start - timedelta(days=i*7))
+            for lookback_clan in clans:
+                lookback_file_path = path.join('scoreData', f'{lookback_week:%Y-%m-%d}', clans[lookback_clan].name + '.csv')
+                if path.exists(lookback_file_path):
+                    temp_df = pd.read_csv(lookback_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id')
+                    temp_df['date'] = f'{lookback_week:%Y-%m-%d}'
+                    lookback_df = lookback_df.append(temp_df)
+
     members = clan_member_response['results']
     clan.memberList = []
 
@@ -592,9 +652,13 @@ def generate_scores(selected_clan):
                 curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'), clan.clan_type)
                 curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'), clan.clan_type)
 
-        curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
-        if not member_joined_this_week:
+        if member_joined_this_week:
+            curr_member = perform_lookback(curr_member, lookback_df)
+        else:
             curr_member = check_inactive(curr_member, clan.clan_type, completion_counter, clan_level)
+
+        curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
+
         curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)

@@ -519,7 +519,141 @@ def write_members_to_csv(mem_list, file_path):
             writer.writerow(v)
 
 
-def generate_scores(selected_clan):
+def build_prev_df(prev_week):
+    global prev_df
+    if prev_df.empty:
+        for prev_week_clan in clans:
+            prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+            if path.exists(prev_file_path):
+                prev_df = prev_df.append(
+                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'],
+                                index_col='membership_id'))
+
+
+def build_lookback_df(week_start):
+    global lookback_df
+    if lookback_df.empty:
+        max_lookback = max(rejoin_lookback_map.values())
+        for i in range(1, max_lookback):
+            lookback_week = (week_start - timedelta(days=i * 7))
+            for lookback_clan in clans:
+                lookback_file_path = path.join('scoreData', f'{lookback_week:%Y-%m-%d}',
+                                               clans[lookback_clan].name + '.csv')
+                if path.exists(lookback_file_path):
+                    temp_df = pd.read_csv(lookback_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'],
+                                          index_col='membership_id')
+                    temp_df['date'] = f'{lookback_week:%Y-%m-%d}'
+                    lookback_df = lookback_df.append(temp_df)
+
+
+def build_score_for_clan_member(clan_member, profile_response, curr_dt, week_start, clan_type):
+    clan_level = 0
+    completion_counter = 0
+    clan_xp = 0
+    curr_member = initialize_member(clan_member)
+    profile = profile_response.json()
+
+    if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
+        curr_member.account_not_exists = True
+        return curr_member
+    if 'data' not in list(profile['Response']['metrics']) or 'data' not in list(
+            profile['Response']['characterProgressions']):  # private profile
+        curr_member.privacy = True
+        return curr_member
+
+    member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
+
+    curr_member = get_prev_week_score(curr_member, prev_df)
+    curr_member = get_date_last_played(curr_member, profile, curr_dt)
+    curr_member = get_prev_gild_level(curr_member, prev_df)
+
+    characters = profile['Response']['characters']['data']  # check light level
+    character_progressions = profile['Response']['characterProgressions']['data']
+    character_activities = profile['Response']['characterActivities']['data']
+
+    owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
+    owns_season_splicer = season_splicer_hash in profile['Response']['profile']['data']['seasonHashes']
+    owns_season_chosen = season_chosen_hash in profile['Response']['profile']['data']['seasonHashes']
+    owns_current_expansion = profile['Response']['profile']['data']['versionsOwned'] > current_expansion_value
+
+    for character_id in character_progressions.keys():  # iterate over single member's characters
+        milestones_list = character_progressions[character_id]['milestones']
+        activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
+        uninstanced_item_objectives = character_progressions[character_id]['uninstancedItemObjectives']
+        progressions = character_progressions[character_id]['progressions']
+        character = characters[character_id]
+        curr_class = DestinyClass(character['classType'])
+        aggregate_activity_stats = None
+
+        if '584850370' not in progressions.keys():
+            # Member left clan within the time that it took to reach their profile in the code
+            break
+        clan_level = progressions['584850370']['level']
+
+        curr_member = get_low_light(curr_member, curr_class, character)
+        curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id,
+                                                    completion_counter)
+        curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
+        curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
+        curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
+
+        aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type,
+                                                                                        curr_member.membership_id,
+                                                                                        character_id)
+        unlocked_empire_hunt_milestones = check_aggregate_stats(aggregate_activity_stats, empire_hunt_hashes)
+        if unlocked_empire_hunt_milestones:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
+                                                        milestones_special.get('empire_hunt'))
+
+        curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
+
+        if owns_season_chosen:
+            if aggregate_activity_stats is None:
+                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
+                    curr_member.membership_type, curr_member.membership_id, character_id)
+            unlocked_battleground_milestones = check_aggregate_stats(aggregate_activity_stats, battleground_hashes)
+            if unlocked_battleground_milestones:
+                curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_chosen)
+
+        if owns_season_splicer:
+            if aggregate_activity_stats is None:
+                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
+                    curr_member.membership_type, curr_member.membership_id, character_id)
+            unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
+            if unlocked_override_milestones:
+                curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_splicer)
+
+        if owns_current_season:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
+                                                        milestones_seasonal.get('wf_compass'))
+
+            curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
+
+            if aggregate_activity_stats is None:
+                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
+                    curr_member.membership_type, curr_member.membership_id, character_id)
+            unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
+            if unlocked_shattered_realms:
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
+                                                            milestones_seasonal.get('shattered_champions'))
+
+        if owns_current_expansion:
+            curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'),
+                                     clan_type)
+            curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'),
+                                     clan_type)
+
+    if member_joined_this_week:
+        curr_member = perform_lookback(curr_member, lookback_df)
+    else:
+        curr_member = check_inactive(curr_member, clan_type, completion_counter, clan_level)
+
+    curr_member = apply_score_cap_and_decay(curr_member, clan_type)
+
+    return curr_member
+
+
+def generate_scores_for_clan(selected_clan):
 
     curr_dt = datetime.now(timezone.utc)
     week_start = get_week_start(curr_dt)
@@ -533,24 +667,9 @@ def generate_scores(selected_clan):
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
 
-    global prev_df
-    if prev_df.empty:
-        for prev_week_clan in clans:
-            prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
-            if path.exists(prev_file_path):
-                prev_df = prev_df.append(pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id'))
+    build_prev_df(prev_week)
 
-    global lookback_df
-    if lookback_df.empty:
-        max_lookback = max(rejoin_lookback_map.values())
-        for i in range(1, max_lookback):
-            lookback_week = (week_start - timedelta(days=i*7))
-            for lookback_clan in clans:
-                lookback_file_path = path.join('scoreData', f'{lookback_week:%Y-%m-%d}', clans[lookback_clan].name + '.csv')
-                if path.exists(lookback_file_path):
-                    temp_df = pd.read_csv(lookback_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'], index_col='membership_id')
-                    temp_df['date'] = f'{lookback_week:%Y-%m-%d}'
-                    lookback_df = lookback_df.append(temp_df)
+    build_lookback_df(week_start)
 
     members = clan_member_response['results']
     clan.memberList = []
@@ -565,99 +684,9 @@ def generate_scores(selected_clan):
     profile_responses = request.BungieApiCall().get_profile(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
 
-        clan_level = 0
-        completion_counter = 0
-        clan_xp = 0
-        curr_member = initialize_member(clan.memberList[j])
-        profile = profile_responses[j].json()
-        print(str(j+1) + '/' + str(len(profile_responses)) + ':' + curr_member.name)
+        print(str(j + 1) + '/' + str(len(profile_responses)) + ':' + clan.memberList[j].name)
 
-        if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
-            curr_member.account_not_exists = True
-            curr_member_list.append(curr_member)
-            continue
-        if 'data' not in list(profile['Response']['metrics']) or 'data' not in list(profile['Response']['characterProgressions']):  # private profile
-            curr_member.privacy = True
-            curr_member_list.append(curr_member)
-            continue
-
-        member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
-
-        curr_member = get_prev_week_score(curr_member, prev_df)
-        curr_member = get_date_last_played(curr_member, profile, curr_dt)
-        curr_member = get_prev_gild_level(curr_member, prev_df)
-
-        characters = profile['Response']['characters']['data']  # check light level
-        character_progressions = profile['Response']['characterProgressions']['data']
-        character_activities = profile['Response']['characterActivities']['data']
-
-        owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
-        owns_season_splicer = season_splicer_hash in profile['Response']['profile']['data']['seasonHashes']
-        owns_season_chosen = season_chosen_hash in profile['Response']['profile']['data']['seasonHashes']
-        owns_current_expansion = profile['Response']['profile']['data']['versionsOwned'] > current_expansion_value
-
-        for character_id in character_progressions.keys():  # iterate over single member's characters
-            milestones_list = character_progressions[character_id]['milestones']
-            activity_hashes = build_activity_hashes(character_activities[character_id]['availableActivities'])
-            uninstanced_item_objectives = character_progressions[character_id]['uninstancedItemObjectives']
-            progressions = character_progressions[character_id]['progressions']
-            character = characters[character_id]
-            curr_class = DestinyClass(character['classType'])
-            aggregate_activity_stats = None
-
-            if '584850370' not in progressions.keys():
-                # Member left clan within the time that it took to reach their profile in the code
-                break
-            clan_level = progressions['584850370']['level']
-
-            curr_member = get_low_light(curr_member, curr_class, character)
-            curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id, completion_counter)
-            curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
-            curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
-            curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
-
-            aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-            unlocked_empire_hunt_milestones = check_aggregate_stats(aggregate_activity_stats, empire_hunt_hashes)
-            if unlocked_empire_hunt_milestones:
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_special.get('empire_hunt'))
-
-            curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
-
-            if owns_season_chosen:
-                if aggregate_activity_stats is None:
-                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-                unlocked_battleground_milestones = check_aggregate_stats(aggregate_activity_stats, battleground_hashes)
-                if unlocked_battleground_milestones:
-                    curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_chosen)
-
-            if owns_season_splicer:
-                if aggregate_activity_stats is None:
-                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-                unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
-                if unlocked_override_milestones:
-                    curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_splicer)
-
-            if owns_current_season:
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wf_compass'))
-
-                curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
-
-                if aggregate_activity_stats is None:
-                    aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-                unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
-                if unlocked_shattered_realms:
-                    curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('shattered_champions'))
-
-            if owns_current_expansion:
-                curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'), clan.clan_type)
-                curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'), clan.clan_type)
-
-        if member_joined_this_week:
-            curr_member = perform_lookback(curr_member, lookback_df)
-        else:
-            curr_member = check_inactive(curr_member, clan.clan_type, completion_counter, clan_level)
-
-        curr_member = apply_score_cap_and_decay(curr_member, clan.clan_type)
+        curr_member = build_score_for_clan_member(clan.memberList[j], profile_responses[j], curr_dt, week_start, clan.clan_type)
 
         curr_member_list.append(curr_member)
 
@@ -667,7 +696,7 @@ def generate_scores(selected_clan):
 def generate_all_scores():
     for clan in clans:
         print(clan)
-        generate_scores(clan)
+        generate_scores_for_clan(clan)
 
 
 def get_file_path(selected_clan, date):

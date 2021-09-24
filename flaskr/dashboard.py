@@ -39,7 +39,7 @@ def generate_scores():
         score_gen.generate_all_scores()
         return render_template('dashboard/index.html')
     else:
-        score_gen.generate_scores(clan_name)
+        score_gen.generate_scores_for_clan(clan_name)
         return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
 
 

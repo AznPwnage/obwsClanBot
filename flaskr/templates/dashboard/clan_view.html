@@ -189,6 +189,8 @@
         <td>
             {%- if ( members[i].clan_xp_hunter | int + members[i].clan_xp_warlock | int + members[i].clan_xp_titan | int ) >= 5000 -%}
             ✔️
+            {%- else -%}
+            {{ (members[i].clan_xp_hunter | int) + (members[i].clan_xp_warlock | int) + (members[i].clan_xp_titan | int) }}
             {%- endif -%}
         </td>
         <td>{{ members[i].gos_hunter }}</td> <!-- GOS Hunter -->
@@ -206,9 +208,9 @@
         <td>{{ members[i].vog_challenge_hunter }}</td> <!-- VOG Challenge Hunter -->
         <td>{{ members[i].vog_challenge_warlock }}</td> <!-- VOG Challenge Warlock -->
         <td>{{ members[i].vog_challenge_titan }}</td> <!-- VOG Challenge Titan -->
-        <td>{%- if members[i].clan_xp_hunter | int >= 5000 -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Hunter -->
-        <td>{%- if members[i].clan_xp_warlock | int >= 5000 -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Warlock -->
-        <td>{%- if members[i].clan_xp_titan | int >= 5000 -%}✔️{%- else -%}{%- endif -%}</td> <!-- Clan Engram Titan -->
+        <td>{%- if members[i].clan_xp_hunter | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
+        <td>{%- if members[i].clan_xp_warlock | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
+        <td>{%- if members[i].clan_xp_titan | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->
         <td>{%- if members[i].crucible_engram_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
         <td>{%- if members[i].crucible_engram_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
         <td>{%- if members[i].crucible_engram_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->

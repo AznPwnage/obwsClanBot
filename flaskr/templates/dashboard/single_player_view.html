@@ -1,0 +1,366 @@
+<!doctype html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>/SinglePlayer
+{% block header %}
+<h1>Score for {{ member.name }}</h1>
+{% endblock %}
+
+{% block content %}
+<table class="fullTable" id="table">
+    <thead>
+    <tr>
+        <th rowspan="2">Name
+        </th>
+        <th rowspan="2">Score
+        </th>
+        <th rowspan="2">Display Score
+        </th>
+        <th rowspan="2">Previous Score
+        </th>
+        <th rowspan="2">Gild Level
+        </th>
+        <th rowspan="2">Score Delta
+        </th>
+        <th rowspan="2">Days Last Played
+        </th>
+        <th rowspan="2">Date Last Played
+        </th>
+        <th rowspan="2">Inactive
+        </th>
+        <th rowspan="2">Clan XP
+        </th>
+        <th colspan="3">GOS</th>
+        <th colspan="3">DSC</th>
+        <th colspan="3">LW</th>
+        <th colspan="3">VOG</th>
+        <th colspan="3">VOGC</th>
+        <th colspan="3">Clan Engram By Class</th>
+        <th colspan="3">Crucible Engram</th>
+        <th colspan="3">Exo Challenge</th>
+        <th colspan="3">Banshee</th>
+        <th colspan="3">Drifter</th>
+        <th colspan="3">Zavala</th>
+        <th colspan="3">Variks</th>
+        <th colspan="3">Exo Stranger</th>
+        <th colspan="3">Empire Hunts</th>
+        <th colspan="3">Nightfall</th>
+        <th colspan="3">Deadly Venatics</th>
+        <th colspan="3">Strikes</th>
+        <th colspan="3">Nightfall 100k</th>
+        <th colspan="3">Gambit</th>
+        <th colspan="3">Crucible Playlist</th>
+        <th colspan="3">Crucible Glory</th>
+        <th colspan="3">Trials 50 Wins</th>
+        <th colspan="3">Trials 7 Wins</th>
+        <th colspan="3">Prophecy</th>
+        <th colspan="3">Harbinger</th>
+        <th colspan="3">Presage</th>
+        <th colspan="3">POH</th>
+        <th colspan="3">ST</th>
+        <th colspan="3">Battle Hardened</th>
+        <th colspan="3">Net Crasher</th>
+        <th colspan="3">Wayfinder's Compass</th>
+        <th colspan="3">Shattered Champions</th>
+        <th colspan="3">Astral Alignment 1</th>
+        <th colspan="3">Astral Alignment 2</th>
+        <th colspan="3">Astral Alignment 3</th>
+        <th colspan="3">Low Light</th>
+        <th rowspan="2">Account doesn't exist</th>
+        <th rowspan="2">Private account</th>
+    </tr>
+    <tr>
+        {%- for i in range(36) %}
+        <th>H</th>
+        <th>W</th>
+        <th>T</th>
+        {%- endfor -%}
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <th>{{ member.name }}</th>  <!-- Name -->
+        <td class="score" id="score_td"><b id="score">{{ member.score }}</b></td>  <!-- Score -->
+        <td class="score" id="displayScore_td">
+            <b id="displayScore" class="displayScore"></b>
+        </td>   <!-- Display Score -->
+        <td class="score" id="prevScore">{{ member.prev_score }}</td>  <!-- Previous Score -->
+        <td>
+        <select id="gildLevel" onchange="updateGildLevel()">
+            {%- if member.gild_level == '0' -%}
+                <option value="0" selected id="option0">0</option>
+                {%- if member.score == '720' -%}
+                    <option value="1" id="option1">1</option>
+                {%- else -%}
+                    <option value="1" disabled="false" id="option1">1</option>
+                {%- endif -%}
+                <option value="2" hidden id="option2">2</option>
+                <option value="3" hidden id="option3">3</option>
+                <option value="4" hidden id="option4">4</option>
+            {%- elif member.gild_level == '1' -%}
+                <option value="1" selected id="option1">1</option>
+                {%- if member.score == '2160' -%}
+                    <option value="2" id="option2">2</option>
+                {%- else -%}
+                    <option value="2" disabled id="option2">2</option>
+                {%- endif -%}
+                <option value="3" hidden id="option3">3</option>
+                <option value="4" hidden id="option4">4</option>
+            {%- elif member.gild_level == '2' -%}
+                <option value="2" selected id="option2">2</option>
+                {%- if member.score == '4320' -%}
+                    <option value="3" id="option3">3</option>
+                {%- else -%}
+                    <option value="3" disabled id="option3">3</option>
+                {%- endif -%}
+                <option value="4" hidden id="option4">4</option>
+            {%- elif member.gild_level == '3' -%}
+                <option value="3" selected id="option3">3</option>
+                {%- if member.score == '7920' -%}
+                    <option value="4" id="option4">4</option>
+                {%- else -%}
+                    <option value="4" disabled id="option4">4</option>
+                {%- endif -%}
+            {%- elif member.gild_level == '4' -%}
+                <option value="4" selected id="option4">4</option>
+            {%- endif -%}
+        </select>
+        </td>   <!-- Gild Level -->
+        <td id="scoreDelta">{{ member.score_delta }}</td>  <!-- Score Delta -->
+        <td>{{ member.days_last_played }}</td>  <!-- Days Last Played -->
+        <td>{{ member.date_last_played[:10] }}</td>  <!-- Date Last Played -->
+        <td>
+            {%- if member.inactive == 'True' -%}
+            ✔️
+            {%- endif -%}
+        </td>  <!-- Inactive -->
+        <td>
+            {%- if ( (member.clan_xp.hunter | int) + (member.clan_xp.warlock | int) + (member.clan_xp.titan | int) ) >= 5000 -%}
+            ✔️
+            {%- else -%}
+            {{ (member.clan_xp.hunter | int) + (member.clan_xp.warlock | int) + (member.clan_xp.titan | int) }}
+            {%- endif -%}
+        </td>
+        <td>{{ member.gos.hunter }}</td> <!-- GOS Hunter -->
+        <td>{{ member.gos.warlock }}</td> <!-- GOS Warlock -->
+        <td>{{ member.gos.titan }}</td> <!-- GOS Titan -->
+        <td>{{ member.dsc.hunter }}</td> <!-- DSC Hunter -->
+        <td>{{ member.dsc.warlock }}</td> <!-- DSC Warlock -->
+        <td>{{ member.dsc.titan }}</td> <!-- DSC Titan -->
+        <td>{{ member.lw.hunter }}</td> <!-- LW Hunter -->
+        <td>{{ member.lw.warlock }}</td> <!-- LW Warlock -->
+        <td>{{ member.lw.titan }}</td> <!-- LW Titan -->
+        <td>{{ member.vog.hunter }}</td> <!-- VOG Hunter -->
+        <td>{{ member.vog.warlock }}</td> <!-- VOG Warlock -->
+        <td>{{ member.vog.titan }}</td> <!-- VOG Titan -->
+        <td>{{ member.vog_challenge.hunter }}</td> <!-- VOG Challenge Hunter -->
+        <td>{{ member.vog_challenge.warlock }}</td> <!-- VOG Challenge Warlock -->
+        <td>{{ member.vog_challenge.titan }}</td> <!-- VOG Challenge Titan -->
+        <td>{%- if (member.clan_xp.hunter | int) >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
+        <td>{%- if (member.clan_xp.warlock) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
+        <td>{%- if (member.clan_xp.titan) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->
+        <td>{%- if member.crucible_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
+        <td>{%- if member.crucible_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
+        <td>{%- if member.crucible_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->
+        <td>{%- if member.exo_challenge.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Hunter -->
+        <td>{%- if member.exo_challenge.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Warlock -->
+        <td>{%- if member.exo_challenge.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Titan -->
+        <td>{%- if member.banshee_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Hunter -->
+        <td>{%- if member.banshee_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Warlock -->
+        <td>{%- if member.banshee_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Titan -->
+        <td>{%- if member.drifter_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Hunter -->
+        <td>{%- if member.drifter_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Warlock -->
+        <td>{%- if member.drifter_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Titan -->
+        <td>{%- if member.zavala_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Hunter -->
+        <td>{%- if member.zavala_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Warlock -->
+        <td>{%- if member.zavala_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Titan -->
+        <td>{%- if member.variks_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Hunter -->
+        <td>{%- if member.variks_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Warlock -->
+        <td>{%- if member.variks_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Titan -->
+        <td>{%- if member.exo_stranger.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Hunter -->
+        <td>{%- if member.exo_stranger.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Warlock -->
+        <td>{%- if member.exo_stranger.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Titan -->
+        <td>{%- if member.empire_hunt.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Hunter -->
+        <td>{%- if member.empire_hunt.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Warlock -->
+        <td>{%- if member.empire_hunt.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Titan -->
+        <td>{%- if member.nightfall.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
+        <td>{%- if member.nightfall.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
+        <td>{%- if member.nightfall.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
+        <td>{%- if member.deadly_venatics.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Hunter -->
+        <td>{%- if member.deadly_venatics.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Warlock -->
+        <td>{%- if member.deadly_venatics.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Titan -->
+        <td>{%- if member.strikes.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
+        <td>{%- if member.strikes.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
+        <td>{%- if member.strikes.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
+        <td>{%- if member.nightfall_100k.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
+        <td>{%- if member.nightfall_100k.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
+        <td>{%- if member.nightfall_100k.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
+        <td>{%- if member.gambit.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Hunter -->
+        <td>{%- if member.gambit.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Warlock -->
+        <td>{%- if member.gambit.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Titan -->
+        <td>{%- if member.crucible_playlist.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Hunter -->
+        <td>{%- if member.crucible_playlist.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Warlock -->
+        <td>{%- if member.crucible_playlist.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Titan -->
+        <td>{%- if member.crucible_glory.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
+        <td>{%- if member.crucible_glory.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
+        <td>{%- if member.crucible_glory.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
+        <td>{%- if member.trials50.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Hunter -->
+        <td>{%- if member.trials50.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Warlock -->
+        <td>{%- if member.trials50.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Titan -->
+        <td>{%- if member.trials7.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Hunter -->
+        <td>{%- if member.trials7.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Warlock -->
+        <td>{%- if member.trials7.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Titan -->
+        <td>{%- if member.prophecy.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Hunter -->
+        <td>{%- if member.prophecy.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Warlock -->
+        <td>{%- if member.prophecy.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Titan -->
+        <td>{%- if member.harbinger.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Hunter -->
+        <td>{%- if member.harbinger.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Warlock -->
+        <td>{%- if member.harbinger.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Titan -->
+        <td>{{ member.presage.hunter }}</td> <!-- Presage Hunter -->
+        <td>{{ member.presage.warlock }}</td> <!-- Presage Warlock -->
+        <td>{{ member.presage.titan }}</td> <!-- Presage Titan -->
+        <td>{{ member.poh.hunter }}</td> <!-- POH Hunter -->
+        <td>{{ member.poh.warlock }}</td> <!-- POH Warlock -->
+        <td>{{ member.poh.titan }}</td> <!-- POH Titan -->
+        <td>{{ member.st.hunter }}</td> <!-- ST Hunter -->
+        <td>{{ member.st.warlock }}</td> <!-- ST Warlock -->
+        <td>{{ member.st.titan }}</td> <!-- ST Titan -->
+        <td>{%- if member.battle_hardened.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Hunter -->
+        <td>{%- if member.battle_hardened.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Warlock -->
+        <td>{%- if member.battle_hardened.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Titan -->
+        <td>{%- if member.net_crasher.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Hunter -->
+        <td>{%- if member.net_crasher.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Warlock -->
+        <td>{%- if member.net_crasher.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Titan -->
+        <td>{%- if member.wf_compass.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Hunter -->
+        <td>{%- if member.wf_compass.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Warlock -->
+        <td>{%- if member.wf_compass.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Titan -->
+        <td>{%- if member.shattered_champions.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Hunter -->
+        <td>{%- if member.shattered_champions.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Warlock -->
+        <td>{%- if member.shattered_champions.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Titan -->
+        <td>{%- if member.astral_alignment1.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Hunter -->
+        <td>{%- if member.astral_alignment1.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Warlock -->
+        <td>{%- if member.astral_alignment1.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Titan -->
+        <td>{%- if member.astral_alignment2.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Hunter -->
+        <td>{%- if member.astral_alignment2.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Warlock -->
+        <td>{%- if member.astral_alignment2.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Titan -->
+        <td>{%- if member.astral_alignment3.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Hunter -->
+        <td>{%- if member.astral_alignment3.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Warlock -->
+        <td>{%- if member.astral_alignment3.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Titan -->
+        <td>{%- if member.low_light.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
+        <td>{%- if member.low_light.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
+        <td>{%- if member.low_light.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
+        <td>{%- if member.account_not_exists == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Account doesn't exist -->
+        <td>{%- if member.privacy == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Private account -->
+    </tr>
+    </tbody>
+</table>
+{% endblock %}
+<script>
+$(document).ready(function () {
+    $('.score').each(function() {
+        applyScoreColor(parseInt($(this).text()), $(this)[0]);
+    });
+    $('.displayScore').each(function() {
+        calculateDisplayScore();
+    });
+});
+</script>
+<script>
+function applyScoreColor(score, element) {
+    if (score < 60) {
+      element.className = "score guardian";
+    } else if (score < 120) {
+      element.className = "score brave";
+    } else if (score < 240) {
+      element.className = "score heroic";
+    } else if (score < 480) {
+      element.className = "score fabled";
+    } else if (score < 720) {
+      element.className = "score mythic";
+    } else if (score == 720) {
+      element.className = "score legend";
+    } else if (score < 2160) {
+      element.className = "score gildedLegend";
+    } else if (score == 2160) {
+      element.className = "score ironWolf";
+    } else if (score < 4320) {
+      element.className = "score gildedIronWolf";
+    } else if (score == 4320) {
+      element.className = "score ironLord";
+    } else if (score < 7920) {
+      element.className = "score gildedIronLord";
+    } else if (score == 7920) {
+      element.className = "score ironWill";
+    } else {
+      element.className = "score ironWill";
+    }
+}
+</script>
+<script>
+function applyDisplayScoreColor(score, gildLevel, element) {
+    if (score < 60 && gildLevel == 0) {
+      element.className = "score guardian";
+    } else if (score < 120 && gildLevel == 0) {
+      element.className = "score brave";
+    } else if (score < 240 && gildLevel == 0) {
+      element.className = "score heroic";
+    } else if (score < 480 && gildLevel == 0) {
+      element.className = "score fabled";
+    } else if (score < 720 && gildLevel == 0) {
+      element.className = "score mythic";
+    } else if (score == 720 && gildLevel == 0) {
+      element.className = "score legend";
+    } else if (score < 1440 && gildLevel == 1) {
+      element.className = "score gildedLegend";
+    } else if (score == 1440 && gildLevel == 1) {
+      element.className = "score ironWolf";
+    } else if (score < 2160 && gildLevel == 2) {
+      element.className = "score gildedIronWolf";
+    } else if (score == 2160 && gildLevel == 2) {
+      element.className = "score ironLord";
+    } else if (score < 3600 && gildLevel >= 3) {
+      element.className = "score gildedIronLord";
+    } else if (score == 3600 && gildLevel >= 3) {
+      element.className = "score ironWill";
+    } else {
+      element.className = "score ironWill";
+    }
+}
+</script>
+<script>
+function calculateDisplayScore() {
+       var score = +document.getElementById("score").innerHTML;
+       var gildLevel = +document.getElementById("gildLevel").value;
+       var displayScore = score;
+
+       if (gildLevel == 0) {
+       } else if (gildLevel == 1) {
+            displayScore = displayScore - 720;
+       } else if (gildLevel == 2) {
+            displayScore = displayScore - 2160;
+       } else if (gildLevel == 3) {
+            displayScore = displayScore - 4320;
+       } else {
+            displayScore = displayScore - 4320;
+       }
+       document.getElementById("displayScore").innerHTML = displayScore;
+       applyDisplayScoreColor(displayScore, gildLevel, document.getElementById("displayScore_td"));
+}
+</script>
+<script>
+function updateGildLevel() {
+    var oldGildLevel = +member.gild_level;
+    var gildLevel = +document.getElementById("gildLevel").value;
+    if (gildLevel != 4) {
+        var optionElement = document.getElementById("option".concat(gildLevel+1));
+        optionElement.hidden = false;
+        optionElement.disabled = true;
+    }
+    if (gildLevel <= oldGildLevel) {
+        // TODO: add logic to remove optionElements above current
+        addExternalScore(i);
+    }
+}
+</script>

@@ -13,6 +13,7 @@
     <th>Discord view</th>
     <th>Diff</th>
     <th>Inactives</th>
+    <th>Generate scores for player</th>
     </thead>
     <tbody>
     <tr>
@@ -29,6 +30,9 @@
         </td>
         <td>
             Date:<input type="date" id="inactiveView_datePick">
+        </td>
+        <td>
+            Bungie Name:<input type="text" id="generateSingle_textField">
         </td>
     </tr>
     <tr>
@@ -89,6 +93,19 @@
             <option value="All">All</option>
         </select>
         </td>
+        <td>
+            Clan: <select id="generateSingle_clanPick">
+            <option value="Emerald">Emerald</option>
+            <option value="Jade">Jade</option>
+            <option value="Peridot">Peridot</option>
+            <option value="Beryl">Beryl</option>
+            <option value="Ruby">Ruby</option>
+            <option value="Garnet">Garnet</option>
+            <option value="Thulite">Thulite</option>
+            <option value="Onyx">Onyx</option>
+            <option value="Topaz">Topaz</option>
+        </select>
+        </td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -105,6 +122,9 @@
         </td>
         <td class="bottomCell">
             <input id="inactiveView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="generateSingle_btn" type="button" value="Go"/>
         </td>
     </tr>
     </tbody>
@@ -176,6 +196,19 @@ $('#inactiveView_btn').click( function(e){
 });
 </script>
 <script>
+$('#generateSingle_btn').click( function(e){
+    e.preventDefault();
+    disableBtn();
+    var bungieName = $("#generateSingle_textField").val()
+    var selectedClan = $("#generateSingle_clanPick").val()
+    var url = "{{ url_for('dashboard.generate_single', bungie_name ='bungieName', clan_name='selectedClan') }}"
+            .replace("selectedClan", selectedClan)
+            .replace("bungieName", encodeURI(bungieName).replaceAll("#", "%23"))
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
 $(document).ready( function() {
     $('#clanView_datePick').val(new Date().toISOString().slice(0,10));
     $('#discordView_datePick').val(new Date().toISOString().slice(0,10));
@@ -191,5 +224,6 @@ function disableBtn() {
     $('#discordView_btn').prop('disabled', true);
     $('#diffView_btn').prop('disabled', true);
     $('#inactiveView_btn').prop('disabled', true);
+    $('#generateSingle_btn').prop('disabled', true);
 }
 </script>

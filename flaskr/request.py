@@ -1,3 +1,5 @@
+import urllib
+
 import grequests
 import requests as r
 
@@ -21,12 +23,19 @@ class BungieApiCall:
     def get_clan_members(self, clan):
         return r.get(self.get_api_root() + 'GroupV2/' + clan.group_id + '/Members', headers=self.get_header())
 
-    def get_profile(self, member_list):
+    def get_profiles(self, member_list):
         profile_requests = (
             self.api_call('Destiny2/', member.membership_type, '/Profile/', member.membership_id,
                           {'components': [100, 200, 202, 204, 1100]})
             for member in member_list)
         return grequests.map(profile_requests)
+
+    def get_profile(self, membership_type, membership_id):
+        return r.get(self.get_api_root() + 'Destiny2/' + membership_type + '/Profile/' + membership_id,
+                     params={'components': [100, 200, 202, 204, 1100]}, headers=self.get_header()).json()
+
+    def search_player(self, bungie_name):
+        return r.get(self.get_api_root() + 'Destiny2/SearchDestinyPlayer/-1/' + urllib.parse.quote(bungie_name), headers=self.get_header()).json()
 
     def get_activity_history(self, membership_type, membership_id, character_id, activity_type):
         activities = []

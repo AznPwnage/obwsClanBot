@@ -12,6 +12,8 @@ import os
 import pandas as pd
 from configparser import ConfigParser
 
+from .clan import ClanMember
+
 
 class DestinyClass(enum.Enum):
     hunter = 1
@@ -526,7 +528,7 @@ def build_prev_df(prev_week):
             prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
                 prev_df = prev_df.append(
-                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level'],
+                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level', 'clan_name'],
                                 index_col='membership_id'))
 
 
@@ -546,12 +548,15 @@ def build_lookback_df(week_start):
                     lookback_df = lookback_df.append(temp_df)
 
 
-def build_score_for_clan_member(clan_member, profile_response, curr_dt, week_start, clan_type):
+def build_score_for_clan_member(clan_member, profile, clan_type):
+    curr_dt = datetime.now(timezone.utc)
     clan_level = 0
     completion_counter = 0
     clan_xp = 0
+
+    curr_week = get_week_start(curr_dt)
+
     curr_member = initialize_member(clan_member)
-    profile = profile_response.json()
 
     if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
         curr_member.account_not_exists = True
@@ -591,9 +596,9 @@ def build_score_for_clan_member(clan_member, profile_response, curr_dt, week_sta
         clan_level = progressions['584850370']['level']
 
         curr_member = get_low_light(curr_member, curr_class, character)
-        curr_member, completion_counter = get_raids(curr_member, curr_class, week_start, character_id,
+        curr_member, completion_counter = get_raids(curr_member, curr_class, curr_week, character_id,
                                                     completion_counter)
-        curr_member = get_dungeons(curr_member, curr_class, week_start, character_id)
+        curr_member = get_dungeons(curr_member, curr_class, curr_week, character_id)
         curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
         curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
 
@@ -654,39 +659,38 @@ def build_score_for_clan_member(clan_member, profile_response, curr_dt, week_sta
 
 
 def generate_scores_for_clan(selected_clan):
-
-    curr_dt = datetime.now(timezone.utc)
-    week_start = get_week_start(curr_dt)
-    prev_week = (week_start - timedelta(days=7))
+    prev_week, curr_week = get_prev_and_curr_weeks()
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
     curr_member_list = []
     clan = clans[selected_clan]
 
-    curr_week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
+    curr_week_folder = path.join('scoreData', f'{curr_week:%Y-%m-%d}')
     curr_file_path = path.join(curr_week_folder, clan.name + '.csv')
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
 
     build_prev_df(prev_week)
 
-    build_lookback_df(week_start)
+    build_lookback_df(curr_week)
 
     members = clan_member_response['results']
     clan.memberList = []
 
     for mem in members:
-        name = mem['destinyUserInfo']['bungieGlobalDisplayName'] if mem['destinyUserInfo']['bungieGlobalDisplayName'] != '' else mem['destinyUserInfo']['LastSeenDisplayName']
+        name = mem['destinyUserInfo']['bungieGlobalDisplayName'] \
+            if mem['destinyUserInfo']['bungieGlobalDisplayName'] != '' \
+            else mem['destinyUserInfo']['LastSeenDisplayName']
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
         if membership_id not in mod_alts:
             clan.add_member(name, membership_type, membership_id)
 
-    profile_responses = request.BungieApiCall().get_profile(clan.memberList)
+    profile_responses = request.BungieApiCall().get_profiles(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
 
         print(str(j + 1) + '/' + str(len(profile_responses)) + ':' + clan.memberList[j].name)
 
-        curr_member = build_score_for_clan_member(clan.memberList[j], profile_responses[j], curr_dt, week_start, clan.clan_type)
+        curr_member = build_score_for_clan_member(clan.memberList[j], profile_responses[j].json(), clan.clan_type)
 
         curr_member_list.append(curr_member)
 
@@ -697,6 +701,53 @@ def generate_all_scores():
     for clan in clans:
         print(clan)
         generate_scores_for_clan(clan)
+
+
+def generate_scores_for_clan_member(bungie_name, selected_clan):
+    print(bungie_name, selected_clan)
+    clan = clans[selected_clan]
+    clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
+    members = clan_member_response['results']
+    member_in_clan_flag = False
+    for mem in members:
+        if 'bungieGlobalDisplayName' in mem['destinyUserInfo'] and 'bungieGlobalDisplayNameCode' in mem['destinyUserInfo']:
+            name = '{0}#{1}'.format(mem['destinyUserInfo']['bungieGlobalDisplayName'],  mem['destinyUserInfo']['bungieGlobalDisplayNameCode'])
+            if bungie_name == name:
+                member_in_clan_flag = True
+    if not member_in_clan_flag:
+        return 'No such member found', False
+
+    search_response = request.BungieApiCall().search_player(bungie_name)['Response'][0]
+    if not search_response:
+        return 'No such member found', False
+    membership_id = search_response['membershipId']
+    membership_type = search_response['membershipType']
+    profile_response = request.BungieApiCall().get_profile(str(membership_type), membership_id)
+
+    prev_week, curr_week = get_prev_and_curr_weeks()
+
+    build_prev_df(prev_week)
+
+    build_lookback_df(curr_week)
+
+    profile_user_info = profile_response['Response']['profile']['data']['userInfo']
+
+    name = profile_user_info['bungieGlobalDisplayName'] \
+        if profile_user_info['bungieGlobalDisplayName'] != '' \
+        else profile_user_info['LastSeenDisplayName']
+    membership_type = str(profile_user_info['membershipType'])
+
+    clan_member = ClanMember(name, membership_id, name, membership_type, clan.clan_type)
+    clan_member = build_score_for_clan_member(clan_member, profile_response, clan.clan_type)
+    return clan_member, True
+
+
+def get_prev_and_curr_weeks():
+    curr_dt = datetime.now(timezone.utc)
+    curr_week = get_week_start(curr_dt)
+    prev_week = (curr_week - timedelta(days=7))
+
+    return prev_week, curr_week
 
 
 def get_file_path(selected_clan, date):

@@ -1,9 +1,9 @@
 import csv
 import os.path as path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import (
-    Blueprint, redirect, render_template, request, url_for
+    Blueprint, redirect, render_template, request, url_for, flash
 )
 
 from . import clan as clan_lib
@@ -111,10 +111,27 @@ def inactive_view():
                            selected_date=selected_date, clans=score_gen.clans)
 
 
-def get_file_path(clan_name, selected_date):
-    dt = datetime.strptime(selected_date, '%Y-%m-%d')
+@dashboard.route('/single')
+def generate_single():
+    bungie_name = request.args.get('bungie_name', None)
+    clan_name = request.args.get('clan_name', None)
+    output, member_found = score_gen.generate_scores_for_clan_member(bungie_name, clan_name)
+    print(output, member_found)
+    if not member_found:
+        flash(output)
+        redirect('/')
+    return render_template('dashboard/single_player_view.html', member=output)
+
+
+def get_week_start_as_str(dt):
+    dt = datetime.strptime(dt, '%Y-%m-%d')
     week_start = score_gen.get_week_start(dt)
-    week_folder = path.join('scoreData', f'{week_start:%Y-%m-%d}')
+    return f'{week_start:%Y-%m-%d}'
+
+
+def get_file_path(clan_name, selected_date):
+    week_start_str = get_week_start_as_str(selected_date)
+    week_folder = path.join('scoreData', week_start_str)
     return path.join(week_folder, clan_name + '.csv')
 
 

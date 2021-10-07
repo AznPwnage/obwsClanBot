@@ -475,12 +475,8 @@ def perform_lookback(member, df):
             lookback_score = int(latest_row.values[0][2])
             lookback_date_str = str(latest_row.values[0][4])
 
-            print('lookback score: {0}'.format(lookback_score))
-
             lookback_weeks = get_lookback_weeks(lookback_score)
             weeks_looked_back = get_weeks_looked_back(lookback_date_str)
-
-            print('lookback_weeks: {0}, weeks_looked_back: {1}'.format(lookback_weeks, weeks_looked_back))
 
             if weeks_looked_back <= lookback_weeks:
                 member.prev_score += lookback_score

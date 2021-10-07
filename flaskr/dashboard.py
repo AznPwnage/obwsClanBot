@@ -116,7 +116,6 @@ def generate_single():
     bungie_name = request.args.get('bungie_name', None)
     clan_name = request.args.get('clan_name', None)
     output, member_found = score_gen.generate_scores_for_clan_member(bungie_name, clan_name)
-    print(output, member_found)
     if not member_found:
         flash(output)
         redirect('/')

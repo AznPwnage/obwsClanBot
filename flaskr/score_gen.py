@@ -470,10 +470,15 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
 def perform_lookback(member, df):
     if df is not None:
         if int(member.membership_id) in df.index:
-            latest_row = lookback_df.loc[int(member.membership_id)].sort_values('date', ascending=False).head(1)
-            latest_row.reset_index(inplace=True)
-            lookback_score = int(latest_row.values[0][2])
-            lookback_date_str = str(latest_row.values[0][4])
+            latest_row = lookback_df.loc[int(member.membership_id)]
+            if isinstance(latest_row, pd.DataFrame):  # df.loc returns DF if multiple rows in DF
+                latest_row = lookback_df.loc[int(member.membership_id)].sort_values('date', ascending=False).head(1)
+                latest_row.reset_index(inplace=True)
+                lookback_score = int(latest_row.values[0][2])
+                lookback_date_str = str(latest_row.values[0][4])
+            else:  # df.loc return Series if single row in Df
+                lookback_score = int(latest_row.values[2])
+                lookback_date_str = str(latest_row.values[3])
 
             lookback_weeks = get_lookback_weeks(lookback_score)
             weeks_looked_back = get_weeks_looked_back(lookback_date_str)

@@ -85,6 +85,7 @@ current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 season_splicer_hash = parser.getint('seasonal_variables', 'season_splicer_hash')
 season_chosen_hash = parser.getint('seasonal_variables', 'season_chosen_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
+trials_enabled = parser.getboolean('seasonal_variables', 'trials_enabled')
 
 min_light = parser.getint('seasonal_variables', 'min_light')
 
@@ -643,7 +644,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
                 curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
                                                             milestones_seasonal.get('shattered_champions'))
 
-        if owns_current_expansion:
+        if owns_current_expansion and trials_enabled:
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'),
                                      clan_type)
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'),

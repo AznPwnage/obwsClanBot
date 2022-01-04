@@ -122,6 +122,20 @@ def generate_single():
     return render_template('dashboard/single_player_view.html', member=output)
 
 
+@dashboard.route('/raid_report')
+def raid_report():
+    bungie_name = request.args.get('bungie_name', None)
+    score_gen.generate_raid_report(bungie_name)
+    return render_template('dashboard/index.html')
+
+
+@dashboard.route('/check_raid')
+def check_raid():
+    pgcr_id = request.args.get('pgcr_id', None)
+    score_gen.check_raid(pgcr_id)
+    return render_template('dashboard/index.html')
+
+
 def get_week_start_as_str(dt):
     dt = datetime.strptime(dt, '%Y-%m-%d')
     week_start = score_gen.get_week_start(dt)

@@ -37,7 +37,7 @@ class BungieApiCall:
     def search_player(self, bungie_name):
         return r.get(self.get_api_root() + 'Destiny2/SearchDestinyPlayer/-1/' + urllib.parse.quote(bungie_name), headers=self.get_header()).json()
 
-    def get_activity_history(self, membership_type, membership_id, character_id, activity_type):
+    def get_activity_history(self, membership_type, membership_id, character_id, activity_type, page_limit):
         activities = []
         page = 0
         while True:
@@ -48,9 +48,16 @@ class BungieApiCall:
                 break
             if 'activities' in response['Response'].keys():
                 activities.extend(response['Response']['activities'])
-            page += 1
-            if 250 > len(response['Response']):
+                if 250 > len(response['Response']['activities']):
+                    break
+            if page >= page_limit > 0:
+                # We use page_limit = 2 for weekly score generation purposes since we assume that the activities are
+                # returned in reverse chronological order, in which case it's safe to assume a player cannot have done
+                # more than 500 (2 pages) dungeons or raids per character in a week. Number may vary if this method is
+                # used for other activities.
+                # page_limit = 0 just allows for the method to pull all activity history for the call.
                 break
+            page += 1
         return activities
 
     def get_aggregate_activity_stats(self, membership_type, membership_id, character_id):
@@ -58,3 +65,6 @@ class BungieApiCall:
 
     def get_linked_profiles(self, membership_type, membership_id, get_all_memberships):
         return r.get(self.get_api_root() + 'Destiny2/' + membership_type + '/Profile/' + membership_id + '/LinkedProfiles/?getAllMemberships=' + get_all_memberships, headers=self.get_header()).json()
+
+    def get_pgcr(self, activity_id):
+        return r.get(self.get_api_root() + 'Destiny2/Stats/PostGameCarnageReport/' + activity_id, headers=self.get_header()).json()

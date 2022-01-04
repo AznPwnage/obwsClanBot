@@ -220,9 +220,32 @@ def str_to_time(time_str):
     return datetime.strptime(time_str, date_format)
 
 
+def get_raids_for_raid_report(membership_type, membership_id, character_id, raid_report):
+    character_raids = request.BungieApiCall().get_activity_history(membership_type, membership_id, character_id, 4, 0)
+    counter = 1
+
+    for raid in character_raids:
+        ref_id = get_activity_ref_id(raid)
+        if not DestinyActivity.has_value(ref_id):
+            continue
+        activity_enum = DestinyActivity(ref_id)
+        activity_id = raid['activityDetails']['instanceId']
+        if activity_invalid(raid, activity_enum, character_id, membership_id):
+            print(str(counter) + '/' + str(len(character_raids)) + ' - invalid: ' + activity_id)
+            counter += 1
+            raid_report[activity_enum.name]['invalid_pgcrs'].append(activity_id)
+            continue
+        # print(str(counter) + '/' + str(len(character_raids)) + ' - valid: ' + activity_id)
+        counter += 1
+        raid_report[activity_enum.name]['count'] += 1
+        raid_report[activity_enum.name]['valid_pgcrs'].append(activity_id)
+
+    return raid_report
+
+
 def get_raids(member, member_class, week_start, character_id, completion_counter):
     utc = pytz.UTC
-    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 4)
+    character_raids = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, 4, 2)
     for raid in character_raids:
         if utc.localize(str_to_time(raid['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
             break
@@ -230,7 +253,7 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
         if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
-        if activity_invalid(raid, activity_enum):
+        if activity_invalid(raid, activity_enum, character_id, member.membership_id):
             continue
 
         member.get(activity_enum.name)[member_class.name] += 1
@@ -251,7 +274,7 @@ def get_dungeons(member, member_class, week_start, character_id):
 
 
 def process_dungeons(member, member_class, week_start, character_id, activity_mode_type):
-    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, activity_mode_type)
+    character_dungeons = request.BungieApiCall().get_activity_history(member.membership_type, member.membership_id, character_id, activity_mode_type, 2)
     utc = pytz.UTC
     for dungeon in character_dungeons:
         if utc.localize(str_to_time(dungeon['period'])) < week_start:  # exit if date is less than week start, as stats are in desc order (I hope)
@@ -263,7 +286,7 @@ def process_dungeons(member, member_class, week_start, character_id, activity_mo
         activity_enum = DestinyActivity(ref_id)
         if activity_enum not in activities_to_track_by_history:
             continue
-        if activity_invalid(dungeon, activity_enum):
+        if activity_invalid(dungeon, activity_enum, character_id, member.membership_id):
             continue
         if activity_enum == DestinyActivity.presage_master:
             activity_enum = DestinyActivity.presage
@@ -274,12 +297,14 @@ def process_dungeons(member, member_class, week_start, character_id, activity_mo
     return member
 
 
-def activity_invalid(activity, activity_enum):
+def activity_invalid(activity, activity_enum, character_id, membership_id):
     if 'No' == activity['values']['completed']['basic']['displayValue']:  # incomplete raids shouldn't be added to the counter
         return True
+    pgcr = request.BungieApiCall().get_pgcr(activity['activityDetails']['instanceId'])['Response']
+    if dnf_using_pgcr(pgcr, character_id):
+        return True
 
-    kills = activity['values']['kills']['basic']['value']
-    completion_time_in_seconds = activity['values']['timePlayedSeconds']['basic']['value']
+    kills, completion_time_in_seconds = kills_and_completion_time_using_pgcr(pgcr, membership_id)
     kill_check_fail = False
     time_check_fail = False
     if activity_enum.threshold_kill is not None:
@@ -289,6 +314,25 @@ def activity_invalid(activity, activity_enum):
     if kill_check_fail and time_check_fail:
         return True
     return False
+
+
+def dnf_using_pgcr(pgcr, character_id):
+    for entry in pgcr['entries']:
+        if entry['characterId'] == character_id:
+            if 'No' == entry['values']['completed']['basic']['displayValue']:
+                return True
+            return False
+    return True
+
+
+def kills_and_completion_time_using_pgcr(pgcr, membership_id):
+    kills_total = 0
+    completion_time_in_seconds_total = 0
+    for entry in pgcr['entries']:
+        if membership_id == entry['player']['destinyUserInfo']['membershipId']:
+            kills_total += entry['values']['kills']['basic']['value']
+            completion_time_in_seconds_total += entry['values']['timePlayedSeconds']['basic']['value']
+    return kills_total, completion_time_in_seconds_total
 
 
 def get_activity_ref_id(activity):
@@ -742,6 +786,39 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
     clan_member = ClanMember(name, membership_id, name, membership_type, clan.clan_type)
     clan_member = build_score_for_clan_member(clan_member, profile_response, clan.clan_type)
     return clan_member, True
+
+
+def generate_raid_report(bungie_name):
+    search_response = request.BungieApiCall().search_player(bungie_name)['Response'][0]
+    if not search_response:
+        return 'No such member found', False
+    membership_id = search_response['membershipId']
+    membership_type = search_response['membershipType']
+    profile_response = request.BungieApiCall().get_profile(str(membership_type), membership_id)
+    characters = profile_response['Response']['characters']['data']
+    raid_report = {
+        DestinyActivity.lw.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
+        DestinyActivity.gos.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
+        DestinyActivity.dsc.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
+        DestinyActivity.vog.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
+        DestinyActivity.vog_master.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []}
+    }
+
+    for character_id in characters.keys():
+        raid_report = get_raids_for_raid_report(str(membership_type), membership_id, character_id, raid_report)
+    print('\nraid counts')
+    for raid in raid_report.keys():
+        print(raid + ': ' + str(raid_report.get(raid)['count']))
+    print('\ninvalid pgcrs')
+    for raid in raid_report.keys():
+        print(raid + ': ' + str(raid_report.get(raid)['invalid_pgcrs']))
+    print('\nvalid pgcrs')
+    for raid in raid_report.keys():
+        print(raid + ': ' + str(raid_report.get(raid)['valid_pgcrs']))
+
+
+def check_raid(pgcr_id):
+    return None
 
 
 def get_prev_and_curr_weeks():

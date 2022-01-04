@@ -14,6 +14,8 @@
     <th>Diff</th>
     <th>Inactives</th>
     <th>Generate scores for player</th>
+    <th>Raid Report</th>
+    <th>Check PGCR</th>
     </thead>
     <tbody>
     <tr>
@@ -33,6 +35,12 @@
         </td>
         <td>
             Bungie Name:<input type="text" id="generateSingle_textField">
+        </td>
+        <td>
+            Bungie Name:<input type="text" id="raidReport_textField">
+        </td>
+        <td>
+            PGCR ID:<input type="text" id="checkRaid_textField">
         </td>
     </tr>
     <tr>
@@ -106,6 +114,8 @@
             <option value="Topaz">Topaz</option>
         </select>
         </td>
+        <td></td>
+        <td></td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -125,6 +135,12 @@
         </td>
         <td class="bottomCell">
             <input id="generateSingle_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="raidReport_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="checkRaid_btn" type="button" value="Go"/>
         </td>
     </tr>
     </tbody>
@@ -209,6 +225,28 @@ $('#generateSingle_btn').click( function(e){
 });
 </script>
 <script>
+$('#raidReport_btn').click( function(e){
+    e.preventDefault();
+    disableBtn();
+    var bungieName = $("#raidReport_textField").val()
+    var url = "{{ url_for('dashboard.raid_report', bungie_name ='bungieName') }}"
+            .replace("bungieName", encodeURI(bungieName).replaceAll("#", "%23"))
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
+$('#checkRaid_btn').click( function(e){
+    e.preventDefault();
+    disableBtn();
+    var pgcr = $("#checkRaid_textField").val()
+    var url = "{{ url_for('dashboard.check_raid', pgcr_id ='pgcr_id') }}"
+            .replace("pgcr_id", encodeURI(pgcr_id))
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
 $(document).ready( function() {
     $('#clanView_datePick').val(new Date().toISOString().slice(0,10));
     $('#discordView_datePick').val(new Date().toISOString().slice(0,10));
@@ -225,5 +263,7 @@ function disableBtn() {
     $('#diffView_btn').prop('disabled', true);
     $('#inactiveView_btn').prop('disabled', true);
     $('#generateSingle_btn').prop('disabled', true);
+    $('#raidReport_btn').prop('disabled', true);
+    $('#checkRaid_btn').prop('disabled', true);
 }
 </script>

@@ -785,6 +785,7 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
 
     clan_member = ClanMember(name, membership_id, name, membership_type, clan.clan_type)
     clan_member = build_score_for_clan_member(clan_member, profile_response, clan.clan_type)
+    print(clan_member.to_json())
     return clan_member, True
 
 

@@ -212,12 +212,12 @@
         <td>{%- if member.trials7.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Hunter -->
         <td>{%- if member.trials7.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Warlock -->
         <td>{%- if member.trials7.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Titan -->
-        <td>{%- if member.prophecy.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Hunter -->
-        <td>{%- if member.prophecy.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Warlock -->
-        <td>{%- if member.prophecy.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Prophecy Titan -->
-        <td>{%- if member.harbinger.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Hunter -->
-        <td>{%- if member.harbinger.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Warlock -->
-        <td>{%- if member.harbinger.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Harbinger Titan -->
+        <td>{{ member.prophecy.hunter }}</td> <!-- Prophecy Hunter -->
+        <td>{{ member.prophecy.warlock }}</td> <!-- Prophecy Warlock -->
+        <td>{{ member.prophecy.titan }}</td> <!-- Prophecy Titan -->
+        <td>{{ member.harbinger.hunter }}</td> <!-- Harbinger Hunter -->
+        <td>{{ member.harbinger.warlock }}</td> <!-- Harbinger Warlock -->
+        <td>{{ member.harbinger.titan }}</td> <!-- Harbinger Titan -->
         <td>{{ member.presage.hunter }}</td> <!-- Presage Hunter -->
         <td>{{ member.presage.warlock }}</td> <!-- Presage Warlock -->
         <td>{{ member.presage.titan }}</td> <!-- Presage Titan -->

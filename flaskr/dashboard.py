@@ -166,9 +166,9 @@ def read_score_file(file_path, sort_by, reverse, col_type):
         if sort_by == 'inactive':
             reverse = not reverse
 
-        if sort_by == 'clan_engram':
+        if sort_by == 'clan_xp':
             reverse = not reverse
-            mem_list = sorted(mem_list, key=lambda item: str(item[sort_by + '_hunter'] == 'True' or item[sort_by + '_warlock'] == 'True' or item[sort_by + '_titan'] == 'True'), reverse=reverse)
+            mem_list = sorted(mem_list, key=lambda item: (int(item[sort_by + '_hunter']) + int(item[sort_by + '_warlock']) + int(item[sort_by + '_titan'])), reverse=reverse)
         elif col_type == 'int':
             mem_list = sorted(mem_list, key=lambda item: int(item[sort_by]), reverse=reverse)
         elif col_type == 'date':

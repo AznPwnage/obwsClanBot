@@ -231,8 +231,9 @@ def get_raids_for_raid_report(membership_type, membership_id, character_id, raid
         activity_enum = DestinyActivity(ref_id)
         activity_id = raid['activityDetails']['instanceId']
         if activity_invalid(raid, activity_enum, character_id, membership_id):
-            print(str(counter) + '/' + str(len(character_raids)) + ' - invalid: ' + activity_id)
+            # print(str(counter) + '/' + str(len(character_raids)) + ' - invalid: ' + activity_id)
             counter += 1
+            raid_report[activity_enum.name]['invalid_count'] += 1
             raid_report[activity_enum.name]['invalid_pgcrs'].append(activity_id)
             continue
         # print(str(counter) + '/' + str(len(character_raids)) + ' - valid: ' + activity_id)
@@ -312,6 +313,7 @@ def activity_invalid(activity, activity_enum, character_id, membership_id):
     if activity_enum.threshold_time is not None:
         time_check_fail = completion_time_in_seconds < activity_enum.threshold_time
     if kill_check_fail and time_check_fail:
+        # print(str(activity_enum) + 'invalid due to kill/time check with pgcr' + pgcr)
         return True
     return False
 
@@ -604,6 +606,14 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
 
     curr_member = initialize_member(clan_member)
 
+    member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
+
+    curr_member = get_prev_week_score(curr_member, prev_df)
+    curr_member = get_prev_gild_level(curr_member, prev_df)
+
+    if member_joined_this_week:
+        curr_member = perform_lookback(curr_member, lookback_df)
+
     if profile['ErrorStatus'] != 'Success':  # check for account existing or not, unsure of root cause
         curr_member.account_not_exists = True
         return curr_member
@@ -612,11 +622,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
         curr_member.privacy = True
         return curr_member
 
-    member_joined_this_week = int(curr_member.membership_id) not in prev_df.index
-
-    curr_member = get_prev_week_score(curr_member, prev_df)
     curr_member = get_date_last_played(curr_member, profile, curr_dt)
-    curr_member = get_prev_gild_level(curr_member, prev_df)
 
     characters = profile['Response']['characters']['data']  # check light level
     character_progressions = profile['Response']['characterProgressions']['data']
@@ -694,9 +700,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'),
                                      clan_type)
 
-    if member_joined_this_week:
-        curr_member = perform_lookback(curr_member, lookback_df)
-    else:
+    if not member_joined_this_week:
         curr_member = check_inactive(curr_member, clan_type, completion_counter, clan_level)
 
     curr_member = apply_score_cap_and_decay(curr_member, clan_type)
@@ -798,11 +802,11 @@ def generate_raid_report(bungie_name):
     profile_response = request.BungieApiCall().get_profile(str(membership_type), membership_id)
     characters = profile_response['Response']['characters']['data']
     raid_report = {
-        DestinyActivity.lw.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
-        DestinyActivity.gos.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
-        DestinyActivity.dsc.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
-        DestinyActivity.vog.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []},
-        DestinyActivity.vog_master.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': []}
+        DestinyActivity.lw.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': [], 'invalid_count': 0},
+        DestinyActivity.gos.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': [], 'invalid_count': 0},
+        DestinyActivity.dsc.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': [], 'invalid_count': 0},
+        DestinyActivity.vog.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': [], 'invalid_count': 0},
+        DestinyActivity.vog_master.name: {'count': 0, 'invalid_pgcrs': [], 'valid_pgcrs': [], 'invalid_count': 0}
     }
 
     for character_id in characters.keys():
@@ -810,6 +814,9 @@ def generate_raid_report(bungie_name):
     print('\nraid counts')
     for raid in raid_report.keys():
         print(raid + ': ' + str(raid_report.get(raid)['count']))
+    print('\ninvalid raid counts')
+    for raid in raid_report.keys():
+        print(raid + ': ' + str(raid_report.get(raid)['invalid_count']))
     print('\ninvalid pgcrs')
     for raid in raid_report.keys():
         print(raid + ': ' + str(raid_report.get(raid)['invalid_pgcrs']))

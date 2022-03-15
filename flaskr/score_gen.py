@@ -28,12 +28,13 @@ class DestinyActivity(enum.Enum):
     vog = (3881495763, 4, 45, 1500)
     vog_challenge = (1485585878, 4, 45, 1500)
     vog_master = (1681562271, 4, 45, 1500)
+    vow = (1441982566, 4, 45, 1500)
+    vow_master = (4217492330, 4, 45, 1500)
     poh = (2582501063, 82, None, None)
     prophecy = (1077850348, 82, None, None)
     st = (2032534090, 2, None, None)
-    presage = (2124066889, 2, None, None)
-    presage_master = (4212753278, 2, None, None)
-    harbinger = (1738383283, 2, None, None)
+    goa = (4078656646, 82, None, None)
+    goa_master = (3774021532, 82, None, None)
 
     def __init__(self, activity_hash, activity_mode, threshold_kill, threshold_time):
         self.activity_hash = activity_hash
@@ -82,8 +83,6 @@ def build_milestones_from_config(section_name):
 
 
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
-season_splicer_hash = parser.getint('seasonal_variables', 'season_splicer_hash')
-season_chosen_hash = parser.getint('seasonal_variables', 'season_chosen_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
 trials_enabled = parser.getboolean('seasonal_variables', 'trials_enabled')
 
@@ -96,15 +95,9 @@ mods = dict(parser.items('mods')).values()
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 rejoin_lookback_map = dict([(int(x[0]), int(x[1])) for x in parser.items('rejoin_lookback')])
 
-exo_challenge_hashes = dict([(x[0], int(x[1])) for x in parser.items('exo_challenge_hashes')]).values()
-empire_hunt_hashes = dict([(x[0], int(x[1])) for x in parser.items('empire_hunt_hashes')]).values()
-battleground_hashes = dict([(x[0], int(x[1])) for x in parser.items('battleground_hashes')]).values()
-override_hashes = dict([(x[0], int(x[1])) for x in parser.items('override_hashes')]).values()
-shattered_realms_hashes = dict([(x[0], int(x[1])) for x in parser.items('shattered_realms_hashes')]).values()
-
 destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
 
-activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.presage, DestinyActivity.presage_master]
+activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.goa, DestinyActivity.goa_master]
 
 clans = clan_lib.ClanGroup().get_clans()
 
@@ -113,8 +106,6 @@ lookback_df = pd.DataFrame()
 
 milestones = build_milestones_from_config('milestones')
 milestones_seasonal = build_milestones_from_config('milestones_seasonal')
-milestones_splicer = build_milestones_from_config('milestones_splicer')
-milestones_chosen = build_milestones_from_config('milestones_chosen')
 milestones_special = build_milestones_from_config('milestones_special')
 
 
@@ -130,18 +121,11 @@ def initialize_member(clan_member):
     for m in milestones.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
 
-    for m in milestones_chosen.values():
-        member.set(m.name, copy.copy(destiny_class_bool_dict))
-
-    for m in milestones_splicer.values():
-        member.set(m.name, copy.copy(destiny_class_bool_dict))
-
     for m in milestones_seasonal.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
 
     for m in milestones_special.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
-    member.set('exo_challenge', copy.copy(destiny_class_count_dict))
     member.set('clan_xp', copy.copy(destiny_class_count_dict))
 
     member.set(DestinyActivity.gos.name, copy.copy(destiny_class_count_dict))
@@ -150,11 +134,12 @@ def initialize_member(clan_member):
     member.set(DestinyActivity.vog.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vog_challenge.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vog_master.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.vow.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.vow_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.prophecy.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.harbinger.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.presage.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.poh.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.st.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.goa.name, copy.copy(destiny_class_count_dict))
 
     member.low_light = {DestinyClass.hunter.name: True, DestinyClass.warlock.name: True, DestinyClass.titan.name: True}
 
@@ -289,8 +274,8 @@ def process_dungeons(member, member_class, week_start, character_id, activity_mo
             continue
         if activity_invalid(dungeon, activity_enum, character_id, member.membership_id):
             continue
-        if activity_enum == DestinyActivity.presage_master:
-            activity_enum = DestinyActivity.presage
+        if activity_enum == DestinyActivity.goa_master:
+            activity_enum = DestinyActivity.goa
 
         member.get(activity_enum.name)[member_class.name] += 1
         if member.get(activity_enum.name)[member_class.name] == 1:  # only award points for first unique completion of the dungeon
@@ -345,6 +330,10 @@ def get_activity_ref_id(activity):
         ref_id = 910380154
     if ref_id == 3711931140:  # Hack for guided games VOG.
         ref_id = 3881495763
+    if ref_id == 2906950631:  # Hack for Vow
+        ref_id = 1441982566
+    if ref_id == 4156879541:  # Hack for Vow
+        ref_id = 1441982566
     return ref_id
 
 
@@ -403,18 +392,6 @@ def check_arr_contains(hash_arr, check_arr):
         if item in hash_arr:
             return True
     return False
-
-
-def get_exo_challenge(member, member_class, milestones_list, activity_hash_arr):
-    if not member.low_light[member_class.name] and check_arr_contains(activity_hash_arr, exo_challenge_hashes):
-        m1 = milestones_special.get('exo_challenge_powerful')
-        m2 = milestones_special.get('exo_challenge_pinnacle')
-        m1_not_in_list = milestone_not_in_list(milestones_list, m1.ms_hash)
-        m2_not_in_list = milestone_not_in_list(milestones_list, m2.ms_hash)
-        if m1_not_in_list and m2_not_in_list:
-            member.get('exo_challenge')[member_class.name] = True
-            member.score += m1.score
-    return member
 
 
 def get_clan_xp(member, member_class, uninstanced_item_objectives):
@@ -629,8 +606,6 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
     character_activities = profile['Response']['characterActivities']['data']
 
     owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
-    owns_season_splicer = season_splicer_hash in profile['Response']['profile']['data']['seasonHashes']
-    owns_season_chosen = season_chosen_hash in profile['Response']['profile']['data']['seasonHashes']
     owns_current_expansion = profile['Response']['profile']['data']['versionsOwned'] > current_expansion_value
 
     for character_id in character_progressions.keys():  # iterate over single member's characters
@@ -651,48 +626,27 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
         curr_member, completion_counter = get_raids(curr_member, curr_class, curr_week, character_id,
                                                     completion_counter)
         curr_member = get_dungeons(curr_member, curr_class, curr_week, character_id)
-        curr_member = get_exo_challenge(curr_member, curr_class, milestones_list, activity_hashes)
         curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
 
         aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type,
                                                                                         curr_member.membership_id,
                                                                                         character_id)
-        unlocked_empire_hunt_milestones = check_aggregate_stats(aggregate_activity_stats, empire_hunt_hashes)
-        if unlocked_empire_hunt_milestones:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
-                                                        milestones_special.get('empire_hunt'))
 
         curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
 
-        if owns_season_chosen:
-            if aggregate_activity_stats is None:
-                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
-                    curr_member.membership_type, curr_member.membership_id, character_id)
-            unlocked_battleground_milestones = check_aggregate_stats(aggregate_activity_stats, battleground_hashes)
-            if unlocked_battleground_milestones:
-                curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_chosen)
-
-        if owns_season_splicer:
-            if aggregate_activity_stats is None:
-                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
-                    curr_member.membership_type, curr_member.membership_id, character_id)
-            unlocked_override_milestones = check_aggregate_stats(aggregate_activity_stats, override_hashes)
-            if unlocked_override_milestones:
-                curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones_splicer)
-
-        if owns_current_season:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
-                                                        milestones_seasonal.get('wf_compass'))
-
-            curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
-
-            if aggregate_activity_stats is None:
-                aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
-                    curr_member.membership_type, curr_member.membership_id, character_id)
-            unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
-            if unlocked_shattered_realms:
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
-                                                            milestones_seasonal.get('shattered_champions'))
+        # if owns_current_season:
+        #     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
+        #                                                 milestones_seasonal.get('wf_compass'))
+        #
+        #     curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
+        #
+        #     if aggregate_activity_stats is None:
+        #         aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
+        #             curr_member.membership_type, curr_member.membership_id, character_id)
+        #     unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
+        #     if unlocked_shattered_realms:
+        #         curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
+        #                                                     milestones_seasonal.get('shattered_champions'))
 
         if owns_current_expansion and trials_enabled:
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'),

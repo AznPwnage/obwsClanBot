@@ -81,10 +81,23 @@ def build_milestones_from_config(section_name):
         milestones_dict[x[0]] = (DestinyMilestone(x[0], config[0], config[1], config[2], config[3]))
     return milestones_dict
 
+milestones = build_milestones_from_config('milestones')
+milestones_seasonal = build_milestones_from_config('milestones_seasonal')
+milestones_special = build_milestones_from_config('milestones_special')
+
+
+def get_trials_enabled():
+    try:
+        return milestones_special['trials50'].ms_hash in public_milestones['Response'].keys()
+    except:
+        return False
+
 
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
-trials_enabled = parser.getboolean('seasonal_variables', 'trials_enabled')
+
+public_milestones = request.BungieApiCall().get_public_milestones()
+trials_enabled = get_trials_enabled()
 
 min_light = parser.getint('seasonal_variables', 'min_light')
 
@@ -103,10 +116,6 @@ clans = clan_lib.ClanGroup().get_clans()
 
 prev_df = pd.DataFrame()
 lookback_df = pd.DataFrame()
-
-milestones = build_milestones_from_config('milestones')
-milestones_seasonal = build_milestones_from_config('milestones_seasonal')
-milestones_special = build_milestones_from_config('milestones_special')
 
 
 def initialize_member(clan_member):

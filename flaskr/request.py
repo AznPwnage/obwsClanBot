@@ -68,3 +68,6 @@ class BungieApiCall:
 
     def get_pgcr(self, activity_id):
         return r.get(self.get_api_root() + 'Destiny2/Stats/PostGameCarnageReport/' + activity_id, headers=self.get_header()).json()
+
+    def get_public_milestones(self):
+        return r.get(self.get_api_root() + 'Destiny2/Milestones/', headers=self.get_header()).json()

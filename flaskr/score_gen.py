@@ -555,18 +555,18 @@ def write_members_to_csv(mem_list, file_path):
             writer.writerow(v)
 
 
-def build_prev_df(prev_week):
+def build_single_week_df(week_start):
     global prev_df
     if prev_df.empty:
         for prev_week_clan in clans:
-            prev_file_path = path.join('scoreData', f'{prev_week:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
+            prev_file_path = path.join('scoreData', f'{week_start:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
                 prev_df = prev_df.append(
                     pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level', 'clan_name'],
                                 index_col='membership_id'))
 
 
-def build_lookback_df(week_start):
+def build_multi_week_df(week_start):
     global lookback_df
     if lookback_df.empty:
         max_lookback = max(rejoin_lookback_map.values())
@@ -682,9 +682,9 @@ def generate_scores_for_clan(selected_clan):
     if not path.exists(curr_week_folder):
         os.makedirs(curr_week_folder)
 
-    build_prev_df(prev_week)
+    build_single_week_df(prev_week)
 
-    build_lookback_df(curr_week)
+    build_multi_week_df(curr_week)
 
     members = clan_member_response['results']
     clan.memberList = []
@@ -739,9 +739,9 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
 
     prev_week, curr_week = get_prev_and_curr_weeks()
 
-    build_prev_df(prev_week)
+    build_single_week_df(prev_week)
 
-    build_lookback_df(curr_week)
+    build_multi_week_df(curr_week)
 
     profile_user_info = profile_response['Response']['profile']['data']['userInfo']
 

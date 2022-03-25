@@ -96,6 +96,15 @@ def get_trials_enabled():
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
 
+psiops_battlegrounds_hash = parser.getint('activity_hashes', 'psiops_battlegrounds')
+vox_obscura_hash = parser.getint('activity_hashes', 'vox_obscura')
+dares_of_eternity_hash = parser.getint('activity_hashes', 'dares_of_eternity')
+preservation_hash = parser.getint('activity_hashes', 'preservation')
+
+seasonal_xp_hash = str(parser.getint('progression_hashes', 'seasonal_xp'))
+clan_level_hash = str(parser.getint('progression_hashes', 'clan_level'))
+throne_world_rank_hash = str(parser.getint('progression_hashes', 'throne_world_rank'))
+
 public_milestones = request.BungieApiCall().get_public_milestones()
 trials_enabled = get_trials_enabled()
 
@@ -107,6 +116,7 @@ mods = dict(parser.items('mods')).values()
 
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 rejoin_lookback_map = dict([(int(x[0]), int(x[1])) for x in parser.items('rejoin_lookback')])
+wellspring_hashes = dict([(x[0], int(x[1])) for x in parser.items('wellspring_hashes')]).values()
 
 destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
 
@@ -157,6 +167,7 @@ def initialize_member(clan_member):
     member.prev_score = 0
     member.date_last_played = ''
     member.days_last_played = -1
+    member.weekly_xp = 0
 
     member.inactive = False
 
@@ -415,14 +426,19 @@ def get_clan_xp(member, member_class, uninstanced_item_objectives):
     return member
 
 
-def get_astral_alignment(curr_member, curr_class, milestones_list):
-    m = milestones_seasonal.get('astral_alignment1')
+def get_weekly_xp(member, progressions):
+    member.weekly_xp = progressions[seasonal_xp_hash]['weeklyProgress']
+    return member
+
+
+def get_activity_with_triple_stage(curr_member, curr_class, milestones_list, activity_name_1, activity_name_2, activity_name_3):
+    m = milestones_seasonal.get(activity_name_1)
     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
     if curr_member.get(m.name)[curr_class.name]:
-        m = milestones_seasonal.get('astral_alignment2')
+        m = milestones_seasonal.get(activity_name_2)
         curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
         if curr_member.get(m.name)[curr_class.name]:
-            m = milestones_seasonal.get('astral_alignment3')
+            m = milestones_seasonal.get(activity_name_3)
             curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
     return curr_member
 
@@ -614,7 +630,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
     character_progressions = profile['Response']['characterProgressions']['data']
     character_activities = profile['Response']['characterActivities']['data']
 
-    owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
+    # owns_current_season = current_season_hash in profile['Response']['profile']['data']['seasonHashes']
     owns_current_expansion = profile['Response']['profile']['data']['versionsOwned'] > current_expansion_value
 
     for character_id in character_progressions.keys():  # iterate over single member's characters
@@ -624,38 +640,51 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
         progressions = character_progressions[character_id]['progressions']
         character = characters[character_id]
         curr_class = DestinyClass(character['classType'])
-        aggregate_activity_stats = None
+        # aggregate_activity_stats = None
 
-        if '584850370' not in progressions.keys():
+        if clan_level_hash not in progressions.keys():
             # Member left clan within the time that it took to reach their profile in the code
             break
-        clan_level = progressions['584850370']['level']
+        clan_level = progressions[clan_level_hash]['level']
 
         curr_member = get_low_light(curr_member, curr_class, character)
         curr_member, completion_counter = get_raids(curr_member, curr_class, curr_week, character_id,
                                                     completion_counter)
         curr_member = get_dungeons(curr_member, curr_class, curr_week, character_id)
         curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
+        curr_member = get_weekly_xp(curr_member, progressions)
 
-        aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type,
-                                                                                        curr_member.membership_id,
-                                                                                        character_id)
+        # aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
 
         curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
 
-        # if owns_current_season:
-        #     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
-        #                                                 milestones_seasonal.get('wf_compass'))
-        #
-        #     curr_member = get_astral_alignment(curr_member, curr_class, milestones_list)
-        #
-        #     if aggregate_activity_stats is None:
-        #         aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(
-        #             curr_member.membership_type, curr_member.membership_id, character_id)
-        #     unlocked_shattered_realms = check_aggregate_stats(aggregate_activity_stats, shattered_realms_hashes)
-        #     if unlocked_shattered_realms:
-        #         curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list,
-        #                                                     milestones_seasonal.get('shattered_champions'))
+        if psiops_battlegrounds_hash in activity_hashes:
+            curr_member = get_activity_with_triple_stage(curr_member, curr_class, milestones_list, 'runic_decoder1', 'runic_decoder2', 'runic_decoder3')
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('for_the_light'))
+
+        throne_world_rank = progressions[throne_world_rank_hash]['level'] + 1
+
+        if check_arr_contains(activity_hashes, wellspring_hashes):
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wellspring_powerful'))
+            if throne_world_rank >= 18:
+                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wellspring_pinnacle'))
+
+        if throne_world_rank >= 13:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('campaign_powerful'))
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('campaign_pinnacle'))
+
+        if throne_world_rank >= 2:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('fynch_challenge'))
+
+        if dares_of_eternity_hash in activity_hashes:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('doe_powerful'))
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('doe_pinnacle'))
+
+        if vox_obscura_hash in activity_hashes:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('tank_buster'))
+
+        if preservation_hash in activity_hashes:
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('preservation'))
 
         if owns_current_expansion and trials_enabled:
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'),

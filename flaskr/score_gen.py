@@ -11,6 +11,7 @@ import os.path as path
 import os
 import pandas as pd
 from configparser import ConfigParser
+from concurrent.futures import ThreadPoolExecutor
 
 from .clan import ClanMember
 
@@ -729,20 +730,40 @@ def generate_scores_for_clan(selected_clan):
 
     profile_responses = request.BungieApiCall().get_profiles(clan.memberList)
     for j in range(len(profile_responses)):  # iterate over single clan's members
-
-        print(str(j + 1) + '/' + str(len(profile_responses)) + ':' + clan.memberList[j].name)
-
-        curr_member = build_score_for_clan_member(clan.memberList[j], profile_responses[j].json(), clan.clan_type)
-
-        curr_member_list.append(curr_member)
+        print(selected_clan + ': ' + str(j + 1) + '/' + str(len(profile_responses)) + ':' + clan.memberList[j].name)
+        curr_member = generate_scores_for_clan_member_with_retry(clan.memberList[j], profile_responses[j].json(), clan.clan_type)
+        if curr_member is not None:
+            curr_member_list.append(curr_member)
 
     write_members_to_csv(curr_member_list, curr_file_path)
 
 
+def generate_scores_for_clan_member_with_retry(clan_member, profile_response, clan_type):
+    retry_count = 0
+    try:
+        return build_score_for_clan_member(clan_member, profile_response, clan_type)
+    except:
+        retry_count += 1
+        if retry_count < 3:
+            return generate_scores_for_clan_member_with_retry(clan_member, profile_response, clan_type)
+        return None
+
+
 def generate_all_scores():
-    for clan in clans:
-        print(clan)
-        generate_scores_for_clan(clan)
+    tasks = []
+    parallelize = True
+
+    prev_week, curr_week = get_prev_and_curr_weeks()
+    build_single_week_df(prev_week)
+    build_multi_week_df(curr_week)
+
+    if not parallelize:
+        for clan in clans:
+            print(clan)
+            generate_scores_for_clan(clan)
+    else:
+        with ThreadPoolExecutor(max_workers=len(clans)) as executor:
+            [executor.submit(generate_scores_for_clan, clan) for clan in clans]
 
 
 def generate_scores_for_clan_member(bungie_name, selected_clan):

@@ -750,20 +750,12 @@ def generate_scores_for_clan_member_with_retry(clan_member, profile_response, cl
 
 
 def generate_all_scores():
-    tasks = []
-    parallelize = True
-
     prev_week, curr_week = get_prev_and_curr_weeks()
     build_single_week_df(prev_week)
     build_multi_week_df(curr_week)
 
-    if not parallelize:
-        for clan in clans:
-            print(clan)
-            generate_scores_for_clan(clan)
-    else:
-        with ThreadPoolExecutor(max_workers=len(clans)) as executor:
-            [executor.submit(generate_scores_for_clan, clan) for clan in clans]
+    with ThreadPoolExecutor(max_workers=len(clans)) as executor:
+        [executor.submit(generate_scores_for_clan, clan) for clan in clans]
 
 
 def generate_scores_for_clan_member(bungie_name, selected_clan):

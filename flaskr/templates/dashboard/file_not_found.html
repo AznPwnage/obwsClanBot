@@ -1,0 +1,8 @@
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<a href="{{ url_for('dashboard.index') }}">home</a>
+{% block header %}
+<h1>{% block title %}Cannot find the relevant score file. Navigate back to <a href="{{ url_for('dashboard.index') }}">home</a>.{% endblock %}</h1>
+{% endblock %}

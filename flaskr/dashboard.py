@@ -26,9 +26,12 @@ def clan_view():
     selected_date = request.args.get('selected_date', None)
     file_path = get_file_path(clan_name, selected_date)
 
-    members = read_score_file(file_path, sort_by, reverse, col_type)
-    return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name,
-                           selected_date=selected_date)
+    try:
+        members = read_score_file(file_path, sort_by, reverse, col_type)
+        return render_template('dashboard/clan_view.html', members=members, clan_name=clan_name,
+                               selected_date=selected_date)
+    except FileNotFoundError:
+        return render_template('dashboard/file_not_found.html')
 
 
 @dashboard.route('/generate')

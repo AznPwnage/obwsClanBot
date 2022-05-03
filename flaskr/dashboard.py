@@ -83,19 +83,19 @@ def diff_view():
     return render_template('dashboard/diff_view.html', members_who_left=members_who_left, members_who_joined=members_who_joined, start_date=start_date_str, end_date=end_date_str)
 
 
-@dashboard.route('/save')
+@dashboard.route('/save', methods=['POST'])
 def save_to_csv():
-    m = request.args.get('m', None).replace('%23', '#')
-    clan = request.args.get('clan', None)
-    date = request.args.get('date', None)
-    url = request.args.get('old_url', None).replace('%26', '&')
+    m = request.form['save_members']
+    date = request.form['date']
+    clan = request.form['clan']
 
     mem_list = clan_lib.build_clan_members_from_json_string(m)
 
     file_path = get_file_path(clan, date)
     score_gen.write_members_to_csv(mem_list, file_path)
+    reread_members = read_score_file(file_path, None, None, None)
 
-    return redirect(url)
+    return render_template('dashboard/clan_view.html', members=reread_members, clan_name=clan, selected_date=date)
 
 
 @dashboard.route('/inactive')

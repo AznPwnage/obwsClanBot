@@ -9,7 +9,13 @@
 <h1>{{clan_name}} for {{selected_date}}</h1>
 {% endblock %}
 
-<input id="saveScores_btn" type="button" value="Save to CSV"/>
+<!--<input id="saveScores_btn" type="button" value="Save to CSV"/>-->
+<form id="saveScores_form" name="saveScores_form" action="/save" method="post" role="form">
+    <input type="hidden" id="save_members" name="save_members" value="">
+    <input type="hidden" id="date" name="date" value="{{ selected_date }}">
+    <input type="hidden" id="clan" name="clan" value="{{ clan_name }}">
+    <input type="submit" name="btnSubmit" value="Change Label" class="btn btn-info">
+</form>
 <input id="copyNames_btn" type="button" value="Copy Inactives"/>
 {% block content %}
 <table class="fullTable" id="table">
@@ -466,7 +472,7 @@ $('#copyNames_btn').click( function(e){
 });
 </script>
 <script>
-$('#saveScores_btn').click( function(e){
+$('#saveScores_form').submit( function(e){
     e.preventDefault();
 
     var m = {{members|tojson}};
@@ -483,14 +489,8 @@ $('#saveScores_btn').click( function(e){
         m_string += JSON.stringify(m[i]) + "\r\n";
     }
 
-    var url_to_hit = "{{ url_for('dashboard.save_to_csv', m='members_placeholder', clan='clan_placeholder', date='date_placeholder', old_url='url_placeholder') }}"
-            .replace("members_placeholder", encodeURI(m_string).replaceAll("#", "%23"))
-            .replace("clan_placeholder", {{clan_name|tojson}})
-            .replace("date_placeholder", {{selected_date|tojson}})
-            .replace("url_placeholder", window.location.href.replaceAll("&", "%26"))
-            .replaceAll("amp;", "");
-
-    window.location.href = url_to_hit;
+    document.getElementById('save_members').value = m_string;
+    document.getElementById("saveScores_form").submit();
 });
 </script>
 <script>

@@ -1,5 +1,7 @@
+import concurrent
 import copy
 import enum
+import math
 from collections import OrderedDict
 
 from . import request
@@ -81,6 +83,7 @@ def build_milestones_from_config(section_name):
         config[3] = True if config[3] == 'True' else False
         milestones_dict[x[0]] = (DestinyMilestone(x[0], config[0], config[1], config[2], config[3]))
     return milestones_dict
+
 
 milestones = build_milestones_from_config('milestones')
 milestones_seasonal = build_milestones_from_config('milestones_seasonal')
@@ -702,9 +705,9 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
 
 
 def generate_scores_for_clan(selected_clan):
+    start = datetime.now()
     prev_week, curr_week = get_prev_and_curr_weeks()
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
-    curr_member_list = []
     clan = clans[selected_clan]
 
     curr_week_folder = path.join('scoreData', f'{curr_week:%Y-%m-%d}')
@@ -729,13 +732,32 @@ def generate_scores_for_clan(selected_clan):
             clan.add_member(name, membership_type, membership_id)
 
     profile_responses = request.BungieApiCall().get_profiles(clan.memberList)
-    for j in range(len(profile_responses)):  # iterate over single clan's members
-        print(selected_clan + ': ' + str(j + 1) + '/' + str(len(profile_responses)) + ':' + clan.memberList[j].name)
-        curr_member = generate_scores_for_clan_member_with_retry(clan.memberList[j], profile_responses[j].json(), clan.clan_type)
-        if curr_member is not None:
-            curr_member_list.append(curr_member)
+    curr_member_list = generate_scores_with_batch(profile_responses, clan.memberList, clan.clan_type, selected_clan)
 
     write_members_to_csv(curr_member_list, curr_file_path)
+    delta = datetime.now() - start
+    print('Time taken to generate scores for ' + selected_clan + ': ' + str(delta))
+
+
+def generate_scores_with_batch(profile_responses, clan_member_list, clan_type, clan_name):
+    batch_size = 10
+    list_size = len(profile_responses)
+    number_of_batches = math.ceil(list_size / batch_size)
+    curr_member_list = []
+    with ThreadPoolExecutor(max_workers=number_of_batches) as executor:
+        futures = []
+        for i in range(number_of_batches):
+            for j in range(batch_size):
+                index = j + (i * batch_size)
+                if index < list_size:
+                    print(clan_name + ': ' + str(index + 1) + ' - ' + clan_member_list[index].name)
+                    futures.append(executor.submit(generate_scores_for_clan_member_with_retry,
+                                                   clan_member_list[index],
+                                                   profile_responses[index].json(),
+                                                   clan_type))
+        for future in concurrent.futures.as_completed(futures):
+            curr_member_list.append(future.result())
+    return curr_member_list
 
 
 def generate_scores_for_clan_member_with_retry(clan_member, profile_response, clan_type):
@@ -754,8 +776,11 @@ def generate_all_scores():
     build_single_week_df(prev_week)
     build_multi_week_df(curr_week)
 
+    start = datetime.now()
     with ThreadPoolExecutor(max_workers=len(clans)) as executor:
         [executor.submit(generate_scores_for_clan, clan) for clan in clans]
+    delta = datetime.now() - start
+    print('Time taken to generate all scores: ' + str(delta))
 
 
 def generate_scores_for_clan_member(bungie_name, selected_clan):

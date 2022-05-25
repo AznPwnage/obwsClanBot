@@ -113,6 +113,7 @@ public_milestones = request.BungieApiCall().get_public_milestones()
 trials_enabled = get_trials_enabled()
 
 min_light = parser.getint('seasonal_variables', 'min_light')
+inactive_xp_threshold = parser.getint('seasonal_variables', 'inactive_xp_threshold')
 
 mod_alts = dict(parser.items('mod_alts')).values()
 
@@ -503,9 +504,9 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
     else:
         total_xp = 0
         member.inactive = True
-        for xp in member.clan_xp.values():
+        for xp in member.weekly_xp.values():
             total_xp += xp
-        if total_xp >= 5000:
+        if total_xp >= inactive_xp_threshold:
             member.inactive = False
     if clan_type == 'Regional':
         return member

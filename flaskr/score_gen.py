@@ -100,7 +100,6 @@ def get_trials_enabled():
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
 
-psiops_battlegrounds_hash = parser.getint('activity_hashes', 'psiops_battlegrounds')
 vox_obscura_hash = parser.getint('activity_hashes', 'vox_obscura')
 dares_of_eternity_hash = parser.getint('activity_hashes', 'dares_of_eternity')
 preservation_hash = parser.getint('activity_hashes', 'preservation')
@@ -659,13 +658,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
         curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
         curr_member = get_weekly_xp(curr_member, progressions)
 
-        # aggregate_activity_stats = request.BungieApiCall().get_aggregate_activity_stats(curr_member.membership_type, curr_member.membership_id, character_id)
-
         curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
-
-        if psiops_battlegrounds_hash in activity_hashes:
-            curr_member = get_activity_with_triple_stage(curr_member, curr_class, milestones_list, 'runic_decoder1', 'runic_decoder2', 'runic_decoder3')
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('for_the_light'))
 
         throne_world_rank = progressions[throne_world_rank_hash]['level'] + 1
 

@@ -21,17 +21,18 @@ class Clan:
         self.clan_type = clan_type
         self.memberList = []
 
-    def add_member(self, name, membership_type, membership_id):
-        self.memberList.append(ClanMember(name, membership_id, self.name, membership_type, self.clan_type))
+    def add_member(self, name, membership_type, membership_id, bungie_name):
+        self.memberList.append(ClanMember(name, membership_id, self.name, membership_type, self.clan_type, bungie_name))
 
 
 class ClanMember:
-    def __init__(self, name, membership_id, clan_name, membership_type, clan_type):
+    def __init__(self, name, membership_id, clan_name, membership_type, clan_type, bungie_name):
         self.name = name
         self.membership_id = membership_id
         self.clan_name = clan_name
         self.membership_type = membership_type
         self.clan_type = clan_type
+        self.bungie_name = bungie_name
 
     def get(self, attr_name):
         return getattr(self, attr_name)
@@ -70,7 +71,7 @@ def build_clan_members_from_json_string(json_string):
     mem_list = []
     for json_string in json_strings:
         json_obj = json.loads(json_string)
-        m = ClanMember(None, None, None, None, None)
+        m = ClanMember(None, None, None, None, None, None)
         for k, v in json_obj.items():
             m.set(k, v)
         mem_list.append(m)

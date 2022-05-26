@@ -134,7 +134,7 @@ lookback_df = pd.DataFrame()
 
 def initialize_member(clan_member):
     member = clan_lib.ClanMember(clan_member.name, clan_member.membership_id, clan_member.clan_name,
-                                 clan_member.membership_type, clan_member.clan_type)
+                                 clan_member.membership_type, clan_member.clan_type, clan_member.bungie_name)
     member.privacy = False
     member.account_not_exists = False
 
@@ -715,15 +715,18 @@ def generate_scores_for_clan(selected_clan):
 
     members = clan_member_response['results']
     clan.memberList = []
+    bungie_name = ''
 
     for mem in members:
         name = mem['destinyUserInfo']['bungieGlobalDisplayName'] \
             if mem['destinyUserInfo']['bungieGlobalDisplayName'] != '' \
             else mem['destinyUserInfo']['LastSeenDisplayName']
+        if 'bungieGlobalDisplayName' in mem['destinyUserInfo'] and 'bungieGlobalDisplayNameCode' in mem['destinyUserInfo']:
+            bungie_name = '{0}#{1}'.format(mem['destinyUserInfo']['bungieGlobalDisplayName'],mem['destinyUserInfo']['bungieGlobalDisplayNameCode'])
         membership_type = str(mem['destinyUserInfo']['membershipType'])
         membership_id = str(mem['destinyUserInfo']['membershipId'])
         if membership_id not in mod_alts:
-            clan.add_member(name, membership_type, membership_id)
+            clan.add_member(name, membership_type, membership_id, bungie_name)
 
     profile_responses = request.BungieApiCall().get_profiles(clan.memberList)
     curr_member_list = generate_scores_with_batch(profile_responses, clan.memberList, clan.clan_type, selected_clan)
@@ -811,7 +814,7 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
         else profile_user_info['LastSeenDisplayName']
     membership_type = str(profile_user_info['membershipType'])
 
-    clan_member = ClanMember(name, membership_id, name, membership_type, clan.clan_type)
+    clan_member = ClanMember(name, membership_id, name, membership_type, clan.clan_type, bungie_name)
     clan_member = build_score_for_clan_member(clan_member, profile_response, clan.clan_type)
     print(clan_member.to_json())
     return clan_member, True

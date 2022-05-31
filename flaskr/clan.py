@@ -8,17 +8,18 @@ class ClanGroup:
         clan_list_df = pd.read_csv('clan_list.csv')
         self.clans = {}
         for index, row in clan_list_df.iterrows():
-            self.clans[row['name']] = (Clan(row['name'], str(row['groupId']), row['type']))
+            self.clans[row['name']] = (Clan(row['name'], str(row['groupId']), row['type'], bool(row['lookback_only'])))
 
     def get_clans(self):
         return self.clans
 
 
 class Clan:
-    def __init__(self, name, group_id, clan_type):
+    def __init__(self, name, group_id, clan_type, lookback_only):
         self.name = name
         self.group_id = group_id
         self.clan_type = clan_type
+        self.lookback_only = lookback_only
         self.memberList = []
 
     def add_member(self, name, membership_type, membership_id, bungie_name):

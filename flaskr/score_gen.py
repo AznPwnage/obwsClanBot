@@ -431,7 +431,7 @@ def get_clan_xp(member, member_class, uninstanced_item_objectives):
 
 
 def get_weekly_xp(member, progressions):
-    member.weekly_xp = progressions[seasonal_xp_hash]['weeklyProgress']
+    member.weekly_xp = int(progressions[seasonal_xp_hash]['weeklyProgress'])
     return member
 
 
@@ -501,11 +501,8 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
         if member.days_last_played > 5:
             member.inactive = True
     else:
-        total_xp = 0
         member.inactive = True
-        for xp in member.weekly_xp.values():
-            total_xp += xp
-        if total_xp >= inactive_xp_threshold:
+        if member.weekly_xp >= inactive_xp_threshold:
             member.inactive = False
     if clan_type == 'Regional':
         return member
@@ -731,7 +728,10 @@ def generate_scores_for_clan(selected_clan):
     profile_responses = request.BungieApiCall().get_profiles(clan.memberList)
     curr_member_list = generate_scores_with_batch(profile_responses, clan.memberList, clan.clan_type, selected_clan)
 
-    write_members_to_csv(curr_member_list, curr_file_path)
+    try:
+        write_members_to_csv(curr_member_list, curr_file_path)
+    except:
+        print('Error in writing to csv for clan: ' + selected_clan)
     delta = datetime.now() - start
     print('Time taken to generate scores for ' + selected_clan + ': ' + str(delta))
 
@@ -762,6 +762,7 @@ def generate_scores_for_clan_member_with_retry(clan_member, profile_response, cl
     try:
         return build_score_for_clan_member(clan_member, profile_response, clan_type)
     except:
+        print('Error in generating scores for clan member: ' + clan_member.bungie_name)
         retry_count += 1
         if retry_count < 3:
             return generate_scores_for_clan_member_with_retry(clan_member, profile_response, clan_type)
@@ -775,7 +776,9 @@ def generate_all_scores():
 
     start = datetime.now()
     with ThreadPoolExecutor(max_workers=len(clans)) as executor:
-        [executor.submit(generate_scores_for_clan, clan) for clan in clans]
+        for clan in clans:
+            if not clans[clan].lookback_only:
+                executor.submit(generate_scores_for_clan, clan)
     delta = datetime.now() - start
     print('Time taken to generate all scores: ' + str(delta))
 

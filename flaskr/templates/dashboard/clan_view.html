@@ -90,6 +90,12 @@
             <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='weekly_xp', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
                     size="2">▼</font></a>
         </th>
+        <th rowspan="2">Seasonal XP<br/>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='seasonal_xp', col_type='int', selected_date='%s'%selected_date ) }}"><font
+                    size="2">▲</font></a>
+            <a href="{{ url_for('dashboard.clan_view', clan_name='%s'%clan_name, sort_by='seasonal_xp', col_type='int', selected_date='%s'%selected_date, reverse='1' ) }}"><font
+                    size="2">▼</font></a>
+        </th>
         <th colspan="3">GOS</th>
         <th colspan="3">DSC</th>
         <th colspan="3">LW</th>
@@ -204,6 +210,7 @@
             {%- endif -%}
         </td>
         <td>{{ members[i].weekly_xp }}</td> <!-- Weekly XP -->
+        <td>{{ members[i].seasonal_xp }}</td> <!-- Seasonal XP -->
         <td>{{ members[i].gos_hunter }}</td> <!-- GOS Hunter -->
         <td>{{ members[i].gos_warlock }}</td> <!-- GOS Warlock -->
         <td>{{ members[i].gos_titan }}</td> <!-- GOS Titan -->

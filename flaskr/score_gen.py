@@ -104,7 +104,7 @@ vox_obscura_hash = parser.getint('activity_hashes', 'vox_obscura')
 dares_of_eternity_hash = parser.getint('activity_hashes', 'dares_of_eternity')
 preservation_hash = parser.getint('activity_hashes', 'preservation')
 
-seasonal_xp_hash = str(parser.getint('progression_hashes', 'seasonal_xp'))
+season_pass_progress_hash = str(parser.getint('progression_hashes', 'season_pass_progress'))
 clan_level_hash = str(parser.getint('progression_hashes', 'clan_level'))
 throne_world_rank_hash = str(parser.getint('progression_hashes', 'throne_world_rank'))
 
@@ -172,6 +172,7 @@ def initialize_member(clan_member):
     member.date_last_played = ''
     member.days_last_played = -1
     member.weekly_xp = 0
+    member.seasonal_xp = 0
 
     member.inactive = False
 
@@ -200,6 +201,14 @@ def get_prev_gild_level(member, df):
         if int(member.membership_id) in df.index:
             if 'gild_level' in df.columns:
                 member.gild_level = int(df.loc[int(member.membership_id)]['gild_level'])
+    return member
+
+
+def get_prev_xp(member, df):
+    if df is not None:
+        if int(member.seasonal_xp) in df.index:
+            if 'seasonal_xp' in df.columns:
+                member.seasonal_xp = int(df.loc[int(member.membership_id)]['seasonal_xp'])
     return member
 
 
@@ -430,9 +439,8 @@ def get_clan_xp(member, member_class, uninstanced_item_objectives):
     return member
 
 
-def get_weekly_xp(member, progressions):
-    member.weekly_xp = int(progressions[seasonal_xp_hash]['weeklyProgress'])
-    return member
+def get_seasonal_xp(progressions):
+    return int(progressions[season_pass_progress_hash]['currentProgress'])
 
 
 def get_activity_with_triple_stage(curr_member, curr_class, milestones_list, activity_name_1, activity_name_2, activity_name_3):
@@ -494,16 +502,20 @@ def apply_gild_cap(member):
     return member
 
 
-def check_inactive(member, clan_type, completion_counter, clan_level):
+def check_inactive(member, clan_type, raid_completions, clan_level, curr_seasonal_xp):
+    member.weekly_xp = curr_seasonal_xp - member.seasonal_xp
     if member.membership_id in mods:
+        member.seasonal_xp = curr_seasonal_xp
         return member
     if clan_level == 6:
+        member.seasonal_xp = curr_seasonal_xp
         if member.days_last_played > 5:
             member.inactive = True
     else:
         member.inactive = True
         if member.weekly_xp >= inactive_xp_threshold:
             member.inactive = False
+        member.seasonal_xp = curr_seasonal_xp
     if clan_type == 'Regional':
         return member
     if clan_type == 'PVP':
@@ -512,7 +524,7 @@ def check_inactive(member, clan_type, completion_counter, clan_level):
                 return member
         member.inactive = True
     if clan_type == 'Raid':
-        if completion_counter < 3:
+        if raid_completions < 3:
             member.inactive = True
     return member
 
@@ -602,8 +614,8 @@ def build_multi_week_df(week_start):
 def build_score_for_clan_member(clan_member, profile, clan_type):
     curr_dt = datetime.now(timezone.utc)
     clan_level = 0
-    completion_counter = 0
-    clan_xp = 0
+    raid_completions = 0
+    curr_seasonal_xp = 0
 
     curr_week = get_week_start(curr_dt)
 
@@ -613,6 +625,7 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
 
     curr_member = get_prev_week_score(curr_member, prev_df)
     curr_member = get_prev_gild_level(curr_member, prev_df)
+    curr_member = get_prev_xp(curr_member, prev_df)
 
     if member_joined_this_week:
         curr_member = perform_lookback(curr_member, lookback_df)
@@ -649,11 +662,10 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
         clan_level = progressions[clan_level_hash]['level']
 
         curr_member = get_low_light(curr_member, curr_class, character)
-        curr_member, completion_counter = get_raids(curr_member, curr_class, curr_week, character_id,
-                                                    completion_counter)
+        curr_member, raid_completions = get_raids(curr_member, curr_class, curr_week, character_id, raid_completions)
         curr_member = get_dungeons(curr_member, curr_class, curr_week, character_id)
         curr_member = get_clan_xp(curr_member, curr_class, uninstanced_item_objectives)
-        curr_member = get_weekly_xp(curr_member, progressions)
+        curr_seasonal_xp = get_seasonal_xp(progressions)
 
         curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
 
@@ -688,7 +700,10 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
                                      clan_type)
 
     if not member_joined_this_week:
-        curr_member = check_inactive(curr_member, clan_type, completion_counter, clan_level)
+        curr_member = check_inactive(curr_member, clan_type, raid_completions, clan_level, curr_seasonal_xp)
+    else:
+        curr_member.weekly_xp = curr_seasonal_xp - curr_member.seasonal_xp
+        curr_member.seasonal_xp = curr_seasonal_xp
 
     curr_member = apply_score_cap_and_decay(curr_member, clan_type)
 
@@ -748,7 +763,7 @@ def generate_scores_with_batch(profile_responses, clan_member_list, clan_type, c
                 index = j + (i * batch_size)
                 if index < list_size:
                     print(clan_name + ': ' + str(index + 1) + ' - ' + clan_member_list[index].name)
-                    futures.append(executor.submit(generate_scores_for_clan_member_with_retry,
+                    futures.append(executor.submit(build_score_for_clan_member,
                                                    clan_member_list[index],
                                                    profile_responses[index].json(),
                                                    clan_type))
@@ -764,7 +779,7 @@ def generate_scores_for_clan_member_with_retry(clan_member, profile_response, cl
     except:
         print('Error in generating scores for clan member: ' + clan_member.bungie_name)
         retry_count += 1
-        if retry_count < 3:
+        if retry_count < 1:
             return generate_scores_for_clan_member_with_retry(clan_member, profile_response, clan_type)
         return None
 

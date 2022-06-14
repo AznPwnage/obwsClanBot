@@ -2,7 +2,6 @@ import concurrent
 import copy
 import enum
 import math
-from collections import OrderedDict
 
 from . import request
 from . import clan as clan_lib
@@ -206,7 +205,7 @@ def get_prev_gild_level(member, df):
 
 def get_prev_xp(member, df):
     if df is not None:
-        if int(member.seasonal_xp) in df.index:
+        if int(member.membership_id) in df.index:
             if 'seasonal_xp' in df.columns:
                 member.seasonal_xp = int(df.loc[int(member.membership_id)]['seasonal_xp'])
     return member
@@ -502,20 +501,16 @@ def apply_gild_cap(member):
     return member
 
 
-def check_inactive(member, clan_type, raid_completions, clan_level, curr_seasonal_xp):
-    member.weekly_xp = curr_seasonal_xp - member.seasonal_xp
+def check_inactive(member, clan_type, raid_completions, clan_level):
     if member.membership_id in mods:
-        member.seasonal_xp = curr_seasonal_xp
         return member
     if clan_level == 6:
-        member.seasonal_xp = curr_seasonal_xp
         if member.days_last_played > 5:
             member.inactive = True
     else:
         member.inactive = True
         if member.weekly_xp >= inactive_xp_threshold:
             member.inactive = False
-        member.seasonal_xp = curr_seasonal_xp
     if clan_type == 'Regional':
         return member
     if clan_type == 'PVP':
@@ -591,7 +586,7 @@ def build_single_week_df(week_start):
             prev_file_path = path.join('scoreData', f'{week_start:%Y-%m-%d}', clans[prev_week_clan].name + '.csv')
             if path.exists(prev_file_path):
                 prev_df = prev_df.append(
-                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level', 'clan_name'],
+                    pd.read_csv(prev_file_path, usecols=['score', 'membership_id', 'name', 'gild_level', 'clan_name', 'seasonal_xp'],
                                 index_col='membership_id'))
 
 
@@ -699,11 +694,11 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'),
                                      clan_type)
 
+    curr_member.weekly_xp = curr_seasonal_xp - curr_member.seasonal_xp
+    curr_member.seasonal_xp = curr_seasonal_xp
+
     if not member_joined_this_week:
-        curr_member = check_inactive(curr_member, clan_type, raid_completions, clan_level, curr_seasonal_xp)
-    else:
-        curr_member.weekly_xp = curr_seasonal_xp - curr_member.seasonal_xp
-        curr_member.seasonal_xp = curr_seasonal_xp
+        curr_member = check_inactive(curr_member, clan_type, raid_completions, clan_level)
 
     curr_member = apply_score_cap_and_decay(curr_member, clan_type)
 

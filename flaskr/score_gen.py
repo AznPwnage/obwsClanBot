@@ -32,6 +32,7 @@ class DestinyActivity(enum.Enum):
     vog_master = (1681562271, 4, 45, 1500)
     vow = (1441982566, 4, 45, 1500)
     vow_master = (4217492330, 4, 45, 1500)
+    kf = (1374392663, 4, 45, 1500)
     poh = (2582501063, 82, None, None)
     prophecy = (1077850348, 82, None, None)
     st = (2032534090, 2, None, None)
@@ -112,6 +113,7 @@ trials_enabled = get_trials_enabled()
 
 min_light = parser.getint('seasonal_variables', 'min_light')
 inactive_xp_threshold = parser.getint('seasonal_variables', 'inactive_xp_threshold')
+new_season = parser.getboolean('seasonal_variables', 'new_season')
 
 mod_alts = dict(parser.items('mod_alts')).values()
 
@@ -158,6 +160,7 @@ def initialize_member(clan_member):
     member.set(DestinyActivity.vog_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vow.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vow_master.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.kf.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.prophecy.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.poh.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.st.name, copy.copy(destiny_class_count_dict))
@@ -366,6 +369,8 @@ def get_activity_ref_id(activity):
         ref_id = 1441982566
     if ref_id == 4156879541:  # Hack for Vow
         ref_id = 1441982566
+    if ref_id == 1063970578:  # Hack for Challenge Mode KF
+        ref_id = 1374392663
     return ref_id
 
 
@@ -694,7 +699,10 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials7'),
                                      clan_type)
 
-    curr_member.weekly_xp = curr_seasonal_xp - curr_member.seasonal_xp
+    if new_season:
+        curr_member.weekly_xp = curr_seasonal_xp
+    else:
+        curr_member.weekly_xp = curr_seasonal_xp - curr_member.seasonal_xp
     curr_member.seasonal_xp = curr_seasonal_xp
 
     if not member_joined_this_week:

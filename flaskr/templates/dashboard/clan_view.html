@@ -103,6 +103,7 @@
         <th colspan="3">MVOG</th>
         <th colspan="3">VOW</th>
         <th colspan="3">MVOW</th>
+        <th colspan="3">KF</th>
         <th colspan="3">Clan Engram By Class</th>
         <th colspan="3">Crucible Engram</th>
         <th colspan="3">Banshee</th>
@@ -134,7 +135,7 @@
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(34) %}
+        {%- for i in range(35) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -232,6 +233,9 @@
         <td>{{ members[i].vow_master_hunter }}</td> <!-- VOW Master Hunter -->
         <td>{{ members[i].vow_master_warlock }}</td> <!-- VOW Master Warlock -->
         <td>{{ members[i].vow_master_titan }}</td> <!-- VOW Master Titan -->
+        <td>{{ members[i].kf_hunter }}</td> <!-- KF Hunter -->
+        <td>{{ members[i].kf_warlock }}</td> <!-- KF Warlock -->
+        <td>{{ members[i].kf_titan }}</td> <!-- KF Titan -->
         <td>{%- if members[i].clan_xp_hunter | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
         <td>{%- if members[i].clan_xp_warlock | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
         <td>{%- if members[i].clan_xp_titan | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->

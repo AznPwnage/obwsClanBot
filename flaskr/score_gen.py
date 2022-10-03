@@ -28,16 +28,18 @@ class DestinyActivity(enum.Enum):
     dsc = (910380154, 4, 35, 1200)
     lw = (2122313384, 4, 45, 1500)
     vog = (3881495763, 4, 45, 1500)
-    vog_challenge = (1485585878, 4, 45, 1500)
     vog_master = (1681562271, 4, 45, 1500)
     vow = (1441982566, 4, 45, 1500)
     vow_master = (4217492330, 4, 45, 1500)
     kf = (1374392663, 4, 45, 1500)
+    kf_master = (2964135793, 4, 45, 1500)
     poh = (2582501063, 82, None, None)
     prophecy = (1077850348, 82, None, None)
     st = (2032534090, 2, None, None)
     goa = (4078656646, 82, None, None)
     goa_master = (3774021532, 82, None, None)
+    duality = (2823159265, 82, None, None)
+    duality_master = (1668217731, 82, None, None)
 
     def __init__(self, activity_hash, activity_mode, threshold_kill, threshold_time):
         self.activity_hash = activity_hash
@@ -156,15 +158,18 @@ def initialize_member(clan_member):
     member.set(DestinyActivity.dsc.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.lw.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vog.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.vog_challenge.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vog_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vow.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.vow_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.kf.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.kf_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.prophecy.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.poh.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.st.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.goa.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.goa_master.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.duality.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.duality_master.name, copy.copy(destiny_class_count_dict))
 
     member.low_light = {DestinyClass.hunter.name: True, DestinyClass.warlock.name: True, DestinyClass.titan.name: True}
 
@@ -363,13 +368,17 @@ def get_activity_ref_id(activity):
         ref_id = 2122313384
     if ref_id == 3976949817:  # Hack because Bungie API has 2 separate DSC Raids. This one is for guided games.
         ref_id = 910380154
-    if ref_id == 3711931140:  # Hack for guided games VOG.
+    if ref_id == 1485585878:  # Hack for Challenge Mode VOG
         ref_id = 3881495763
-    if ref_id == 2906950631:  # Hack for Vow
+    if ref_id == 3711931140:  # Hack for Guided Games VOG
+        ref_id = 3881495763
+    if ref_id == 4156879541:  # Hack for Challenge Mode Vow
         ref_id = 1441982566
-    if ref_id == 4156879541:  # Hack for Vow
+    if ref_id == 2906950631:  # Hack for Guided Games Vow
         ref_id = 1441982566
     if ref_id == 1063970578:  # Hack for Challenge Mode KF
+        ref_id = 1374392663
+    if ref_id == 2897223272:  # Hack for Guided Games KF
         ref_id = 1374392663
     return ref_id
 
@@ -536,7 +545,7 @@ def perform_lookback(member, df):
             if isinstance(latest_row, pd.DataFrame):  # df.loc returns DF if multiple rows in DF
                 latest_row = lookback_df.loc[int(member.membership_id)].sort_values('date', ascending=False).head(1)
                 latest_row.reset_index(inplace=True)
-                lookback_score = int(latest_row.values[0][2])
+                lookback_score = int(latest_row.values[0][3])
                 lookback_date_str = str(latest_row.values[0][4])
             else:  # df.loc return Series if single row in Df
                 lookback_score = int(latest_row.values[2])

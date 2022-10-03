@@ -32,22 +32,24 @@
         </th>
         <th rowspan="2">Clan XP
         </th>
+        <th rowspan="2">Weekly XP
+        </th>
+        <th rowspan="2">Seasonal XP
+        </th>
         <th colspan="3">GOS</th>
         <th colspan="3">DSC</th>
         <th colspan="3">LW</th>
         <th colspan="3">VOG</th>
-        <th colspan="3">VOGC</th>
+        <th colspan="3">MVOG</th>
+        <th colspan="3">VOW</th>
+        <th colspan="3">MVOW</th>
+        <th colspan="3">KF</th>
         <th colspan="3">Clan Engram By Class</th>
         <th colspan="3">Crucible Engram</th>
-        <th colspan="3">Exo Challenge</th>
         <th colspan="3">Banshee</th>
         <th colspan="3">Drifter</th>
         <th colspan="3">Zavala</th>
-        <th colspan="3">Variks</th>
-        <th colspan="3">Exo Stranger</th>
-        <th colspan="3">Empire Hunts</th>
         <th colspan="3">Nightfall</th>
-        <th colspan="3">Deadly Venatics</th>
         <th colspan="3">Strikes</th>
         <th colspan="3">Nightfall 100k</th>
         <th colspan="3">Gambit</th>
@@ -56,23 +58,24 @@
         <th colspan="3">Trials 50 Wins</th>
         <th colspan="3">Trials 7 Wins</th>
         <th colspan="3">Prophecy</th>
-        <th colspan="3">Harbinger</th>
-        <th colspan="3">Presage</th>
         <th colspan="3">POH</th>
         <th colspan="3">ST</th>
-        <th colspan="3">Battle Hardened</th>
-        <th colspan="3">Net Crasher</th>
-        <th colspan="3">Wayfinder's Compass</th>
-        <th colspan="3">Shattered Champions</th>
-        <th colspan="3">Astral Alignment 1</th>
-        <th colspan="3">Astral Alignment 2</th>
-        <th colspan="3">Astral Alignment 3</th>
+        <th colspan="3">GOA</th>
+        <th colspan="3">DOE Powerful</th>
+        <th colspan="3">DOE Pinnacle</th>
+        <th colspan="3">Preservation</th>
+        <th colspan="3">Wellspring Powerful</th>
+        <th colspan="3">Wellspring Pinnacle</th>
+        <th colspan="3">Campaign Powerful</th>
+        <th colspan="3">Campaign Pinnacle</th>
+        <th colspan="3">Fynch Challenge</th>
+        <th colspan="3">Tank Buster</th>
         <th colspan="3">Low Light</th>
         <th rowspan="2">Account doesn't exist</th>
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(36) %}
+        {%- for i in range(35) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -143,116 +146,115 @@
             {{ (member.clan_xp.hunter | int) + (member.clan_xp.warlock | int) + (member.clan_xp.titan | int) }}
             {%- endif -%}
         </td>
-        <td>{{ member.gos.hunter }}</td> <!-- GOS Hunter -->
-        <td>{{ member.gos.warlock }}</td> <!-- GOS Warlock -->
-        <td>{{ member.gos.titan }}</td> <!-- GOS Titan -->
-        <td>{{ member.dsc.hunter }}</td> <!-- DSC Hunter -->
-        <td>{{ member.dsc.warlock }}</td> <!-- DSC Warlock -->
-        <td>{{ member.dsc.titan }}</td> <!-- DSC Titan -->
-        <td>{{ member.lw.hunter }}</td> <!-- LW Hunter -->
-        <td>{{ member.lw.warlock }}</td> <!-- LW Warlock -->
-        <td>{{ member.lw.titan }}</td> <!-- LW Titan -->
-        <td>{{ member.vog.hunter }}</td> <!-- VOG Hunter -->
-        <td>{{ member.vog.warlock }}</td> <!-- VOG Warlock -->
-        <td>{{ member.vog.titan }}</td> <!-- VOG Titan -->
-        <td>{{ member.vog_challenge.hunter }}</td> <!-- VOG Challenge Hunter -->
-        <td>{{ member.vog_challenge.warlock }}</td> <!-- VOG Challenge Warlock -->
-        <td>{{ member.vog_challenge.titan }}</td> <!-- VOG Challenge Titan -->
-        <td>{%- if (member.clan_xp.hunter | int) >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
-        <td>{%- if (member.clan_xp.warlock) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
-        <td>{%- if (member.clan_xp.titan) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp.titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->
-        <td>{%- if member.crucible_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
-        <td>{%- if member.crucible_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
-        <td>{%- if member.crucible_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->
-        <td>{%- if member.exo_challenge.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Hunter -->
-        <td>{%- if member.exo_challenge.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Warlock -->
-        <td>{%- if member.exo_challenge.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Challenge Titan -->
-        <td>{%- if member.banshee_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Hunter -->
-        <td>{%- if member.banshee_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Warlock -->
-        <td>{%- if member.banshee_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Titan -->
-        <td>{%- if member.drifter_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Hunter -->
-        <td>{%- if member.drifter_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Warlock -->
-        <td>{%- if member.drifter_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Titan -->
-        <td>{%- if member.zavala_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Hunter -->
-        <td>{%- if member.zavala_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Warlock -->
-        <td>{%- if member.zavala_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Titan -->
-        <td>{%- if member.variks_engram.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Hunter -->
-        <td>{%- if member.variks_engram.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Warlock -->
-        <td>{%- if member.variks_engram.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Variks Titan -->
-        <td>{%- if member.exo_stranger.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Hunter -->
-        <td>{%- if member.exo_stranger.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Warlock -->
-        <td>{%- if member.exo_stranger.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Exo Stranger Titan -->
-        <td>{%- if member.empire_hunt.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Hunter -->
-        <td>{%- if member.empire_hunt.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Warlock -->
-        <td>{%- if member.empire_hunt.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Empire Hunt Titan -->
-        <td>{%- if member.nightfall.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
-        <td>{%- if member.nightfall.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
-        <td>{%- if member.nightfall.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
-        <td>{%- if member.deadly_venatics.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Hunter -->
-        <td>{%- if member.deadly_venatics.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Warlock -->
-        <td>{%- if member.deadly_venatics.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Deadly Venatics Titan -->
-        <td>{%- if member.strikes.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
-        <td>{%- if member.strikes.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
-        <td>{%- if member.strikes.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
-        <td>{%- if member.nightfall_100k.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
-        <td>{%- if member.nightfall_100k.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
-        <td>{%- if member.nightfall_100k.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
-        <td>{%- if member.gambit.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Hunter -->
-        <td>{%- if member.gambit.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Warlock -->
-        <td>{%- if member.gambit.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Titan -->
-        <td>{%- if member.crucible_playlist.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Hunter -->
-        <td>{%- if member.crucible_playlist.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Warlock -->
-        <td>{%- if member.crucible_playlist.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Titan -->
-        <td>{%- if member.crucible_glory.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
-        <td>{%- if member.crucible_glory.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
-        <td>{%- if member.crucible_glory.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
-        <td>{%- if member.trials50.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Hunter -->
-        <td>{%- if member.trials50.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Warlock -->
-        <td>{%- if member.trials50.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Titan -->
-        <td>{%- if member.trials7.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Hunter -->
-        <td>{%- if member.trials7.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Warlock -->
-        <td>{%- if member.trials7.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Titan -->
-        <td>{{ member.prophecy.hunter }}</td> <!-- Prophecy Hunter -->
-        <td>{{ member.prophecy.warlock }}</td> <!-- Prophecy Warlock -->
-        <td>{{ member.prophecy.titan }}</td> <!-- Prophecy Titan -->
-        <td>{{ member.harbinger.hunter }}</td> <!-- Harbinger Hunter -->
-        <td>{{ member.harbinger.warlock }}</td> <!-- Harbinger Warlock -->
-        <td>{{ member.harbinger.titan }}</td> <!-- Harbinger Titan -->
-        <td>{{ member.presage.hunter }}</td> <!-- Presage Hunter -->
-        <td>{{ member.presage.warlock }}</td> <!-- Presage Warlock -->
-        <td>{{ member.presage.titan }}</td> <!-- Presage Titan -->
-        <td>{{ member.poh.hunter }}</td> <!-- POH Hunter -->
-        <td>{{ member.poh.warlock }}</td> <!-- POH Warlock -->
-        <td>{{ member.poh.titan }}</td> <!-- POH Titan -->
-        <td>{{ member.st.hunter }}</td> <!-- ST Hunter -->
-        <td>{{ member.st.warlock }}</td> <!-- ST Warlock -->
-        <td>{{ member.st.titan }}</td> <!-- ST Titan -->
-        <td>{%- if member.battle_hardened.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Hunter -->
-        <td>{%- if member.battle_hardened.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Warlock -->
-        <td>{%- if member.battle_hardened.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Battle Hardened Titan -->
-        <td>{%- if member.net_crasher.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Hunter -->
-        <td>{%- if member.net_crasher.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Warlock -->
-        <td>{%- if member.net_crasher.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Net Crasher Titan -->
-        <td>{%- if member.wf_compass.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Hunter -->
-        <td>{%- if member.wf_compass.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Warlock -->
-        <td>{%- if member.wf_compass.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wayfinder's Compass Bounties Titan -->
-        <td>{%- if member.shattered_champions.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Hunter -->
-        <td>{%- if member.shattered_champions.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Warlock -->
-        <td>{%- if member.shattered_champions.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Shattered Champions Titan -->
-        <td>{%- if member.astral_alignment1.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Hunter -->
-        <td>{%- if member.astral_alignment1.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Warlock -->
-        <td>{%- if member.astral_alignment1.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 1 Titan -->
-        <td>{%- if member.astral_alignment2.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Hunter -->
-        <td>{%- if member.astral_alignment2.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Warlock -->
-        <td>{%- if member.astral_alignment2.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 2 Titan -->
-        <td>{%- if member.astral_alignment3.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Hunter -->
-        <td>{%- if member.astral_alignment3.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Warlock -->
-        <td>{%- if member.astral_alignment3.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Astral Alignment 3 Titan -->
-        <td>{%- if member.low_light.hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
-        <td>{%- if member.low_light.warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
-        <td>{%- if member.low_light.titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
-        <td>{%- if member.account_not_exists == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Account doesn't exist -->
-        <td>{%- if member.privacy == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Private account -->
+        <td>{{ member.weekly_xp }}</td> <!-- Weekly XP -->
+        <td>{{ member.seasonal_xp }}</td> <!-- Seasonal XP -->
+        <td>{{ member.gos_hunter }}</td> <!-- GOS Hunter -->
+        <td>{{ member.gos_warlock }}</td> <!-- GOS Warlock -->
+        <td>{{ member.gos_titan }}</td> <!-- GOS Titan -->
+        <td>{{ member.dsc_hunter }}</td> <!-- DSC Hunter -->
+        <td>{{ member.dsc_warlock }}</td> <!-- DSC Warlock -->
+        <td>{{ member.dsc_titan }}</td> <!-- DSC Titan -->
+        <td>{{ member.lw_hunter }}</td> <!-- LW Hunter -->
+        <td>{{ member.lw_warlock }}</td> <!-- LW Warlock -->
+        <td>{{ member.lw_titan }}</td> <!-- LW Titan -->
+        <td>{{ member.vog_hunter }}</td> <!-- VOG Hunter -->
+        <td>{{ member.vog_warlock }}</td> <!-- VOG Warlock -->
+        <td>{{ member.vog_titan }}</td> <!-- VOG Titan -->
+        <td>{{ member.vog_master_hunter }}</td> <!-- VOG Master Hunter -->
+        <td>{{ member.vog_master_warlock }}</td> <!-- VOG Master Warlock -->
+        <td>{{ member.vog_master_titan }}</td> <!-- VOG Master Titan -->
+        <td>{{ member.vow_hunter }}</td> <!-- VOW Hunter -->
+        <td>{{ member.vow_warlock }}</td> <!-- VOW Warlock -->
+        <td>{{ member.vow_titan }}</td> <!-- VOW Titan -->
+        <td>{{ member.vow_master_hunter }}</td> <!-- VOW Master Hunter -->
+        <td>{{ member.vow_master_warlock }}</td> <!-- VOW Master Warlock -->
+        <td>{{ member.vow_master_titan }}</td> <!-- VOW Master Titan -->
+        <td>{{ member.kf_hunter }}</td> <!-- KF Hunter -->
+        <td>{{ member.kf_warlock }}</td> <!-- KF Warlock -->
+        <td>{{ member.kf_titan }}</td> <!-- KF Titan -->
+        <td>{%- if (member.clan_xp_hunter | int) >= 5000 -%}✔️{%- else -%}{{ member.clan_xp_hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
+        <td>{%- if (member.clan_xp_warlock) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp_warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
+        <td>{%- if (member.clan_xp_titan) | int >= 5000 -%}✔️{%- else -%}{{ member.clan_xp_titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->
+        <td>{%- if member.crucible_engram_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Hunter -->
+        <td>{%- if member.crucible_engram_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Warlock -->
+        <td>{%- if member.crucible_engram_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Engram Titan -->
+        <td>{%- if member.banshee_engram_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Hunter -->
+        <td>{%- if member.banshee_engram_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Warlock -->
+        <td>{%- if member.banshee_engram_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Banshee Titan -->
+        <td>{%- if member.drifter_engram_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Hunter -->
+        <td>{%- if member.drifter_engram_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Warlock -->
+        <td>{%- if member.drifter_engram_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Drifter Titan -->
+        <td>{%- if member.zavala_engram_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Hunter -->
+        <td>{%- if member.zavala_engram_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Warlock -->
+        <td>{%- if member.zavala_engram_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Zavala Titan -->
+        <td>{%- if member.nightfall_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
+        <td>{%- if member.nightfall_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
+        <td>{%- if member.nightfall_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
+        <td>{%- if member.strikes_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
+        <td>{%- if member.strikes_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
+        <td>{%- if member.strikes_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
+        <td>{%- if member.nightfall_100k_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
+        <td>{%- if member.nightfall_100k_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
+        <td>{%- if member.nightfall_100k_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
+        <td>{%- if member.gambit_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Hunter -->
+        <td>{%- if member.gambit_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Warlock -->
+        <td>{%- if member.gambit_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Gambit Titan -->
+        <td>{%- if member.crucible_playlist_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Hunter -->
+        <td>{%- if member.crucible_playlist_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Warlock -->
+        <td>{%- if member.crucible_playlist_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Playlist Titan -->
+        <td>{%- if member.crucible_glory_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Hunter -->
+        <td>{%- if member.crucible_glory_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Warlock -->
+        <td>{%- if member.crucible_glory_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Crucible Glory Titan -->
+        <td>{%- if member.trials50_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Hunter -->
+        <td>{%- if member.trials50_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Warlock -->
+        <td>{%- if member.trials50_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 50 Wins Titan -->
+        <td>{%- if member.trials7_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Hunter -->
+        <td>{%- if member.trials7_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Warlock -->
+        <td>{%- if member.trials7_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Trials 7 Wins Titan -->
+        <td>{{ member.prophecy_hunter }}</td> <!-- Prophecy Hunter -->
+        <td>{{ member.prophecy_warlock }}</td> <!-- Prophecy Warlock -->
+        <td>{{ member.prophecy_titan }}</td> <!-- Prophecy Titan -->
+        <td>{{ member.poh_hunter }}</td> <!-- POH Hunter -->
+        <td>{{ member.poh_warlock }}</td> <!-- POH Warlock -->
+        <td>{{ member.poh_titan }}</td> <!-- POH Titan -->
+        <td>{{ member.st_hunter }}</td> <!-- ST Hunter -->
+        <td>{{ member.st_warlock }}</td> <!-- ST Warlock -->
+        <td>{{ member.st_titan }}</td> <!-- ST Titan -->
+        <td>{{ member.goa_hunter }}</td> <!-- GOA Hunter -->
+        <td>{{ member.goa_warlock }}</td> <!-- GOA Warlock -->
+        <td>{{ member.goa_titan }}</td> <!-- GOA Titan -->
+        <td>{%- if member.doe_powerful_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Powerful Hunter -->
+        <td>{%- if member.doe_powerful_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Powerful Warlock -->
+        <td>{%- if member.doe_powerful_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Powerful Titan -->
+        <td>{%- if member.doe_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Hunter -->
+        <td>{%- if member.doe_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Warlock -->
+        <td>{%- if member.doe_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Titan -->
+        <td>{%- if member.preservation_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Hunter -->
+        <td>{%- if member.preservation_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Warlock -->
+        <td>{%- if member.preservation_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Titan -->
+        <td>{%- if member.wellspring_powerful_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Hunter -->
+        <td>{%- if member.wellspring_powerful_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Warlock -->
+        <td>{%- if member.wellspring_powerful_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Titan -->
+        <td>{%- if member.wellspring_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Hunter -->
+        <td>{%- if member.wellspring_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Warlock -->
+        <td>{%- if member.wellspring_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Titan -->
+        <td>{%- if member.campaign_powerful_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Hunter -->
+        <td>{%- if member.campaign_powerful_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Warlock -->
+        <td>{%- if member.campaign_powerful_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Titan -->
+        <td>{%- if member.campaign_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Hunter -->
+        <td>{%- if member.campaign_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Warlock -->
+        <td>{%- if member.campaign_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Titan -->
+        <td>{%- if member.fynch_challenge_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Hunter -->
+        <td>{%- if member.fynch_challenge_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Warlock -->
+        <td>{%- if member.fynch_challenge_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Titan -->
+        <td>{%- if member.tank_buster_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Hunter -->
+        <td>{%- if member.tank_buster_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Warlock -->
+        <td>{%- if member.tank_buster_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Titan -->
+        <td>{%- if member.low_light_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
+        <td>{%- if member.low_light_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
+        <td>{%- if member.low_light_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->
+        <td>{%- if member.account_not_exists== 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Account doesn't exist -->
+        <td>{%- if member.privacy== 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Private account -->
     </tr>
     </tbody>
 </table>

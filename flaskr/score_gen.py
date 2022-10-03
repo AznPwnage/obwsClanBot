@@ -286,6 +286,8 @@ def get_raids(member, member_class, week_start, character_id, completion_counter
         if member.get(activity_enum.name)[member_class.name] == 1:    # only award points for first unique completion of the raid
             if member.clan_type == 'Raid':
                 member.score += 2
+            if member.clan_type == 'RaidElite':
+                member.score += 4
             member.score += 5
         completion_counter += 1
     return member, completion_counter
@@ -518,7 +520,7 @@ def apply_gild_cap(member):
 def check_inactive(member, clan_type, raid_completions, clan_level):
     if member.membership_id in mods:
         return member
-    if clan_level == 6:
+    if clan_level == 6 or clan_type == 'RaidElite':
         if member.days_last_played > 5:
             member.inactive = True
     else:

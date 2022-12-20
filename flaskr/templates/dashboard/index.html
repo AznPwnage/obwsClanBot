@@ -40,7 +40,7 @@
             Bungie Name:<input type="text" id="raidReport_textField">
         </td>
         <td>
-            PGCR ID:<input type="text" id="checkRaid_textField">
+            PGCR ID:<input type="text" id="checkRaid_pgcrId_textField">
         </td>
     </tr>
     <tr>
@@ -115,7 +115,10 @@
         </select>
         </td>
         <td></td>
-        <td></td>
+        <td>
+            BName:<input type="text" id="checkRaid_bungieName_textField">
+            H/W/T:<input type="text" id="checkRaid_hwt_textField" maxlength="1" size="2">
+        </td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -239,9 +242,13 @@ $('#raidReport_btn').click( function(e){
 $('#checkRaid_btn').click( function(e){
     e.preventDefault();
     disableBtn();
-    var pgcr = $("#checkRaid_textField").val()
-    var url = "{{ url_for('dashboard.check_raid', pgcr_id ='pgcr_id') }}"
-            .replace("pgcr_id", encodeURI(pgcr_id))
+    var pgcrId = $("#checkRaid_pgcrId_textField").val()
+    var bungieName = $("#checkRaid_bungieName_textField").val()
+    var characterClass = $("#checkRaid_hwt_textField").val()
+    var url = "{{ url_for('dashboard.check_raid', pgcr_id ='pgcrId', bungie_name = 'bungieName', character_class = 'characterClass') }}"
+            .replace("pgcrId", encodeURI(pgcrId))
+            .replace("bungieName", encodeURI(bungieName))
+            .replace("characterClass", encodeURI(characterClass))
             .replaceAll("amp;", "");
     window.location.href = url;
 });

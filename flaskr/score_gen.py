@@ -553,6 +553,7 @@ def perform_lookback(member, df):
                 lookback_score = int(latest_row.values[2])
                 lookback_date_str = str(latest_row.values[3])
 
+            print(member.name)
             lookback_weeks = get_lookback_weeks(lookback_score)
             weeks_looked_back = get_weeks_looked_back(lookback_date_str)
 
@@ -569,7 +570,8 @@ def get_lookback_weeks(score):
     for i in range(len(score_thresholds)):
         if i == len(score_thresholds):
             if score_thresholds[i] <= score:
-                lookback_weeks = rejoin_lookback_map.get(score_thresholds[i])
+                return 6
+                # lookback_weeks = rejoin_lookback_map.get(score_thresholds[i])
             return lookback_weeks
         if score_thresholds[i] <= score < score_thresholds[i + 1]:
             return rejoin_lookback_map.get(score_thresholds[i])
@@ -821,17 +823,15 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
     for mem in members:
         if 'bungieGlobalDisplayName' in mem['destinyUserInfo'] and 'bungieGlobalDisplayNameCode' in mem['destinyUserInfo']:
             name = '{0}#{1}'.format(mem['destinyUserInfo']['bungieGlobalDisplayName'],  mem['destinyUserInfo']['bungieGlobalDisplayNameCode'])
+            print(bungie_name)
             if bungie_name == name:
                 member_in_clan_flag = True
     if not member_in_clan_flag:
         return 'No such member found', False
 
-    search_response = request.BungieApiCall().search_player(bungie_name)['Response'][0]
-    if not search_response:
+    member_found, membership_id, membership_type, profile_response = search_by_bungie_name(bungie_name)
+    if not member_found:
         return 'No such member found', False
-    membership_id = search_response['membershipId']
-    membership_type = search_response['membershipType']
-    profile_response = request.BungieApiCall().get_profile(str(membership_type), membership_id)
 
     prev_week, curr_week = get_prev_and_curr_weeks()
 
@@ -850,6 +850,17 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
     clan_member = build_score_for_clan_member(clan_member, profile_response, clan.clan_type)
     print(clan_member.to_json())
     return clan_member, True
+
+
+def search_by_bungie_name(bungie_name):
+    search_response = request.BungieApiCall().search_player(bungie_name)['Response'][0]
+    if not search_response:
+        return False, None, None, None
+    membership_id = search_response['membershipId']
+    membership_type = search_response['membershipType']
+    profile_response = request.BungieApiCall().get_profile(str(membership_type), membership_id)
+
+    return True, membership_id, membership_type, profile_response
 
 
 def generate_raid_report(bungie_name):
@@ -884,8 +895,20 @@ def generate_raid_report(bungie_name):
         print(raid + ': ' + str(raid_report.get(raid)['valid_pgcrs']))
 
 
-def check_raid(pgcr_id):
-    return None
+def check_raid(pgcr_id, bungie_name, character_class):
+    print('here')
+    character_class_hashes = {'H': 671679327, 'W': 2271682572, 'T': 3655393761}
+    character_class_hash = character_class_hashes.get(character_class)
+
+    member_found, membership_id, membership_type, profile_response = search_by_bungie_name(bungie_name)
+    if not member_found:
+        print('No such member found')
+
+    for character in profile_response['characters']['data']:
+        if character['classHash'] == character_class_hash:
+            print(character)
+
+    activity_invalid()
 
 
 def get_prev_and_curr_weeks():

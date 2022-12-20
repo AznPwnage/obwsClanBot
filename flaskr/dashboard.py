@@ -135,7 +135,9 @@ def raid_report():
 @dashboard.route('/check_raid')
 def check_raid():
     pgcr_id = request.args.get('pgcr_id', None)
-    score_gen.check_raid(pgcr_id)
+    bungie_name = request.args.get('bungie_name', None)
+    character_class = request.args.get('character_class', None)
+    score_gen.check_raid(pgcr_id, bungie_name, character_class)
     return render_template('dashboard/index.html')
 
 

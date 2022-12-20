@@ -35,7 +35,7 @@ class BungieApiCall:
                      params={'components': [100, 200, 202, 204, 1100]}, headers=self.get_header()).json()
 
     def search_player(self, bungie_name):
-        return r.get(self.get_api_root() + 'Destiny2/SearchDestinyPlayer/-1/' + urllib.parse.quote(bungie_name), headers=self.get_header()).json()
+        return r.post(self.get_api_root() + 'User/Search/GlobalName/-1/' + urllib.parse.quote(bungie_name), headers=self.get_header()).json()
 
     def get_activity_history(self, membership_type, membership_id, character_id, activity_type, page_limit):
         activities = []

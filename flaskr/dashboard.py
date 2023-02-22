@@ -6,7 +6,7 @@ from flask import (
     Blueprint, redirect, render_template, request, url_for, flash
 )
 
-from . import clan as clan_lib
+from . import clan as clan_lib, role_gen
 from . import score_gen
 
 dashboard = Blueprint('dashboard', __name__)
@@ -48,6 +48,7 @@ def generate_scores():
 
 @dashboard.route('/roles')
 def generate_role_file():
+    role_gen.generate_role_file()
     return render_template('dashboard/index.html')
 
 

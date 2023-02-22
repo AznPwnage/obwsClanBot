@@ -40,6 +40,8 @@ class DestinyActivity(enum.Enum):
     goa_master = (3774021532, 82, None, None)
     duality = (2823159265, 82, None, None)
     duality_master = (1668217731, 82, None, None)
+    spire = (1262462921, 82, None, None)
+    spire_master = (1801496203, 82, None, None)
 
     def __init__(self, activity_hash, activity_mode, threshold_kill, threshold_time):
         self.activity_hash = activity_hash
@@ -568,10 +570,9 @@ def get_lookback_weeks(score):
     lookback_weeks = 0
     score_thresholds = list(rejoin_lookback_map.keys())
     for i in range(len(score_thresholds)):
-        if i == len(score_thresholds):
+        if i == len(score_thresholds)-1:
             if score_thresholds[i] <= score:
-                return 6
-                # lookback_weeks = rejoin_lookback_map.get(score_thresholds[i])
+                lookback_weeks = rejoin_lookback_map.get(score_thresholds[i])
             return lookback_weeks
         if score_thresholds[i] <= score < score_thresholds[i + 1]:
             return rejoin_lookback_map.get(score_thresholds[i])

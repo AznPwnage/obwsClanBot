@@ -35,8 +35,6 @@ def get_curr_week_start():
 
 
 def get_role_name_from_score(score, gild_level):
-    print(score)
-    print(gild_level)
     if score < 60 and gild_level == 0:
         return "Guardian"
     elif score < 120 and gild_level == 0:
@@ -71,7 +69,6 @@ def add_roles_to_df(df):
 
 
 def write_to_csv(df: pd.DataFrame):
-    print(df)
     file_path = path.join('roleFile', 'role_file.csv')
     if path.exists(file_path):  # delete old file for current week
         os.remove(file_path)

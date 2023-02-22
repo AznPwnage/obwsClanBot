@@ -557,7 +557,6 @@ def perform_lookback(member, df):
                 lookback_score = int(latest_row.values[2])
                 lookback_date_str = str(latest_row.values[3])
 
-            print(member.name)
             lookback_weeks = get_lookback_weeks(lookback_score)
             weeks_looked_back = get_weeks_looked_back(lookback_date_str)
 
@@ -818,7 +817,6 @@ def generate_all_scores():
 
 
 def generate_scores_for_clan_member(bungie_name, selected_clan):
-    print(bungie_name, selected_clan)
     clan = clans[selected_clan]
     clan_member_response = request.BungieApiCall().get_clan_members(clans[selected_clan]).json()['Response']
     members = clan_member_response['results']
@@ -826,7 +824,6 @@ def generate_scores_for_clan_member(bungie_name, selected_clan):
     for mem in members:
         if 'bungieGlobalDisplayName' in mem['destinyUserInfo'] and 'bungieGlobalDisplayNameCode' in mem['destinyUserInfo']:
             name = '{0}#{1}'.format(mem['destinyUserInfo']['bungieGlobalDisplayName'],  mem['destinyUserInfo']['bungieGlobalDisplayNameCode'])
-            print(bungie_name)
             if bungie_name == name:
                 member_in_clan_flag = True
     if not member_in_clan_flag:

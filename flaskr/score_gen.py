@@ -172,6 +172,8 @@ def initialize_member(clan_member):
     member.set(DestinyActivity.goa_master.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.duality.name, copy.copy(destiny_class_count_dict))
     member.set(DestinyActivity.duality_master.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.spire.name, copy.copy(destiny_class_count_dict))
+    member.set(DestinyActivity.spire_master.name, copy.copy(destiny_class_count_dict))
 
     member.low_light = {DestinyClass.hunter.name: True, DestinyClass.warlock.name: True, DestinyClass.titan.name: True}
 

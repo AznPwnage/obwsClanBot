@@ -46,6 +46,11 @@ def generate_scores():
         return redirect(url_for('dashboard.clan_view', clan_name=clan_name, selected_date=selected_date))
 
 
+@dashboard.route('/roles')
+def generate_role_file():
+    return render_template('dashboard/index.html')
+
+
 @dashboard.route('/discord')
 def discord_view():
     clan_name = request.args.get('clan_name', None)

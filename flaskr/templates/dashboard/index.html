@@ -10,12 +10,9 @@
     <thead>
     <th>View full score chart</th>
     <th>Generate scores</th>
+    <th>Generate role file</th>
     <th>Discord view</th>
-    <th>Diff</th>
     <th>Inactives</th>
-    <th>Generate scores for player</th>
-    <th>Raid Report</th>
-    <th>Check PGCR</th>
     </thead>
     <tbody>
     <tr>
@@ -23,24 +20,12 @@
             Date:<input type="date" id="clanView_datePick">
         </td>
         <td></td>
+        <td></td>
         <td>
             Date:<input type="date" id="discordView_datePick">
         </td>
         <td>
-            Start:<input type="date" id="diffView_startDatePick">
-            End:<input type="date" id="diffView_endDatePick">
-        </td>
-        <td>
             Date:<input type="date" id="inactiveView_datePick">
-        </td>
-        <td>
-            Bungie Name:<input type="text" id="generateSingle_textField">
-        </td>
-        <td>
-            Bungie Name:<input type="text" id="raidReport_textField">
-        </td>
-        <td>
-            PGCR ID:<input type="text" id="checkRaid_pgcrId_textField">
         </td>
     </tr>
     <tr>
@@ -72,6 +57,7 @@
             <option value="All">All</option>
         </select>
         </td>
+        <td></td>
         <td>
             Clan: <select id="discordView_clanPick">
             <option value="Emerald">Emerald</option>
@@ -86,8 +72,6 @@
         </select>
         </td>
         <td>
-        </td>
-        <td>
             Clan: <select id="inactiveView_clanPick">
             <option value="Emerald">Emerald</option>
             <option value="Jade">Jade</option>
@@ -100,6 +84,53 @@
             <option value="Diamond">Diamond</option>
             <option value="All">All</option>
         </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="bottomCell">
+            <input id="clanView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="generateScores_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="generateRoleFile_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="discordView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="inactiveView_btn" type="button" value="Go"/>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<br/>
+<table class="indexTable">
+    <thead>
+    <th>Diff</th>
+    <th>Generate scores for player</th>
+    <th>Raid Report</th>
+    <th>Check PGCR</th>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            Start:<input type="date" id="diffView_startDatePick">
+            End:<input type="date" id="diffView_endDatePick">
+        </td>
+        <td>
+            Bungie Name:<input type="text" id="generateSingle_textField">
+        </td>
+        <td>
+            Bungie Name:<input type="text" id="raidReport_textField">
+        </td>
+        <td>
+            PGCR ID:<input type="text" id="checkRaid_pgcrId_textField">
+        </td>
+    </tr>
+    <tr>
+        <td>
         </td>
         <td>
             Clan: <select id="generateSingle_clanPick">
@@ -122,19 +153,7 @@
     </tr>
     <tr>
         <td class="bottomCell">
-            <input id="clanView_btn" type="button" value="Go"/>
-        </td>
-        <td class="bottomCell">
-            <input id="generateScores_btn" type="button" value="Go"/>
-        </td>
-        <td class="bottomCell">
-            <input id="discordView_btn" type="button" value="Go"/>
-        </td>
-        <td class="bottomCell">
             <input id="diffView_btn" type="button" value="Go"/>
-        </td>
-        <td class="bottomCell">
-            <input id="inactiveView_btn" type="button" value="Go"/>
         </td>
         <td class="bottomCell">
             <input id="generateSingle_btn" type="button" value="Go"/>
@@ -170,6 +189,15 @@ $('#generateScores_btn').click( function(e){
     var url = "{{ url_for('dashboard.generate_scores', clan_name='selectedClan', selected_date='selectedDate') }}"
             .replace("selectedClan", selectedClan)
             .replace("selectedDate", new Date().toISOString().slice(0,10))
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
+$('#generateRoleFile_btn').click( function(e){
+    e.preventDefault();
+    disableBtn();
+    var url = "{{ url_for('dashboard.generate_role_file') }}"
             .replaceAll("amp;", "");
     window.location.href = url;
 });

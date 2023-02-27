@@ -47,17 +47,17 @@ def get_role_name_from_score(score, gild_level):
         return "Mythic"
     elif score == 720 and gild_level == 0:
         return "Legend"
-    elif score < 1440 and gild_level == 1:
+    elif score < 2160 and gild_level == 1:
         return "Gilded Legend"
-    elif score == 1440 and gild_level == 1:
+    elif score == 2160 and gild_level == 1:
         return "Iron Wolf"
-    elif score < 2160 and gild_level == 2:
+    elif score < 4320 and gild_level == 2:
         return "Gilded Iron Wolf"
-    elif score == 2160 and gild_level == 2:
+    elif score == 4320 and gild_level == 2:
         return "Iron Lord"
-    elif score < 3600 and gild_level >= 3:
+    elif score < 7920 and gild_level >= 3:
         return "Gilded Iron Lord"
-    elif score == 3600 and gild_level >= 3:
+    elif score == 7920 and gild_level >= 3:
         return "Iron Will"
     else:
         return "Iron Will"

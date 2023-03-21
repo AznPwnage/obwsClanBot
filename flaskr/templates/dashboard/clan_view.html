@@ -105,6 +105,7 @@
         <th colspan="3">MVOW</th>
         <th colspan="3">KF</th>
         <th colspan="3">MKF</th>
+        <th colspan="3">RON</th>
         <th colspan="3">Clan Engram By Class</th>
         <th colspan="3">Crucible Engram</th>
         <th colspan="3">Banshee</th>
@@ -128,19 +129,12 @@
         <th colspan="3">Spire Master</th>
         <th colspan="3">DOE Powerful</th>
         <th colspan="3">DOE Pinnacle</th>
-        <th colspan="3">Preservation</th>
-        <th colspan="3">Wellspring Powerful</th>
-        <th colspan="3">Wellspring Pinnacle</th>
-        <th colspan="3">Campaign Powerful</th>
-        <th colspan="3">Campaign Pinnacle</th>
-        <th colspan="3">Fynch Challenge</th>
-        <th colspan="3">Tank Buster</th>
         <th colspan="3">Low Light</th>
         <th rowspan="2">Account doesn't exist</th>
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(40) %}
+        {%- for i in range(34) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -244,6 +238,9 @@
         <td>{{ members[i].kf_master_hunter }}</td> <!-- KF Master Hunter -->
         <td>{{ members[i].kf_master_warlock }}</td> <!-- KF Master Warlock -->
         <td>{{ members[i].kf_master_titan }}</td> <!-- KF Master Titan -->
+        <td>{{ members[i].ron_hunter }}</td> <!-- RON Hunter -->
+        <td>{{ members[i].ron_warlock }}</td> <!-- RON Warlock -->
+        <td>{{ members[i].ron_titan }}</td> <!-- RON Titan -->
         <td>{%- if members[i].clan_xp_hunter | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_hunter }}{%- endif -%}</td> <!-- Clan Engram Hunter -->
         <td>{%- if members[i].clan_xp_warlock | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_warlock }}{%- endif -%}</td> <!-- Clan Engram Warlock -->
         <td>{%- if members[i].clan_xp_titan | int >= 5000 -%}✔️{%- else -%}{{ members[i].clan_xp_titan }}{%- endif -%}</td> <!-- Clan Engram Titan -->
@@ -313,27 +310,6 @@
         <td>{%- if members[i].doe_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Hunter -->
         <td>{%- if members[i].doe_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Warlock -->
         <td>{%- if members[i].doe_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- DOE Pinnacle Titan -->
-        <td>{%- if members[i].preservation_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Hunter -->
-        <td>{%- if members[i].preservation_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Warlock -->
-        <td>{%- if members[i].preservation_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Preservation Titan -->
-        <td>{%- if members[i].wellspring_powerful_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Hunter -->
-        <td>{%- if members[i].wellspring_powerful_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Warlock -->
-        <td>{%- if members[i].wellspring_powerful_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Powerful Titan -->
-        <td>{%- if members[i].wellspring_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Hunter -->
-        <td>{%- if members[i].wellspring_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Warlock -->
-        <td>{%- if members[i].wellspring_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Wellspring Pinnacle Titan -->
-        <td>{%- if members[i].campaign_powerful_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Hunter -->
-        <td>{%- if members[i].campaign_powerful_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Warlock -->
-        <td>{%- if members[i].campaign_powerful_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Powerful Titan -->
-        <td>{%- if members[i].campaign_pinnacle_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Hunter -->
-        <td>{%- if members[i].campaign_pinnacle_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Warlock -->
-        <td>{%- if members[i].campaign_pinnacle_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Campaign Pinnacle Titan -->
-        <td>{%- if members[i].fynch_challenge_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Hunter -->
-        <td>{%- if members[i].fynch_challenge_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Warlock -->
-        <td>{%- if members[i].fynch_challenge_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Fynch Challenge Titan -->
-        <td>{%- if members[i].tank_buster_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Hunter -->
-        <td>{%- if members[i].tank_buster_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Warlock -->
-        <td>{%- if members[i].tank_buster_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Tank Buster Titan -->
         <td>{%- if members[i].low_light_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Hunter -->
         <td>{%- if members[i].low_light_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Warlock -->
         <td>{%- if members[i].low_light_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Low Light Titan -->

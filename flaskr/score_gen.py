@@ -15,63 +15,9 @@ from configparser import ConfigParser
 from concurrent.futures import ThreadPoolExecutor
 
 from .clan import ClanMember
-
-
-class DestinyClass(enum.Enum):
-    hunter = 1
-    warlock = 2
-    titan = 0
-
-
-class DestinyActivity(enum.Enum):
-    gos = (3458480158, 4, 40, 1200)
-    dsc = (910380154, 4, 35, 1200)
-    lw = (2122313384, 4, 45, 1500)
-    vog = (3881495763, 4, 45, 1500)
-    vog_master = (1681562271, 4, 45, 1500)
-    vow = (1441982566, 4, 45, 1500)
-    vow_master = (4217492330, 4, 45, 1500)
-    kf = (1374392663, 4, 45, 1500)
-    kf_master = (2964135793, 4, 45, 1500)
-    poh = (2582501063, 82, None, None)
-    prophecy = (1077850348, 82, None, None)
-    st = (2032534090, 2, None, None)
-    goa = (4078656646, 82, None, None)
-    goa_master = (3774021532, 82, None, None)
-    duality = (2823159265, 82, None, None)
-    duality_master = (1668217731, 82, None, None)
-    spire = (1262462921, 82, None, None)
-    spire_master = (1801496203, 82, None, None)
-
-    def __init__(self, activity_hash, activity_mode, threshold_kill, threshold_time):
-        self.activity_hash = activity_hash
-        self.activity_mode = activity_mode
-        self.threshold_kill = threshold_kill
-        self.threshold_time = threshold_time
-
-    def __new__(cls, activity_hash, activity_mode, threshold_kill, threshold_time):
-        entry = object.__new__(cls)
-        entry.activity_hash = entry._value_ = activity_hash  # set the value, and the extra attribute
-        entry.activity_mode = activity_mode
-        entry.threshold_kill = threshold_kill
-        entry.threshold_time = threshold_time
-        return entry
-
-    def __repr__(self):
-        return f'<{type(self).__name__}.{self.name}: ({self.activity_hash!r}, {self.activity_mode!r}, {self.threshold_kill!r}, {self.threshold_time!r})>'
-
-    @classmethod
-    def has_value(cls, value):
-        return value in cls._value2member_map_
-
-
-class DestinyMilestone:
-    def __init__(self, name, ms_hash, obj_hash, score, collectible):
-        self.name = name
-        self.ms_hash = ms_hash
-        self.obj_hash = obj_hash
-        self.score = score
-        self.collectible = collectible
+from .src.enums.DestinyActivity import DestinyActivity
+from .src.enums.DestinyClass import DestinyClass
+from .src.enums.DestinyMilestone import DestinyMilestone
 
 
 parser = ConfigParser()
@@ -90,7 +36,6 @@ def build_milestones_from_config(section_name):
 
 
 milestones = build_milestones_from_config('milestones')
-milestones_seasonal = build_milestones_from_config('milestones_seasonal')
 milestones_special = build_milestones_from_config('milestones_special')
 
 
@@ -104,13 +49,10 @@ def get_trials_enabled():
 current_season_hash = parser.getint('seasonal_variables', 'current_season_hash')
 current_expansion_value = parser.getint('seasonal_variables', 'current_expansion_value')
 
-vox_obscura_hash = parser.getint('activity_hashes', 'vox_obscura')
 dares_of_eternity_hash = parser.getint('activity_hashes', 'dares_of_eternity')
-preservation_hash = parser.getint('activity_hashes', 'preservation')
 
 season_pass_progress_hash = str(parser.getint('progression_hashes', 'season_pass_progress'))
 clan_level_hash = str(parser.getint('progression_hashes', 'clan_level'))
-throne_world_rank_hash = str(parser.getint('progression_hashes', 'throne_world_rank'))
 
 public_milestones = request.BungieApiCall().get_public_milestones()
 trials_enabled = get_trials_enabled()
@@ -125,11 +67,8 @@ mods = dict(parser.items('mods')).values()
 
 gild_level_thresholds = dict([(int(x[0]), int(x[1])) for x in parser.items('gild_level_thresholds')])
 rejoin_lookback_map = dict([(int(x[0]), int(x[1])) for x in parser.items('rejoin_lookback')])
-wellspring_hashes = dict([(x[0], int(x[1])) for x in parser.items('wellspring_hashes')]).values()
 
 destiny_activity_mode_type = dict([(x[0], int(x[1])) for x in parser.items('destiny_activity_mode_type')])
-
-activities_to_track_by_history = [DestinyActivity.poh, DestinyActivity.st, DestinyActivity.goa, DestinyActivity.goa_master]
 
 clans = clan_lib.ClanGroup().get_clans()
 
@@ -149,31 +88,12 @@ def initialize_member(clan_member):
     for m in milestones.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
 
-    for m in milestones_seasonal.values():
-        member.set(m.name, copy.copy(destiny_class_bool_dict))
-
     for m in milestones_special.values():
         member.set(m.name, copy.copy(destiny_class_bool_dict))
     member.set('clan_xp', copy.copy(destiny_class_count_dict))
 
-    member.set(DestinyActivity.gos.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.dsc.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.lw.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.vog.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.vog_master.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.vow.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.vow_master.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.kf.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.kf_master.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.prophecy.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.poh.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.st.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.goa.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.goa_master.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.duality.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.duality_master.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.spire.name, copy.copy(destiny_class_count_dict))
-    member.set(DestinyActivity.spire_master.name, copy.copy(destiny_class_count_dict))
+    for activity in DestinyActivity:
+        member.set(activity.name, copy.copy(destiny_class_count_dict))
 
     member.low_light = {DestinyClass.hunter.name: True, DestinyClass.warlock.name: True, DestinyClass.titan.name: True}
 
@@ -316,8 +236,6 @@ def process_dungeons(member, member_class, week_start, character_id, activity_mo
         if not DestinyActivity.has_value(ref_id):
             continue
         activity_enum = DestinyActivity(ref_id)
-        if activity_enum not in activities_to_track_by_history:
-            continue
         if activity_invalid(dungeon, activity_enum, character_id, member.membership_id):
             continue
         if activity_enum == DestinyActivity.goa_master:
@@ -684,29 +602,9 @@ def build_score_for_clan_member(clan_member, profile, clan_type):
 
         curr_member = iterate_over_milestones(curr_member, curr_class, milestones_list, milestones)
 
-        throne_world_rank = progressions[throne_world_rank_hash]['level'] + 1
-
-        if check_arr_contains(activity_hashes, wellspring_hashes):
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wellspring_powerful'))
-            if throne_world_rank >= 18:
-                curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('wellspring_pinnacle'))
-
-        if throne_world_rank >= 13:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('campaign_powerful'))
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('campaign_pinnacle'))
-
-        if throne_world_rank >= 2:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('fynch_challenge'))
-
         if dares_of_eternity_hash in activity_hashes:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('doe_powerful'))
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('doe_pinnacle'))
-
-        if vox_obscura_hash in activity_hashes:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('tank_buster'))
-
-        if preservation_hash in activity_hashes:
-            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones_seasonal.get('preservation'))
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones.get('doe_powerful'))
+            curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, milestones.get('doe_pinnacle'))
 
         if owns_current_expansion and trials_enabled:
             curr_member = get_trials(curr_member, curr_class, milestones_list, milestones_special.get('trials50'),

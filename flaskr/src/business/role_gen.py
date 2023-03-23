@@ -1,12 +1,11 @@
-import csv
 import os
 from datetime import datetime, timezone
 
-from . import clan as clan_lib
+from flaskr.src.model import clan as clan_lib
 import os.path as path
 import pandas as pd
 
-from .score_gen import get_week_start
+from flaskr.src.business.score_gen import get_week_start
 
 clans = clan_lib.ClanGroup().get_clans()
 

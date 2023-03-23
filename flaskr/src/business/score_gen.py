@@ -1,10 +1,9 @@
 import concurrent
 import copy
-import enum
 import math
 
-from . import request
-from . import clan as clan_lib
+from flaskr import request
+from flaskr.src.model import clan as clan_lib
 import csv
 from datetime import datetime, timezone, timedelta
 import pytz
@@ -14,10 +13,10 @@ import pandas as pd
 from configparser import ConfigParser
 from concurrent.futures import ThreadPoolExecutor
 
-from .clan import ClanMember
-from .src.enums.DestinyActivity import DestinyActivity
-from .src.enums.DestinyClass import DestinyClass
-from .src.enums.DestinyMilestone import DestinyMilestone
+from flaskr.src.model.clan import ClanMember
+from flaskr.src.enums.DestinyActivity import DestinyActivity
+from flaskr.src.enums.DestinyClass import DestinyClass
+from flaskr.src.enums.DestinyMilestone import DestinyMilestone
 
 
 parser = ConfigParser()
@@ -381,13 +380,13 @@ def get_seasonal_xp(progressions):
 
 
 def get_activity_with_triple_stage(curr_member, curr_class, milestones_list, activity_name_1, activity_name_2, activity_name_3):
-    m = milestones_seasonal.get(activity_name_1)
+    m = milestones_list.get(activity_name_1)
     curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
     if curr_member.get(m.name)[curr_class.name]:
-        m = milestones_seasonal.get(activity_name_2)
+        m = milestones_list.get(activity_name_2)
         curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
         if curr_member.get(m.name)[curr_class.name]:
-            m = milestones_seasonal.get(activity_name_3)
+            m = milestones_list.get(activity_name_3)
             curr_member = check_milestone_and_add_score(curr_member, curr_class, milestones_list, m)
     return curr_member
 

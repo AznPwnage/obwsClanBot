@@ -1,13 +1,13 @@
 import csv
 import os.path as path
-from datetime import datetime, timezone
+from datetime import datetime
 
 from flask import (
     Blueprint, redirect, render_template, request, url_for, flash
 )
 
-from . import clan as clan_lib, role_gen
-from . import score_gen
+from .src.business import role_gen, score_gen
+from .src.model import clan as clan_lib
 
 dashboard = Blueprint('dashboard', __name__)
 

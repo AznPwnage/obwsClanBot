@@ -49,7 +49,8 @@ def generate_scores():
 
 @dashboard.route('/roles')
 def generate_role_file():
-    role_gen.generate_role_file()
+    selected_date = request.args.get('selected_date', None)
+    role_gen.generate_role_file(selected_date)
     return render_template('dashboard/index.html')
 
 

@@ -6,13 +6,14 @@ import os.path as path
 import pandas as pd
 
 from flaskr.src.business.score_gen import get_week_start
+from flaskr.src.utils.date_utils import get_week_start_as_str
 
 clans = clan_lib.ClanGroup().get_clans()
 
 
-def generate_role_file():
-    curr_week_start = get_curr_week_start()
-    df = build_score_df(curr_week_start)
+def generate_role_file(selected_date):
+    week_start = get_week_start_as_str(selected_date)
+    df = build_score_df(week_start)
     df = add_roles_to_df(df)
     write_to_csv(df)
 
@@ -20,7 +21,7 @@ def generate_role_file():
 def build_score_df(week_start):
     df = pd.DataFrame()
     for clan in clans:
-        prev_file_path = path.join('scoreData', f'{week_start:%Y-%m-%d}', clans[clan].name + '.csv')
+        prev_file_path = path.join('scoreData', week_start, clans[clan].name + '.csv')
         if path.exists(prev_file_path):
             df = df.append(
                 pd.read_csv(prev_file_path,

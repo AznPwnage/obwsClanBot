@@ -68,7 +68,7 @@ def add_roles_to_df(df):
 
 
 def write_to_csv(df: pd.DataFrame):
-    file_path = path.join('roleFile', 'role_file.csv')
+    file_path = path.join('output/roleFile', 'role_file.csv')
     if path.exists(file_path):  # delete old file for current week
         os.remove(file_path)
     df.to_csv(file_path, columns=["bungie_name", "role_name"], header=False, index=False, encoding='utf-8', sep=',')

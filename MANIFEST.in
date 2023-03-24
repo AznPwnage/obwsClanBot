@@ -1,4 +1,6 @@
 graft flaskr/templates
 graft flaskr/static
 graft flaskr/src
+graft output
+graft clan_list.csv
 global-exclude *.pyc

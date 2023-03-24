@@ -1,13 +1,14 @@
-import csv
-import os.path as path
 from datetime import datetime
 
 from flask import (
     Blueprint, redirect, render_template, request, url_for, flash
 )
 
-from .src.business import role_gen, score_gen
+from .src.business import role_gen, score_gen, inactive_gen
+from .src.business.inactive_gen import get_inactive_members
 from .src.model import clan as clan_lib
+from flaskr.src.utils.file_utils import get_file_path
+from flaskr.src.utils.score_utils import read_score_file
 
 dashboard = Blueprint('dashboard', __name__)
 
@@ -120,6 +121,13 @@ def inactive_view():
                            selected_date=selected_date, clans=score_gen.clans)
 
 
+@dashboard.route('/inactiveFile')
+def inactive_file():
+    selected_date = request.args.get('selected_date', None)
+    inactive_gen.generate_inactive_file(selected_date)
+    return render_template('dashboard/index.html')
+
+
 @dashboard.route('/single')
 def generate_single():
     bungie_name = request.args.get('bungie_name', None)
@@ -145,57 +153,3 @@ def check_raid():
     character_class = request.args.get('character_class', None)
     score_gen.check_raid(pgcr_id, bungie_name, character_class)
     return render_template('dashboard/index.html')
-
-
-def get_week_start_as_str(dt):
-    dt = datetime.strptime(dt, '%Y-%m-%d')
-    week_start = score_gen.get_week_start(dt)
-    return f'{week_start:%Y-%m-%d}'
-
-
-def get_file_path(clan_name, selected_date):
-    week_start_str = get_week_start_as_str(selected_date)
-    week_folder = path.join('scoreData', week_start_str)
-    return path.join(week_folder, clan_name + '.csv')
-
-
-def read_score_file(file_path, sort_by, reverse, col_type):
-    members = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        csv_reader = csv.reader(f)
-        headers = next(csv_reader)
-        for row in csv_reader:
-            members.append(row)
-    mem_list = []
-    for member in members:
-        mem_as_json = {}
-        for i in range(len(headers)):
-            mem_as_json[headers[i]] = member[i]
-        mem_list.append(mem_as_json)
-    if sort_by is not None:
-        reverse = reverse is not None
-        if sort_by == 'inactive':
-            reverse = not reverse
-
-        if sort_by == 'clan_xp':
-            reverse = not reverse
-            mem_list = sorted(mem_list, key=lambda item: (int(item[sort_by + '_hunter']) + int(item[sort_by + '_warlock']) + int(item[sort_by + '_titan'])), reverse=reverse)
-        elif col_type == 'int':
-            mem_list = sorted(mem_list, key=lambda item: int(item[sort_by]), reverse=reverse)
-        elif col_type == 'date':
-            mem_list = sorted(mem_list, key=lambda item: item[sort_by][:10], reverse=reverse)
-        elif col_type == 'str':
-            mem_list = sorted(mem_list, key=lambda item: item[sort_by].lower(), reverse=reverse)
-    return mem_list
-
-
-def get_inactive_members(clan_name, selected_date):
-    inactive_members = []
-
-    file_path = get_file_path(clan_name, selected_date)
-    members = read_score_file(file_path, None, None, None)
-
-    for m in members:
-        if m['inactive'] == 'True':
-            inactive_members.append(m)
-    return inactive_members

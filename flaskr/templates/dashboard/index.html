@@ -13,6 +13,7 @@
     <th>Generate role file</th>
     <th>Discord view</th>
     <th>Inactives</th>
+    <th>Generate inactive file</th>
     </thead>
     <tbody>
     <tr>
@@ -26,6 +27,9 @@
         </td>
         <td>
             Date:<input type="date" id="inactiveView_datePick">
+        </td>
+        <td>
+            Date:<input type="date" id="inactiveFile_datePick">
         </td>
     </tr>
     <tr>
@@ -93,6 +97,7 @@
             <option value="All">All</option>
         </select>
         </td>
+        <td></td>
     </tr>
     <tr>
         <td class="bottomCell">
@@ -109,6 +114,9 @@
         </td>
         <td class="bottomCell">
             <input id="inactiveView_btn" type="button" value="Go"/>
+        </td>
+        <td class="bottomCell">
+            <input id="inactiveFile_btn" type="button" value="Go"/>
         </td>
     </tr>
     </tbody>
@@ -253,6 +261,17 @@ $('#inactiveView_btn').click( function(e){
 });
 </script>
 <script>
+$('#inactiveFile_btn').click( function(e){
+    e.preventDefault();
+    disableBtn();
+    var selectedDate = $("#inactiveFile_datePick").val()
+    var url = "{{ url_for('dashboard.inactive_file', selected_date='selectedDate') }}"
+            .replace("selectedDate", selectedDate)
+            .replaceAll("amp;", "");
+    window.location.href = url;
+});
+</script>
+<script>
 $('#generateSingle_btn').click( function(e){
     e.preventDefault();
     disableBtn();
@@ -304,9 +323,11 @@ $(document).ready( function() {
 function disableBtn() {
     $('#clanView_btn').prop('disabled', true);
     $('#generateScores_btn').prop('disabled', true);
+    $('#generateRoleFile_btn').prop('disabled', true);
     $('#discordView_btn').prop('disabled', true);
     $('#diffView_btn').prop('disabled', true);
     $('#inactiveView_btn').prop('disabled', true);
+    $('#inactiveFile_btn').prop('disabled', true);
     $('#generateSingle_btn').prop('disabled', true);
     $('#raidReport_btn').prop('disabled', true);
     $('#checkRaid_btn').prop('disabled', true);

@@ -112,7 +112,6 @@
         <th colspan="3">Drifter</th>
         <th colspan="3">Zavala</th>
         <th colspan="3">Nightfall</th>
-        <th colspan="3">Strikes</th>
         <th colspan="3">Nightfall 100k</th>
         <th colspan="3">Gambit</th>
         <th colspan="3">Crucible Playlist</th>
@@ -134,7 +133,7 @@
         <th rowspan="2">Private account</th>
     </tr>
     <tr>
-        {%- for i in range(34) %}
+        {%- for i in range(33) %}
         <th>H</th>
         <th>W</th>
         <th>T</th>
@@ -259,9 +258,6 @@
         <td>{%- if members[i].nightfall_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Hunter -->
         <td>{%- if members[i].nightfall_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Warlock -->
         <td>{%- if members[i].nightfall_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall Titan -->
-        <td>{%- if members[i].strikes_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Hunter -->
-        <td>{%- if members[i].strikes_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Warlock -->
-        <td>{%- if members[i].strikes_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Strikes Titan -->
         <td>{%- if members[i].nightfall_100k_hunter == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Hunter -->
         <td>{%- if members[i].nightfall_100k_warlock == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Warlock -->
         <td>{%- if members[i].nightfall_100k_titan == 'True' -%}✔️{%- else -%}{%- endif -%}</td> <!-- Nightfall 100k Titan -->
